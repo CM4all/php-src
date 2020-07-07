@@ -64,6 +64,7 @@
 #endif
 #include "php_syslog.h"
 #include "Zend/zend_exceptions.h"
+#include "metrics.h"
 
 #if PHP_SIGCHILD
 #include <sys/types.h>
@@ -93,6 +94,9 @@
 /* }}} */
 
 #include <float.h>
+
+bool want_was_metrics;
+struct php_was_metrics was_metrics;
 
 PHPAPI int (*php_register_internal_extensions_func)(void) = php_register_internal_extensions;
 
@@ -549,7 +553,7 @@ static PHP_INI_DISP(display_errors_mode)
 	mode = php_get_display_errors_mode(temporary_value);
 
 	/* Display 'On' for other SAPIs instead of STDOUT or STDERR */
-	cgi_or_cli = (!strcmp(sapi_module.name, "cli") || !strcmp(sapi_module.name, "cgi") || !strcmp(sapi_module.name, "phpdbg"));
+	cgi_or_cli = (!strcmp(sapi_module.name, "cli") || !strcmp(sapi_module.name, "cgi") || !strcmp(sapi_module.name, "was") || !strcmp(sapi_module.name, "phpdbg"));
 
 	switch (mode) {
 		case PHP_DISPLAY_ERRORS_STDERR:
@@ -1483,7 +1487,7 @@ static ZEND_COLD void php_error_cb(int orig_type, zend_string *error_filename, c
 					}
 				} else {
 					/* Write CLI/CGI errors to stderr if display_errors = "stderr" */
-					if ((!strcmp(sapi_module.name, "cli") || !strcmp(sapi_module.name, "cgi") || !strcmp(sapi_module.name, "phpdbg")) &&
+					if ((!strcmp(sapi_module.name, "cli") || !strcmp(sapi_module.name, "cgi") || !strcmp(sapi_module.name, "was") || !strcmp(sapi_module.name, "phpdbg")) &&
 						PG(display_errors) == PHP_DISPLAY_ERRORS_STDERR
 					) {
 						fprintf(stderr, "%s: ", error_type_str);
