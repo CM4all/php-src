@@ -2932,6 +2932,7 @@ static inline int accel_find_sapi(void)
 		"uwsgi",
 		"fuzzer",
 		"frankenphp",
+		"was",
 		NULL
 	};
 	const char **sapi_name;
