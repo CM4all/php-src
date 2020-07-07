@@ -2974,6 +2974,7 @@ static inline zend_result accel_find_sapi(void)
 		"fuzzer",
 		"frankenphp",
 		"ngx-php",
+		"was",
 		NULL
 	};
 	const char **sapi_name;
