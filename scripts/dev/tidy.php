@@ -39,6 +39,7 @@ $excludes = [
     'sapi/cli/php_http_parser.c',
     'sapi/cli/php_http_parser.h',
     'sapi/litespeed/',
+    'sapi/was/',
     // Not a PHP file.
     'ext/zlib/tests/data.inc',
     // Flexible HEREDOC/NOWDOC tests are likely whitespace sensitive.
