@@ -130,8 +130,27 @@ static int sapi_was_send_headers(sapi_headers_struct *sapi_headers)
 static size_t sapi_was_read_post(char *buffer, size_t count_bytes)
 {
 	struct was_simple *const w = SG(server_context);
-	ssize_t rv = was_simple_read(w, buffer, count_bytes);
-	return (rv >= 0) ? (size_t)rv : 0;
+
+	/* PHP doesn't handle partial reads properly, so we loop until
+	   either the requested number of bytes have been read, the
+	   end of the request body is reached or an error occurs */
+
+	size_t position = 0;
+	while (position < count_bytes) {
+		ssize_t nbytes = was_simple_read(w, buffer + position,
+						 count_bytes - position);
+		if (nbytes <= 0) {
+			if (nbytes < 0)
+				/* don't return any data if an error
+				   has occurred */
+				return 0;
+			break;
+		}
+
+		position += (size_t)nbytes;
+	}
+
+	return position;
 }
 
 static char *concat_cookies(char *a, const char *b)
