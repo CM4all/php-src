@@ -19,6 +19,7 @@
 #include "SAPI.h"
 #include "php_main.h"
 #include "php_variables.h"
+#include "php_getopt.h"
 #include "zend.h"
 #include "ext/standard/head.h"
 
@@ -508,11 +509,111 @@ static zend_module_entry was_module_entry = {
 	STANDARD_MODULE_PROPERTIES
 };
 
+static void php_was_usage(char *argv0)
+{
+	const char *prog = strrchr(argv0, '/');
+	if (prog) {
+		prog++;
+	} else {
+		prog = "php";
+	}
+
+	printf("Usage: %s [options]\n"
+	       "  -d foo[=bar]     Define INI entry foo with value 'bar'\n"
+	       "  -h               This help\n"
+	       "\n", prog);
+}
+
+struct CommandLine {
+	char *ini_entries;
+	size_t ini_entries_len;
+};
+
+static int
+ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
+{
+	static const opt_struct OPTIONS[] = {
+		{'d', 1, "define"},
+		{'h', 0, "help"},
+		{'?', 0, "usage"},/* help alias (both '?' and 'usage') */
+	};
+
+	int php_optind = 1;
+
+	char *ini_entries = NULL;
+	size_t ini_entries_len = 0;
+
+	while (true) {
+		char *php_optarg = NULL;
+		int c = php_getopt(argc, argv, OPTIONS,
+				   &php_optarg, &php_optind,
+				   1, 2);
+		if (c == -1)
+			break;
+
+		switch (c) {
+		case 'd': {
+			/* define ini entries on command line */
+			size_t len = strlen(php_optarg);
+			char *val;
+
+			if ((val = strchr(php_optarg, '='))) {
+				val++;
+				if (!isalnum(*val) && *val != '"' && *val != '\'' && *val != '\0') {
+					ini_entries = realloc(ini_entries, ini_entries_len + len + sizeof("\"\"\n\0"));
+					memcpy(ini_entries + ini_entries_len, php_optarg, (val - php_optarg));
+					ini_entries_len += (val - php_optarg);
+					memcpy(ini_entries + ini_entries_len, "\"", 1);
+					ini_entries_len++;
+					memcpy(ini_entries + ini_entries_len, val, len - (val - php_optarg));
+					ini_entries_len += len - (val - php_optarg);
+					memcpy(ini_entries + ini_entries_len, "\"\n\0", sizeof("\"\n\0"));
+					ini_entries_len += sizeof("\n\0\"") - 2;
+				} else {
+					ini_entries = realloc(ini_entries, ini_entries_len + len + sizeof("\n\0"));
+					memcpy(ini_entries + ini_entries_len, php_optarg, len);
+					memcpy(ini_entries + ini_entries_len + len, "\n\0", sizeof("\n\0"));
+					ini_entries_len += len + sizeof("\n\0") - 2;
+				}
+			} else {
+				ini_entries = realloc(ini_entries, ini_entries_len + len + sizeof("=1\n\0"));
+				memcpy(ini_entries + ini_entries_len, php_optarg, len);
+				memcpy(ini_entries + ini_entries_len + len, "=1\n\0", sizeof("=1\n\0"));
+				ini_entries_len += len + sizeof("=1\n\0") - 2;
+			}
+			break;
+		}
+
+		case 'h': /* help & quit */
+		case '?':
+			php_was_usage(argv[0]);
+			return EXIT_SUCCESS;
+
+		case PHP_GETOPT_INVALID_ARG: /* print usage on bad options, exit 1 */
+			php_was_usage(argv[0]);
+			return EXIT_FAILURE;
+		}
+	}
+
+	command_line->ini_entries = ini_entries;
+	command_line->ini_entries_len = ini_entries_len;
+
+	return -1;
+}
+
 int main(int argc, char *argv[])
 {
 	zend_signal_startup();
 
+	struct CommandLine command_line = {NULL};
+
+	int ret = ParseCommandLine(argc, argv, &command_line);
+	if (ret != -1)
+		return ret;
+
 	sapi_startup(&was_sapi_module);
+
+	was_sapi_module.ini_entries = command_line.ini_entries;
 
 	was_sapi_module.executable_location = argv[0];
 
@@ -522,7 +623,7 @@ int main(int argc, char *argv[])
 		return FAILURE;
 	}
 
-	int ret = EXIT_SUCCESS;
+	ret = EXIT_SUCCESS;
 
 	struct was_simple *w = was_simple_new();
 	const char *request_uri;
