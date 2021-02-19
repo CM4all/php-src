@@ -2547,6 +2547,7 @@ static inline int accel_find_sapi(void)
 		"apache2handler",
 		"litespeed",
 		"uwsgi",
+		"was",
 		NULL
 	};
 	const char **sapi_name;
@@ -2892,6 +2893,7 @@ static int accel_startup(zend_extension *extension)
 	if (ZCG(accel_directives).huge_code_pages &&
 	    (strcmp(sapi_module.name, "cli") == 0 ||
 	     strcmp(sapi_module.name, "cli-server") == 0 ||
+	     strcmp(sapi_module.name, "was") == 0 ||
 		 strcmp(sapi_module.name, "cgi-fcgi") == 0 ||
 		 strcmp(sapi_module.name, "fpm-fcgi") == 0)) {
 		accel_move_code_to_huge_pages();
