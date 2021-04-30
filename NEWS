@@ -143,6 +143,10 @@ PHP                                                                        NEWS
   . Fixed bug #69279 (Compressed ZIP Phar extractTo() creates garbage files).
     (cmb)
 
+- SOAP:
+  . Fixed bug #80672 (Null Dereference in SoapClient). (CVE-2021-21702) (cmb,
+    Stas)
+
 07 Jan 2021, PHP 7.4.14
 
 - Core:
