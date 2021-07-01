@@ -1,7 +1,11 @@
 --TEST--
 libxml_disable_entity_loader()
 --SKIPIF--
-<?php if (!extension_loaded('libxml') || !extension_loaded('dom')) die('skip'); ?>
+<?php
+if (!extension_loaded('libxml')) die('skip libxml extension not available');
+if (!extension_loaded('dom')) die('skip dom extension not available');
+if (LIBXML_VERSION >= 20912) die('skip For libxml2 < 2.9.12 only');
+?>
 --FILE--
 <?php
 

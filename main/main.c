@@ -296,12 +296,24 @@ static PHP_INI_MH(OnSetSerializePrecision)
  */
 static PHP_INI_MH(OnChangeMemoryLimit)
 {
+	size_t value;
 	if (new_value) {
-		PG(memory_limit) = zend_atol(ZSTR_VAL(new_value), ZSTR_LEN(new_value));
+		value = zend_atol(ZSTR_VAL(new_value), ZSTR_LEN(new_value));
 	} else {
-		PG(memory_limit) = Z_L(1)<<30;		/* effectively, no limit */
+		value = Z_L(1)<<30;		/* effectively, no limit */
 	}
-	return zend_set_memory_limit(PG(memory_limit));
+	if (zend_set_memory_limit(value) == FAILURE) {
+		/* When the memory limit is reset to the original level during deactivation, we may be
+		 * using more memory than the original limit while shutdown is still in progress.
+		 * Ignore a failure for now, and set the memory limit when the memory manager has been
+		 * shut down and the minimal amount of memory is used. */
+		if (stage != ZEND_INI_STAGE_DEACTIVATE) {
+			zend_error(E_WARNING, "Failed to set memory limit to %zd bytes (Current memory usage is %zd bytes)", value, zend_memory_usage(true));
+			return FAILURE;
+		}
+	}
+	PG(memory_limit) = value;
+	return SUCCESS;
 }
 /* }}} */
 
@@ -1180,6 +1192,19 @@ PHPAPI ZEND_COLD void php_error_docref2(const char *docref, const char *param1, 
 /* }}} */
 
 #ifdef PHP_WIN32
+PHPAPI ZEND_COLD void php_win32_docref1_from_error(DWORD error, const char *param1) {
+	char *buf = php_win32_error_to_msg(error);
+	size_t buf_len;
+
+	buf_len = strlen(buf);
+	if (buf_len >= 2) {
+		buf[buf_len - 1] = '\0';
+		buf[buf_len - 2] = '\0';
+	}
+	php_error_docref1(NULL, param1, E_WARNING, "%s (code: %lu)", buf, error);
+	php_win32_error_msg_free(buf);
+}
+
 PHPAPI ZEND_COLD void php_win32_docref2_from_error(DWORD error, const char *param1, const char *param2) {
 	char *buf = php_win32_error_to_msg(error);
 	size_t buf_len;
@@ -1944,6 +1969,10 @@ void php_request_shutdown(void *dummy)
 		shutdown_memory_manager(CG(unclean_shutdown) || !report_memleaks, 0);
 	} zend_end_try();
 
+	/* Reset memory limit, as the reset during INI_STAGE_DEACTIVATE may have failed.
+	 * At this point, no memory beyond a single chunk should be in use. */
+	zend_set_memory_limit(PG(memory_limit));
+
 	/* 16. Deactivate Zend signals */
 #ifdef ZEND_SIGNALS
 	zend_signal_deactivate();
@@ -2699,12 +2728,13 @@ PHPAPI void php_handle_aborted_connection(void)
 PHPAPI int php_handle_auth_data(const char *auth)
 {
 	int ret = -1;
+	size_t auth_len = auth != NULL ? strlen(auth) : 0;
 
-	if (auth && auth[0] != '\0' && strncmp(auth, "Basic ", 6) == 0) {
+	if (auth && auth_len > 0 && zend_binary_strncasecmp(auth, auth_len, "Basic ", sizeof("Basic ")-1, sizeof("Basic ")-1) == 0) {
 		char *pass;
 		zend_string *user;
 
-		user = php_base64_decode((const unsigned char*)auth + 6, strlen(auth) - 6);
+		user = php_base64_decode((const unsigned char*)auth + 6, auth_len - 6);
 		if (user) {
 			pass = strchr(ZSTR_VAL(user), ':');
 			if (pass) {
@@ -2723,7 +2753,7 @@ PHPAPI int php_handle_auth_data(const char *auth)
 		SG(request_info).auth_digest = NULL;
 	}
 
-	if (ret == -1 && auth && auth[0] != '\0' && strncmp(auth, "Digest ", 7) == 0) {
+	if (ret == -1 && auth && auth_len > 0 && zend_binary_strncasecmp(auth, auth_len, "Digest ", sizeof("Digest ")-1, sizeof("Digest ")-1) == 0) {
 		SG(request_info).auth_digest = estrdup(auth + 7);
 		ret = 0;
 	}

@@ -110,6 +110,11 @@ PHPAPI ZEND_INI_MH(OnUpdateBaseDir)
 			*end = '\0';
 			end++;
 		}
+		if (ptr[0] == '.' && ptr[1] == '.' && (ptr[2] == '\0' || IS_SLASH(ptr[2]))) {
+			/* Don't allow paths with a leading .. path component to be set at runtime */
+			efree(pathbuf);
+			return FAILURE;
+		}
 		if (php_check_open_basedir_ex(ptr, 0) != 0) {
 			/* At least one portion of this open_basedir is less restrictive than the prior one, FAIL */
 			efree(pathbuf);
@@ -206,6 +211,10 @@ PHPAPI int php_check_specific_open_basedir(const char *basedir, const char *path
 #else
 			path_tmp[path_len - 1] = '\0';
 #endif
+		}
+		if (*path_tmp == '\0') {
+			/* Do not pass an empty string to realpath(), as this will resolve to CWD. */
+			break;
 		}
 		nesting_level++;
 	}

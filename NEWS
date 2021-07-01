@@ -1,10 +1,98 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+01 Jul 2021, PHP 7.4.21
+
+- Core:
+  . Fixed bug #81068 (Double free in realpath_cache_clean()). (Dimitry Andric)
+  . Fixed bug #76359 (open_basedir bypass through adding ".."). (cmb)
+  . Fixed bug #81090 (Typed property performance degradation with .= operator).
+    (Nikita)
+  . Fixed bug #81070 (Integer underflow in memory limit comparison).
+    (Peter van Dommelen)
+  . Fixed bug #81122 (SSRF bypass in FILTER_VALIDATE_URL).
+    (CVE-2021-21705) (cmb)
+
+- Bzip2:
+  . Fixed bug #81092 (fflush before stream_filter_remove corrupts stream).
+    (cmb)
+
+- OpenSSL:
+  . Fixed bug #76694 (native Windows cert verification uses CN as sever name).
+    (cmb)
+
+- PDO_Firebird:
+  . Fixed bug #76448 (Stack buffer overflow in firebird_info_cb).
+    (CVE-2021-21704) (cmb)
+  . Fixed bug #76449 (SIGSEGV in firebird_handle_doer).
+    (CVE-2021-21704) (cmb)
+  . Fixed bug #76450 (SIGSEGV in firebird_stmt_execute).
+    (CVE-2021-21704) (cmb)
+  . Fixed bug #76452 (Crash while parsing blob data in firebird_fetch_blob).
+    (CVE-2021-21704) (cmb)
+
+- Standard:
+  . Fixed bug #81048 (phpinfo(INFO_VARIABLES) "Array to string conversion").
+    (cmb)
+
+03 Jun 2021, PHP 7.4.20
+
+- Core:
+  . Fixed bug #80929 (Method name corruption related to repeated calls to
+    call_user_func_array). (twosee)
+  . Fixed bug #80960 (opendir() warning wrong info when failed on Windows).
+    (cmb)
+  . Fixed bug #67792 (HTTP Authorization schemes are treated as case-sensitive).
+    (cmb)
+  . Fixed bug #80972 (Memory exhaustion on invalid string offset). (girgias)
+
+- FPM:
+  . Fixed bug #65800 (Events port mechanism). (psumbera)
+
+- FTP:
+  . Fixed bug #80901 (Info leak in ftp extension). (cmb)
+  . Fixed bug #79100 (Wrong FTP error messages). (cmb)
+
+- GD:
+  . Fixed bug #81032 (GD install is affected by external libgd installation).
+    (Flavio Heleno, cmb)
+
+- MBString:
+  . Fixed bug #81011 (mb_convert_encoding removes references from arrays). (cmb)
+
+- ODBC:
+  . Fixed bug #80460 (ODBC doesn't account for SQL_NO_TOTAL indicator). (cmb)
+
+- PDO_MySQL:
+  . Fixed bug #81037 (PDO discards error message text from prepared 
+    statement). (Kamil Tekiela)
+
+- PDO_ODBC:
+  . Fixed bug #44643 (bound parameters ignore explicit type definitions). (cmb)
+
+- pgsql:
+  . Fixed php_pgsql_fd_cast() wrt. php_stream_can_cast(). (cmb)
+
+- SPL:
+  . Fixed bug #80933 (SplFileObject::DROP_NEW_LINE is broken for NUL and CR).
+    (cmb, Nikita)
+
+- Opcache:
+  . Fixed bug #80900 (switch statement behavior inside function). (twosee)
+  . Fixed bug #81015 (Opcache optimization assumes wrong part of ternary
+    operator in if-condition). (Nikita)
+
+- XMLReader:
+  . Fixed bug #73246 (XMLReader: encoding length not checked). (cmb)
+
+- Zip:
+  . Fixed bug #80863 (ZipArchive::extractTo() ignores references). (cmb)
+
 06 May 2021, PHP 7.4.19
 
 - PDO_pgsql:
   . Reverted bug fix for #80892 (PDO::PARAM_INT is treated the same as
     PDO::PARAM_STR). (Matteo)
+
 
 29 Apr 2021, PHP 7.4.18
 
@@ -149,10 +237,6 @@ PHP                                                                        NEWS
   . Fixed bug #69279 (Compressed ZIP Phar extractTo() creates garbage files).
     (cmb)
 
-- SOAP:
-  . Fixed bug #80672 (Null Dereference in SoapClient). (CVE-2021-21702) (cmb,
-    Stas)
-
 07 Jan 2021, PHP 7.4.14
 
 - Core:
@@ -203,7 +287,7 @@ PHP                                                                        NEWS
     PROCEDURE resultset SIGNAL). (Nikita)
 
 - Standard:
-  . Fixed bug #77423 (FILTER_VALIDATE_URL accepts URLs with invalid userinfo). 
+  . Fixed bug #77423 (FILTER_VALIDATE_URL accepts URLs with invalid userinfo).
     (CVE-2020-7071) (cmb)
   . Fixed bug #80366 (Return Value of zend_fstat() not Checked). (sagpant, cmb)
   . Fixed bug #80411 (References to null-serialized object break serialize()).
@@ -342,7 +426,7 @@ PHP                                                                        NEWS
   . Fixed bug #80048 (Bug #69100 has not been fixed for Windows). (cmb)
   . Fixed bug #80049 (Memleak when coercing integers to string via variadic
     argument). (Nikita)
-  . Fixed bug #79699 (PHP parses encoded cookie names so malicious `__Host-` 
+  . Fixed bug #79699 (PHP parses encoded cookie names so malicious `__Host-`
     cookies can be sent). (CVE-2020-7070) (Stas)
 
 - Calendar:
@@ -361,7 +445,7 @@ PHP                                                                        NEWS
     handlers changed). (SammyK)
 
 - OpenSSL:
-  . Fixed bug #79601 (Wrong ciphertext/tag in AES-CCM encryption for a 12 
+  . Fixed bug #79601 (Wrong ciphertext/tag in AES-CCM encryption for a 12
     bytes IV). (CVE-2020-7069) (Jakub Zelenka)
 
 - PDO:
@@ -443,7 +527,7 @@ PHP                                                                        NEWS
     (cmb)
 
 - Core:
-  . Fixed bug #79877 (getimagesize function silently truncates after a null 
+  . Fixed bug #79877 (getimagesize function silently truncates after a null
     byte) (cmb)
   . Fixed bug #79740 (serialize() and unserialize() methods can not be called
     statically). (Nikita)
@@ -504,7 +588,7 @@ PHP                                                                        NEWS
   . Fixed possibly unsupported timercmp() usage. (cmb)
 
 - Exif:
-  . Fixed bug #79687 (Sony picture - PHP Warning - Make, Model, MakerNotes). 
+  . Fixed bug #79687 (Sony picture - PHP Warning - Make, Model, MakerNotes).
     (cmb)
 
 - Fileinfo:
@@ -720,7 +804,7 @@ PHP                                                                        NEWS
   . Fixed bug #79014 (PHP-FPM & Primary script unknown). (Jakub Zelenka)
 
 - MBstring:
-  . Fixed bug #79371 (mb_strtolower (UTF-32LE): stack-buffer-overflow at 
+  . Fixed bug #79371 (mb_strtolower (UTF-32LE): stack-buffer-overflow at
     php_unicode_tolower_full). (CVE-2020-7065) (cmb)
 
 - MySQLi:
