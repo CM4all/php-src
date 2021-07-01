@@ -429,7 +429,9 @@ function getmxrr(string $hostname, &$hosts, &$weights = null): bool {}
 
 /* net.c */
 
+#if defined(PHP_WIN32) || HAVE_GETIFADDRS || defined(__PASE__)
 function net_get_interfaces(): array|false {}
+#endif
 
 /* ftok.c */
 
@@ -528,7 +530,7 @@ function get_html_translation_table(int $table = HTML_SPECIALCHARS, int $flags =
 
 function assert(mixed $assertion, Throwable|string|null $description = null): bool {}
 
-function assert_options(int $option, mixed $value = UNKNOWN): array|object|int|string|null {}
+function assert_options(int $option, mixed $value = UNKNOWN): mixed {}
 
 /* string.c */
 

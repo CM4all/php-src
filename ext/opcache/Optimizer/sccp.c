@@ -1983,7 +1983,7 @@ static void sccp_mark_feasible_successors(
 				scdf_mark_edge_feasible(scdf, block_num, target);
 				return;
 			}
-			s = 0;
+			s = block->successors_count - 1;
 			break;
 		}
 		default:
@@ -2148,6 +2148,8 @@ static zval *value_from_type_and_range(sccp_ctx *ctx, int var_num, zval *tmp) {
 		return tmp;
 	}
 
+#if 0
+	/* Disabled due to bug #81096. */
 	if (!(info->type & ((MAY_BE_ANY|MAY_BE_UNDEF)-MAY_BE_LONG))
 			&& info->has_range
 			&& !info->range.overflow && !info->range.underflow
@@ -2155,6 +2157,7 @@ static zval *value_from_type_and_range(sccp_ctx *ctx, int var_num, zval *tmp) {
 		ZVAL_LONG(tmp, info->range.min);
 		return tmp;
 	}
+#endif
 
 	return NULL;
 }

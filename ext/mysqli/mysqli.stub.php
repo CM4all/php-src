@@ -54,7 +54,7 @@ class mysqli
     public function commit(int $flags = 0, ?string $name = null) {}
 
     /**
-     * @return mysqli|null|false
+     * @return bool|null
      * @alias mysqli_connect
      * @no-verify
      */
@@ -87,7 +87,7 @@ class mysqli
     public function get_charset() {}
 
     /**
-     * @return string|null
+     * @return string
      * @alias mysqli_get_client_info
      */
     public function get_client_info() {}
@@ -113,7 +113,7 @@ class mysqli
     public function get_warnings() {}
 
     /**
-     * @return mysqli|false
+     * @return null|false
      */
     public function init() {}
 
@@ -542,7 +542,7 @@ function mysqli_connect(
     ?string $database = null,
     ?int $port = null,
     ?string $socket = null
-): mysqli|null|false {}
+): mysqli|false {}
 
 function mysqli_connect_errno(): int {}
 
@@ -601,7 +601,7 @@ function mysqli_get_client_stats(): array {}
 
 function mysqli_get_charset(mysqli $mysql): ?object {}
 
-function mysqli_get_client_info(?mysqli $mysql = null): ?string {}
+function mysqli_get_client_info(?mysqli $mysql = null): string {}
 
 function mysqli_get_client_version(): int {}
 

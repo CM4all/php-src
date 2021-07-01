@@ -17,7 +17,7 @@ dnl Basic autoconf initialization, generation of config.nice.
 dnl ----------------------------------------------------------------------------
 
 AC_PREREQ([2.68])
-AC_INIT([PHP],[8.0.5],[https://bugs.php.net],[php],[https://www.php.net])
+AC_INIT([PHP],[8.0.8],[https://bugs.php.net],[php],[https://www.php.net])
 AC_CONFIG_SRCDIR([main/php_version.h])
 AC_CONFIG_AUX_DIR([build])
 AC_PRESERVE_HELP_ORDER
@@ -254,6 +254,17 @@ case $host_alias in
     AC_MSG_RESULT(no)
     ;;
 esac
+
+dnl Detect musl libc
+AC_MSG_CHECKING([whether we are using musl libc])
+if command -v ldd >/dev/null && ldd --version 2>&1 | grep -q ^musl
+then
+  AC_MSG_RESULT(yes)
+  CPPFLAGS="$CPPFLAGS -D__MUSL__"
+else
+  AC_MSG_RESULT(no)
+fi
+
 
 dnl Include Zend configurations.
 dnl ----------------------------------------------------------------------------

@@ -288,7 +288,6 @@ static ZEND_NAMED_FUNCTION(zend_closure_call_magic) /* {{{ */ {
 
 	zend_call_function(&fci, &fcc);
 
-	zval_ptr_dtor(&fci.params[0]);
 	zval_ptr_dtor(&fci.params[1]);
 }
 /* }}} */
@@ -485,6 +484,8 @@ static void zend_closure_free_storage(zend_object *object) /* {{{ */
 
 	if (closure->func.type == ZEND_USER_FUNCTION) {
 		destroy_op_array(&closure->func.op_array);
+	} else if (closure->orig_internal_handler == zend_closure_call_magic) {
+		zend_string_release(closure->func.common.function_name);
 	}
 
 	if (Z_TYPE(closure->this_ptr) != IS_UNDEF) {
@@ -549,16 +550,31 @@ static HashTable *zend_closure_get_debug_info(zend_object *object, int *is_temp)
 
 	if (closure->func.type == ZEND_USER_FUNCTION && closure->func.op_array.static_variables) {
 		zval *var;
-		HashTable *static_variables =
-			ZEND_MAP_PTR_GET(closure->func.op_array.static_variables_ptr);
-		ZVAL_ARR(&val, zend_array_dup(static_variables));
-		zend_hash_update(debug_info, ZSTR_KNOWN(ZEND_STR_STATIC), &val);
-		ZEND_HASH_FOREACH_VAL(Z_ARRVAL(val), var) {
+		zend_string *key;
+		HashTable *static_variables = ZEND_MAP_PTR_GET(closure->func.op_array.static_variables_ptr);
+
+		array_init(&val);
+
+		ZEND_HASH_FOREACH_STR_KEY_VAL(static_variables, key, var) {
+			zval copy;
+
 			if (Z_TYPE_P(var) == IS_CONSTANT_AST) {
-				zval_ptr_dtor(var);
-				ZVAL_STRING(var, "<constant ast>");
+				ZVAL_STRING(&copy, "<constant ast>");
+			} else {
+				if (Z_ISREF_P(var) && Z_REFCOUNT_P(var) == 1) {
+					var = Z_REFVAL_P(var);
+				}
+				ZVAL_COPY(&copy, var);
 			}
+
+			zend_hash_add_new(Z_ARRVAL(val), key, &copy);
 		} ZEND_HASH_FOREACH_END();
+
+		if (zend_hash_num_elements(Z_ARRVAL(val))) {
+			zend_hash_update(debug_info, ZSTR_KNOWN(ZEND_STR_STATIC), &val);
+		} else {
+			zval_ptr_dtor(&val);
+		}
 	}
 
 	if (Z_TYPE(closure->this_ptr) != IS_UNDEF) {

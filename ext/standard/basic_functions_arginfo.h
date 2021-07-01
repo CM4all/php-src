@@ -1,5 +1,5 @@
 /* This is a generated file, edit the .stub.php file instead.
- * Stub hash: b1d68b2f2dcc7a078257c65569f2eec284dcd804 */
+ * Stub hash: 8a11321dffd77850616db42a5c77fc33c30b361f */
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_set_time_limit, 0, 1, _IS_BOOL, 0)
 	ZEND_ARG_TYPE_INFO(0, seconds, IS_LONG, 0)
@@ -652,8 +652,10 @@ ZEND_END_ARG_INFO()
 #define arginfo_getmxrr arginfo_dns_get_mx
 #endif
 
+#if defined(PHP_WIN32) || HAVE_GETIFADDRS || defined(__PASE__)
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_MASK_EX(arginfo_net_get_interfaces, 0, 0, MAY_BE_ARRAY|MAY_BE_FALSE)
 ZEND_END_ARG_INFO()
+#endif
 
 #if HAVE_FTOK
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_ftok, 0, 2, IS_LONG, 0)
@@ -794,7 +796,7 @@ ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_assert, 0, 1, _IS_BOOL, 0)
 	ZEND_ARG_OBJ_TYPE_MASK(0, description, Throwable, MAY_BE_STRING|MAY_BE_NULL, "null")
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_MASK_EX(arginfo_assert_options, 0, 1, MAY_BE_ARRAY|MAY_BE_OBJECT|MAY_BE_LONG|MAY_BE_STRING|MAY_BE_NULL)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_assert_options, 0, 1, IS_MIXED, 0)
 	ZEND_ARG_TYPE_INFO(0, option, IS_LONG, 0)
 	ZEND_ARG_TYPE_INFO(0, value, IS_MIXED, 0)
 ZEND_END_ARG_INFO()
@@ -2394,7 +2396,9 @@ ZEND_FUNCTION(dns_get_record);
 #if defined(PHP_WIN32) || HAVE_DNS_SEARCH_FUNC
 ZEND_FUNCTION(dns_get_mx);
 #endif
+#if defined(PHP_WIN32) || HAVE_GETIFADDRS || defined(__PASE__)
 ZEND_FUNCTION(net_get_interfaces);
+#endif
 #if HAVE_FTOK
 ZEND_FUNCTION(ftok);
 #endif
@@ -3026,7 +3030,9 @@ static const zend_function_entry ext_functions[] = {
 #if defined(PHP_WIN32) || HAVE_DNS_SEARCH_FUNC
 	ZEND_FALIAS(getmxrr, dns_get_mx, arginfo_getmxrr)
 #endif
+#if defined(PHP_WIN32) || HAVE_GETIFADDRS || defined(__PASE__)
 	ZEND_FE(net_get_interfaces, arginfo_net_get_interfaces)
+#endif
 #if HAVE_FTOK
 	ZEND_FE(ftok, arginfo_ftok)
 #endif

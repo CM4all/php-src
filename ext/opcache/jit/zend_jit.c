@@ -116,7 +116,7 @@ static const void *zend_jit_func_trace_counter_handler = NULL;
 static const void *zend_jit_ret_trace_counter_handler = NULL;
 static const void *zend_jit_loop_trace_counter_handler = NULL;
 
-static void ZEND_FASTCALL zend_runtime_jit(void);
+static int ZEND_FASTCALL zend_runtime_jit(void);
 
 static int zend_jit_trace_op_len(const zend_op *opline);
 static int zend_jit_trace_may_exit(const zend_op_array *op_array, const zend_op *opline);
@@ -2709,6 +2709,7 @@ static int zend_jit(const zend_op_array *op_array, zend_ssa *ssa, const zend_op 
 						} else {
 							op2_def_addr = op2_addr;
 						}
+						op1_info = OP1_INFO();
 						if (opline->result_type == IS_UNUSED) {
 							res_addr = 0;
 							res_info = -1;
@@ -2720,7 +2721,8 @@ static int zend_jit(const zend_op_array *op_array, zend_ssa *ssa, const zend_op 
 							 && (i + 1) <= end
 							 && (opline+1)->opcode == ZEND_SEND_VAL
 							 && (opline+1)->op1_type == IS_TMP_VAR
-							 && (opline+1)->op1.var == opline->result.var) {
+							 && (opline+1)->op1.var == opline->result.var
+							 && (!(op1_info & MAY_HAVE_DTOR) || !(op1_info & MAY_BE_RC1))) {
 								i++;
 								res_addr = ZEND_ADDR_MEM_ZVAL(ZREG_RX, (opline+1)->result.var);
 								if (!zend_jit_reuse_ip(&dasm_state)) {
@@ -2729,7 +2731,7 @@ static int zend_jit(const zend_op_array *op_array, zend_ssa *ssa, const zend_op 
 							}
 						}
 						if (!zend_jit_assign(&dasm_state, opline,
-								OP1_INFO(), OP1_REG_ADDR(),
+								op1_info, OP1_REG_ADDR(),
 								OP1_DEF_INFO(), OP1_DEF_REG_ADDR(),
 								OP2_INFO(), op2_addr, op2_def_addr,
 								res_info, res_addr,
@@ -3625,7 +3627,7 @@ jit_failure:
 }
 
 /* Run-time JIT handler */
-static void ZEND_FASTCALL zend_runtime_jit(void)
+static int ZEND_FASTCALL zend_runtime_jit(void)
 {
 	zend_execute_data *execute_data = EG(current_execute_data);
 	zend_op_array *op_array = &EX(func)->op_array;
@@ -3657,6 +3659,7 @@ static void ZEND_FASTCALL zend_runtime_jit(void)
 	zend_shared_alloc_unlock();
 
 	/* JIT-ed code is going to be called by VM */
+	return 0;
 }
 
 void zend_jit_check_funcs(HashTable *function_table, zend_bool is_method) {
@@ -4228,11 +4231,19 @@ ZEND_EXT_API int zend_jit_check_support(void)
 	}
 
 	for (i = 0; i <= 256; i++) {
-		if (zend_get_user_opcode_handler(i) != NULL) {
-			zend_error(E_WARNING, "JIT is incompatible with third party extensions that setup user opcode handlers. JIT disabled.");
-			JIT_G(enabled) = 0;
-			JIT_G(on) = 0;
-			return FAILURE;
+		switch (i) {
+			/* JIT has no effect on these opcodes */
+			case ZEND_BEGIN_SILENCE:
+			case ZEND_END_SILENCE:
+			case ZEND_EXIT:
+				break;
+			default:
+				if (zend_get_user_opcode_handler(i) != NULL) {
+					zend_error(E_WARNING, "JIT is incompatible with third party extensions that setup user opcode handlers. JIT disabled.");
+					JIT_G(enabled) = 0;
+					JIT_G(on) = 0;
+					return FAILURE;
+				}
 		}
 	}
 
