@@ -392,16 +392,16 @@ static int was_module_main()
 
 static bool was_process_request(struct was_simple *w, const char *request_uri)
 {
-	int ret = EXIT_SUCCESS;
+	bool success = true;
 
 	zend_first_try {
 		init_request_info(w, request_uri);
 
 		if (was_module_main() == -1)
-			ret = -1;
+			success = false;
 	} zend_end_try();
 
-	return ret;
+	return success;
 }
 
 ZEND_BEGIN_ARG_INFO(arginfo_was__void, 0)
@@ -628,9 +628,10 @@ int main(int argc, char *argv[])
 	struct was_simple *w = was_simple_new();
 	const char *request_uri;
 	while ((request_uri = was_simple_accept(w)) != NULL) {
-		ret = was_process_request(w, request_uri);
-		if (ret)
+		if (!was_process_request(w, request_uri)) {
+			ret = EXIT_FAILURE;
 			break;
+		}
 	}
 
 	was_simple_free(w);
