@@ -601,6 +601,18 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 	return -1;
 }
 
+static bool
+RunWas(struct was_simple *w)
+{
+	const char *request_uri;
+	while ((request_uri = was_simple_accept(w)) != NULL) {
+		if (!was_process_request(w, request_uri))
+			return false;
+	}
+
+	return true;
+}
+
 int main(int argc, char *argv[])
 {
 	zend_signal_startup();
@@ -626,14 +638,8 @@ int main(int argc, char *argv[])
 	ret = EXIT_SUCCESS;
 
 	struct was_simple *w = was_simple_new();
-	const char *request_uri;
-	while ((request_uri = was_simple_accept(w)) != NULL) {
-		if (!was_process_request(w, request_uri)) {
-			ret = EXIT_FAILURE;
-			break;
-		}
-	}
-
+	if (!RunWas(w))
+		ret = EXIT_FAILURE;
 	was_simple_free(w);
 
 	php_module_shutdown();
