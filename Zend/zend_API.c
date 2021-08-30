@@ -1213,6 +1213,27 @@ ZEND_API void zend_merge_properties(zval *obj, HashTable *properties) /* {{{ */
 }
 /* }}} */
 
+static zend_result update_property(zval *val, zend_property_info *prop_info) {
+	if (ZEND_TYPE_IS_SET(prop_info->type)) {
+		zval tmp;
+
+		ZVAL_COPY(&tmp, val);
+		if (UNEXPECTED(zval_update_constant_ex(&tmp, prop_info->ce) != SUCCESS)) {
+			zval_ptr_dtor(&tmp);
+			return FAILURE;
+		}
+		/* property initializers must always be evaluated with strict types */;
+		if (UNEXPECTED(!zend_verify_property_type(prop_info, &tmp, /* strict */ 1))) {
+			zval_ptr_dtor(&tmp);
+			return FAILURE;
+		}
+		zval_ptr_dtor(val);
+		ZVAL_COPY_VALUE(val, &tmp);
+		return SUCCESS;
+	}
+	return zval_update_constant_ex(val, prop_info->ce);
+}
+
 ZEND_API zend_result zend_update_class_constants(zend_class_entry *class_type) /* {{{ */
 {
 	if (!(class_type->ce_flags & ZEND_ACC_CONSTANTS_UPDATED)) {
@@ -1241,33 +1262,28 @@ ZEND_API zend_result zend_update_class_constants(zend_class_entry *class_type) /
 			}
 		}
 
-		ZEND_HASH_FOREACH_PTR(&class_type->properties_info, prop_info) {
-			if (prop_info->flags & ZEND_ACC_STATIC) {
-				val = CE_STATIC_MEMBERS(class_type) + prop_info->offset;
-			} else {
-				val = (zval*)((char*)class_type->default_properties_table + prop_info->offset - OBJ_PROP_TO_OFFSET(0));
+		/* Use the default properties table to also update initializers of private properties
+		 * that have been shadowed in a child class. */
+		for (uint32_t i = 0; i < class_type->default_properties_count; i++) {
+			val = &class_type->default_properties_table[i];
+			prop_info = class_type->properties_info_table[i];
+			if (Z_TYPE_P(val) == IS_CONSTANT_AST
+					&& UNEXPECTED(update_property(val, prop_info) != SUCCESS)) {
+				return FAILURE;
 			}
-			if (Z_TYPE_P(val) == IS_CONSTANT_AST) {
-				if (ZEND_TYPE_IS_SET(prop_info->type)) {
-					zval tmp;
+		}
 
-					ZVAL_COPY(&tmp, val);
-					if (UNEXPECTED(zval_update_constant_ex(&tmp, prop_info->ce) != SUCCESS)) {
-						zval_ptr_dtor(&tmp);
+		if (class_type->default_static_members_count) {
+			ZEND_HASH_FOREACH_PTR(&class_type->properties_info, prop_info) {
+				if (prop_info->flags & ZEND_ACC_STATIC) {
+					val = CE_STATIC_MEMBERS(class_type) + prop_info->offset;
+					if (Z_TYPE_P(val) == IS_CONSTANT_AST
+							&& UNEXPECTED(update_property(val, prop_info) != SUCCESS)) {
 						return FAILURE;
 					}
-					/* property initializers must always be evaluated with strict types */;
-					if (UNEXPECTED(!zend_verify_property_type(prop_info, &tmp, /* strict */ 1))) {
-						zval_ptr_dtor(&tmp);
-						return FAILURE;
-					}
-					zval_ptr_dtor(val);
-					ZVAL_COPY_VALUE(val, &tmp);
-				} else if (UNEXPECTED(zval_update_constant_ex(val, prop_info->ce) != SUCCESS)) {
-					return FAILURE;
 				}
-			}
-		} ZEND_HASH_FOREACH_END();
+			} ZEND_HASH_FOREACH_END();
+		}
 
 		class_type->ce_flags |= ZEND_ACC_CONSTANTS_UPDATED;
 	}
@@ -2479,8 +2495,8 @@ ZEND_API zend_result zend_register_functions(zend_class_entry *scope, const zend
 						uint32_t j = 0;
 						while (true) {
 							const char *end = strchr(start, '|');
-							zend_string *str =
-								zend_string_init(start, end ? end - start : strlen(start), 1);
+							zend_string *str = zend_string_init_interned(
+								start, end ? end - start : strlen(start), 1);
 							list->types[j] = (zend_type) ZEND_TYPE_INIT_CLASS(str, 0, 0);
 							if (!end) {
 								break;
@@ -2983,6 +2999,9 @@ static bool zend_is_callable_check_class(zend_string *name, zend_class_entry *sc
 			if (error) *error = estrdup("cannot access \"self\" when no class scope is active");
 		} else {
 			fcc->called_scope = zend_get_called_scope(frame);
+			if (!fcc->called_scope || !instanceof_function(fcc->called_scope, scope)) {
+				fcc->called_scope = scope;
+			}
 			fcc->calling_scope = scope;
 			if (!fcc->object) {
 				fcc->object = zend_get_this_object(frame);
@@ -2996,6 +3015,9 @@ static bool zend_is_callable_check_class(zend_string *name, zend_class_entry *sc
 			if (error) *error = estrdup("cannot access \"parent\" when current class scope has no parent");
 		} else {
 			fcc->called_scope = zend_get_called_scope(frame);
+			if (!fcc->called_scope || !instanceof_function(fcc->called_scope, scope->parent)) {
+				fcc->called_scope = scope->parent;
+			}
 			fcc->calling_scope = scope->parent;
 			if (!fcc->object) {
 				fcc->object = zend_get_this_object(frame);

@@ -184,10 +184,10 @@ class DOMElement extends DOMNode implements DOMParentNode, DOMChildNode
     /** @return string */
     public function getAttributeNS(?string $namespace, string $localName) {}
 
-    /** @return DOMAttr|DOMNamespaceNode|false */
+    /** @return DOMAttr|DOMNameSpaceNode|false */
     public function getAttributeNode(string $qualifiedName) {}
 
-    /** @return DOMAttr|DOMNamespaceNode|null */
+    /** @return DOMAttr|DOMNameSpaceNode|null */
     public function getAttributeNodeNS(?string $namespace, string $localName) {}
 
     /** @return DOMNodeList */
@@ -433,4 +433,4 @@ class DOMXPath
 }
 #endif
 
-function dom_import_simplexml(object $node): ?DOMElement {}
+function dom_import_simplexml(object $node): DOMElement {}

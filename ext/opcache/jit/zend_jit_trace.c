@@ -3502,12 +3502,12 @@ static zend_bool zend_jit_may_skip_comparison(const zend_op *opline, const zend_
 			 || prev_opcode == ZEND_IS_NOT_IDENTICAL
 			 || prev_opcode == ZEND_CASE_STRICT) {
 				if (ssa_op->op1_use < 0) {
-					if (opline->op1.constant != ssa_opcodes[prev_ssa_op - ssa->ops]->op1.constant) {
+					if (RT_CONSTANT(opline, opline->op1) != RT_CONSTANT(&ssa_opcodes[prev_ssa_op - ssa->ops], ssa_opcodes[prev_ssa_op - ssa->ops]->op1)) {
 						return 0;
 					}
 				}
 				if (ssa_op->op2_use < 0) {
-					if (opline->op2.constant != ssa_opcodes[prev_ssa_op - ssa->ops]->op2.constant) {
+					if (RT_CONSTANT(opline, opline->op2) != RT_CONSTANT(&ssa_opcodes[prev_ssa_op - ssa->ops], ssa_opcodes[prev_ssa_op - ssa->ops]->op2)) {
 						return 0;
 					}
 				}
@@ -6452,11 +6452,11 @@ static const void *zend_jit_trace_exit_to_vm(uint32_t trace_num, uint32_t exit_n
 
 	opline = zend_jit_traces[trace_num].exit_info[exit_num].opline;
 	if (opline) {
-		zend_jit_set_ip(&dasm_state, opline);
 		if (opline == zend_jit_traces[zend_jit_traces[trace_num].root].opline) {
 			/* prevent endless loop */
 			original_handler = 1;
 		}
+		zend_jit_set_ip_ex(&dasm_state, opline, original_handler);
 	}
 
 	zend_jit_trace_return(&dasm_state, original_handler);
