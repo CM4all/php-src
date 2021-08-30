@@ -24,7 +24,9 @@
 #include "ext/standard/head.h"
 
 #include <was/simple.h>
+#include <was/multi.h>
 
+#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,6 +34,13 @@
 #include <sys/uio.h>
 
 static char *was_cookies = NULL;
+
+static bool
+IsPipe(int fd)
+{
+    struct stat st;
+    return fstat(fd, &st) == 0 && S_ISFIFO(st.st_mode);
+}
 
 static void init_sapi_from_env(sapi_module_struct *sapi_module)
 {
@@ -613,6 +622,45 @@ RunWas(struct was_simple *w)
 	return true;
 }
 
+static bool
+RunMultiWas(struct was_multi *m)
+{
+	const struct sigaction new_sigchld = {
+		.sa_handler = SIG_IGN,
+		.sa_flags = SA_RESTART,
+	};
+	struct sigaction old_sigchld;
+	sigaction(SIGCHLD, &new_sigchld, &old_sigchld);
+
+	const int dev_null = open("/dev/null", O_RDONLY|O_NOCTTY|O_CLOEXEC);
+
+	struct was_simple *w;
+	while ((w = was_multi_accept_simple(m)) != NULL) {
+		// TODO use threads instead of processes
+		pid_t pid = fork();
+		if (pid == 0) {
+			sigaction(SIGCHLD, &old_sigchld, NULL);
+			if (dev_null > 0) {
+				dup2(dev_null, STDIN_FILENO);
+				close(dev_null);
+			}
+
+			return RunWas(w);
+		}
+
+		if (pid < 0)
+			perror("fork() failed");
+
+		// TODO no SIGCHLD=SIG_IGN, waitpid() instead
+		// TODO forward SIGTERM to child processes
+
+		was_simple_free(w);
+	}
+
+	sigaction(SIGCHLD, &old_sigchld, NULL);
+	return true;
+}
+
 int main(int argc, char *argv[])
 {
 	zend_signal_startup();
@@ -637,10 +685,19 @@ int main(int argc, char *argv[])
 
 	ret = EXIT_SUCCESS;
 
-	struct was_simple *w = was_simple_new();
-	if (!RunWas(w))
-		ret = EXIT_FAILURE;
-	was_simple_free(w);
+	if (IsPipe(0)) {
+		/* Single-WAS (classic) mode */
+		struct was_simple *w = was_simple_new();
+		if (!RunWas(w))
+			ret = EXIT_FAILURE;
+		was_simple_free(w);
+	} else {
+		/* Multi-WAS mode */
+		struct was_multi *m = was_multi_new();
+		if (!RunMultiWas(m))
+			ret = EXIT_FAILURE;
+		was_multi_free(m);
+	}
 
 	php_module_shutdown();
 	return ret;
