@@ -269,10 +269,10 @@ function grapheme_extract(string $haystack, int $size, int $type = GRAPHEME_EXTR
 /* idn */
 
 /** @param array $idna_info */
-function idn_to_ascii(string $domain, int $flags = 0, int $variant = INTL_IDNA_VARIANT_UTS46, &$idna_info = null): string|false {}
+function idn_to_ascii(string $domain, int $flags = IDNA_DEFAULT, int $variant = INTL_IDNA_VARIANT_UTS46, &$idna_info = null): string|false {}
 
 /** @param array $idna_info */
-function idn_to_utf8(string $domain, int $flags = 0, int $variant = INTL_IDNA_VARIANT_UTS46, &$idna_info = null): string|false {}
+function idn_to_utf8(string $domain, int $flags = IDNA_DEFAULT, int $variant = INTL_IDNA_VARIANT_UTS46, &$idna_info = null): string|false {}
 
 /* locale */
 
@@ -349,11 +349,8 @@ function normalizer_get_raw_decomposition(string $string, int $form = Normalizer
 
 function resourcebundle_create(?string $locale, ?string $bundle, bool $fallback = true): ?ResourceBundle {}
 
-/**
- * @param string|int $index
- * @return mixed
- */
-function resourcebundle_get(ResourceBundle $bundle, $index, bool $fallback = true) {}
+/** @param string|int $index */
+function resourcebundle_get(ResourceBundle $bundle, $index, bool $fallback = true): mixed {}
 
 function resourcebundle_count(ResourceBundle $bundle): int {}
 
@@ -369,11 +366,8 @@ function intltz_count_equivalent_ids(string $timezoneId): int|false {}
 
 function intltz_create_default(): IntlTimeZone {}
 
-/**
- * @param IntlTimeZone|string|int|float|null $countryOrRawOffset
- * @return IntlIterator|false
- */
-function intltz_create_enumeration($countryOrRawOffset = null) {}
+/** @param IntlTimeZone|string|int|float|null $countryOrRawOffset */
+function intltz_create_enumeration($countryOrRawOffset = null): IntlIterator|false {}
 
 function intltz_create_time_zone(string $timezoneId): ?IntlTimeZone {}
 
