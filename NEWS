@@ -1,5 +1,38 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+23 Sep 2021, PHP 7.4.24
+
+- Core:
+  . Fixed bug #81302 (Stream position after stream filter removed). (cmb)
+  . Fixed bug #81346 (Non-seekable streams don't update position after write).
+    (cmb)
+  . Fixed bug #73122 (Integer Overflow when concatenating strings). (cmb)
+
+-GD:
+  . Fixed bug #53580 (During resize gdImageCopyResampled cause colors change).
+    (cmb)
+
+- Opcache:
+  . Fixed bug #81353 (segfault with preloading and statically bound closure).
+    (Nikita)
+
+- Shmop:
+  . Fixed bug #81407 (shmop_open won't attach and causes php to crash). (cmb)
+
+- Standard:
+  . Fixed bug #71542 (disk_total_space does not work with relative paths). (cmb)
+  . Fixed bug #81400 (Unterminated string in dns_get_record() results). (cmb)
+
+- SysVMsg:
+  . Fixed bug #78819 (Heap Overflow in msg_send). (cmb)
+
+- XML:
+  . Fixed bug #81351 (xml_parse may fail, but has no error code). (cmb, Nikita)
+
+- Zip:
+  . Fixed bug #81420 (ZipArchive::extractTo extracts outside of destination).
+    (CVE-2021-21706) (cmb)
+
 26 Aug 2021, PHP 7.4.23
 
 - Core:
