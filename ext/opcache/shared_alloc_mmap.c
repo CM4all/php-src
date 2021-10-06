@@ -75,6 +75,8 @@ static int create_segments(size_t requested_size, zend_shared_segment ***shared_
 		return ALLOC_FAILURE;
 	}
 
+	madvise(shared_segment->p, requested_size, MADV_HUGEPAGE);
+
 	shared_segment->pos = 0;
 	shared_segment->size = requested_size;
 
