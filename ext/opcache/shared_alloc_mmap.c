@@ -38,6 +38,7 @@
 
 static int create_segments(size_t requested_size, zend_shared_segment ***shared_segments_p, int *shared_segments_count, char **error_in)
 {
+	bool thp = false;
 	zend_shared_segment *shared_segment;
   int flags = PROT_READ | PROT_WRITE;
 	void *p;
@@ -75,6 +76,7 @@ static int create_segments(size_t requested_size, zend_shared_segment ***shared_
 			} else {
 				p = mmap(NULL, requested_size, flags, MAP_SHARED|MAP_ANONYMOUS|MAP_32BIT, -1, 0);
 				if (p != MAP_FAILED) {
+					thp = true;
 					goto success;
 				}
 			}
@@ -84,6 +86,7 @@ static int create_segments(size_t requested_size, zend_shared_segment ***shared_
 		if (p != MAP_FAILED) {
 			goto success;
 		}
+		thp = true;
 	}
 #elif defined(PREFER_MAP_32BIT) && defined(__x86_64__) && defined(MAP_32BIT)
 	p = mmap(NULL, requested_size, flags, MAP_SHARED|MAP_ANONYMOUS|MAP_32BIT, -1, 0);
@@ -99,6 +102,10 @@ static int create_segments(size_t requested_size, zend_shared_segment ***shared_
 	}
 
 success: ZEND_ATTRIBUTE_UNUSED;
+
+	if (thp)
+		madvise(p, requested_size, MADV_HUGEPAGE);
+
 	*shared_segments_count = 1;
 	*shared_segments_p = (zend_shared_segment **) calloc(1, sizeof(zend_shared_segment) + sizeof(void *));
 	if (!*shared_segments_p) {
