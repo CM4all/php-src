@@ -91,6 +91,16 @@
 
 /*** file locking ***/
 #ifndef ZEND_WIN32
+# include <pthread.h>
+# define USE_PTHREAD_MUTEX
+struct opcache_locks {
+	pthread_mutex_t alloc;
+};
+
+extern struct opcache_locks *opcache_locks;
+#endif /* !ZEND_WIN32 */
+
+#if !defined(USE_PTHREAD_MUTEX) && !defined(ZEND_WIN32)
 extern int lock_file;
 #endif
 

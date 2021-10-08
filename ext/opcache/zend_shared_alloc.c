@@ -48,7 +48,9 @@ static const char *g_shared_model;
 /* pointer to globals allocated in SHM and shared across processes */
 zend_smm_shared_globals *smm_shared_globals;
 
-#ifndef ZEND_WIN32
+#ifdef USE_PTHREAD_MUTEX
+struct opcache_locks *opcache_locks;
+#elif !defined(ZEND_WIN32)
 #ifdef ZTS
 static MUTEX_T zts_lock;
 #endif
@@ -75,11 +77,25 @@ static const zend_shared_memory_handler_entry handler_table[] = {
 #ifndef ZEND_WIN32
 void zend_shared_alloc_create_lock(char *lockfile_path)
 {
-	int val;
-
 #ifdef ZTS
 	zts_lock = tsrm_mutex_alloc();
 #endif
+
+#ifdef USE_PTHREAD_MUTEX
+	opcache_locks = mmap(NULL, sizeof(*opcache_locks),
+			     PROT_READ|PROT_WRITE,
+			     MAP_SHARED|MAP_ANONYMOUS, -1, 0);
+	if (opcache_locks == MAP_FAILED) {
+		zend_accel_error(ACCEL_LOG_FATAL, "Unable to create opcache_locks: %s (%d)", strerror(errno), errno);
+		return;
+	}
+
+	pthread_mutexattr_t mutexattr;
+	pthread_mutexattr_init(&mutexattr);
+	pthread_mutexattr_setpshared(&mutexattr, PTHREAD_PROCESS_SHARED);
+	pthread_mutex_init(&opcache_locks->alloc, &mutexattr);
+#else
+	int val;
 
 	snprintf(lockfile_name, sizeof(lockfile_name), "%s/%sXXXXXX", lockfile_path, SEM_FILENAME_PREFIX);
 	lock_file = mkstemp(lockfile_name);
@@ -94,6 +110,7 @@ void zend_shared_alloc_create_lock(char *lockfile_path)
 	fcntl(lock_file, F_SETFD, val);
 
 	unlink(lockfile_name);
+#endif
 }
 #endif
 
@@ -301,7 +318,14 @@ void zend_shared_alloc_shutdown(void)
 	}
 	ZSMMG(shared_segments) = NULL;
 	g_shared_alloc_handler = NULL;
-#ifndef ZEND_WIN32
+#ifdef USE_PTHREAD_MUTEX
+	pthread_mutex_destroy(&opcache_locks->alloc);
+	munmap(opcache_locks, sizeof(opcache_locks));
+
+# ifdef ZTS
+	tsrm_mutex_free(zts_lock);
+# endif
+#elif !defined(ZEND_WIN32)
 	close(lock_file);
 
 # ifdef ZTS
@@ -444,7 +468,14 @@ void zend_shared_alloc_safe_unlock(void)
 
 void zend_shared_alloc_lock(void)
 {
-#ifndef ZEND_WIN32
+#ifdef USE_PTHREAD_MUTEX
+
+#ifdef ZTS
+	tsrm_mutex_lock(zts_lock);
+#endif
+
+	pthread_mutex_lock(&opcache_locks->alloc);
+#elif !defined(ZEND_WIN32)
 	struct flock mem_write_lock;
 
 	mem_write_lock.l_type = F_WRLCK;
@@ -481,7 +512,7 @@ void zend_shared_alloc_lock(void)
 
 void zend_shared_alloc_unlock(void)
 {
-#ifndef ZEND_WIN32
+#if !defined(ZEND_WIN32) && !defined(USE_PTHREAD_MUTEX)
 	struct flock mem_write_unlock;
 
 	mem_write_unlock.l_type = F_UNLCK;
@@ -492,7 +523,12 @@ void zend_shared_alloc_unlock(void)
 
 	ZCG(locked) = 0;
 
-#ifndef ZEND_WIN32
+#ifdef USE_PTHREAD_MUTEX
+	pthread_mutex_unlock(&opcache_locks->alloc);
+#ifdef ZTS
+	tsrm_mutex_unlock(zts_lock);
+#endif
+#elif !defined(ZEND_WIN32)
 	if (fcntl(lock_file, F_SETLK, &mem_write_unlock) == -1) {
 		zend_accel_error_noreturn(ACCEL_LOG_ERROR, "Cannot remove lock - %s (%d)", strerror(errno), errno);
 	}
