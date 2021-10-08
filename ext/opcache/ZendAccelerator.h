@@ -86,9 +86,23 @@
 # include <sys/param.h>
 #endif
 
+#ifndef ZEND_WIN32
+# include <pthread.h>
+# define USE_PTHREAD_LOCK
+struct opcache_locks {
+	pthread_mutex_t alloc;
+	pthread_mutex_t restart_in;
+	pthread_rwlock_t mem_usage;
+};
+
+extern struct opcache_locks *opcache_locks;
+#endif /* !ZEND_WIN32 */
+
 /*** file locking ***/
 #ifndef ZEND_WIN32
+#ifndef USE_PTHREAD_LOCK
 extern int lock_file;
+#endif
 #endif
 
 #if defined(ZEND_WIN32)

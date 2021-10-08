@@ -238,6 +238,8 @@ static inline void accel_restart_enter(void)
 {
 #ifdef ZEND_WIN32
 	INCREMENT(restart_in);
+#elif defined(USE_PTHREAD_LOCK)
+	pthread_mutex_lock(&opcache_locks->restart_in);
 #else
 	struct flock restart_in_progress;
 
@@ -258,6 +260,9 @@ static inline void accel_restart_leave(void)
 #ifdef ZEND_WIN32
 	ZCSG(restart_in_progress) = 0;
 	DECREMENT(restart_in);
+#elif defined USE_PTHREAD_LOCK
+	ZCSG(restart_in_progress) = 0;
+	pthread_mutex_unlock(&opcache_locks->restart_in);
 #else
 	struct flock restart_finished;
 
@@ -276,7 +281,15 @@ static inline void accel_restart_leave(void)
 static inline int accel_restart_is_active(void)
 {
 	if (ZCSG(restart_in_progress)) {
-#ifndef ZEND_WIN32
+#ifdef USE_PTHREAD_LOCK
+		if (pthread_mutex_trylock(&opcache_locks->restart_in) == 0) {
+			ZCSG(restart_in_progress) = 0;
+			pthread_mutex_unlock(&opcache_locks->restart_in);
+			return 0;
+		} else {
+			return 1;
+		}
+#elif !defined(ZEND_WIN32)
 		struct flock restart_check;
 
 		restart_check.l_type = F_WRLCK;
@@ -308,6 +321,13 @@ static inline zend_result accel_activate_add(void)
 	SHM_UNPROTECT();
 	INCREMENT(mem_usage);
 	SHM_PROTECT();
+#elif defined USE_PTHREAD_LOCK
+	if (pthread_rwlock_rdlock(&opcache_locks->mem_usage) < 0) {
+		zend_accel_error(ACCEL_LOG_DEBUG, "UpdateC(+1):  %s (%d)", strerror(errno), errno);
+		return FAILURE;
+	}
+
+	return SUCCESS;
 #else
 	struct flock mem_usage_lock;
 
@@ -334,6 +354,8 @@ static inline void accel_deactivate_sub(void)
 		ZCG(counted) = 0;
 		SHM_PROTECT();
 	}
+#elif defined USE_PTHREAD_LOCK
+	pthread_rwlock_unlock(&opcache_locks->mem_usage);
 #else
 	struct flock mem_usage_unlock;
 
@@ -350,7 +372,7 @@ static inline void accel_deactivate_sub(void)
 
 static inline void accel_unlock_all(void)
 {
-#ifdef ZEND_WIN32
+#if defined(ZEND_WIN32) || defined(USE_PTHREAD_LOCK)
 	accel_deactivate_sub();
 #else
 	struct flock mem_usage_unlock_all;
@@ -760,7 +782,7 @@ static void accel_use_shm_interned_strings(void)
 	HANDLE_UNBLOCK_INTERRUPTIONS();
 }
 
-#ifndef ZEND_WIN32
+#if !defined(ZEND_WIN32) && !defined(USE_PTHREAD_LOCK)
 static inline void kill_all_lockers(struct flock *mem_usage_check)
 {
 	int success, tries;
@@ -829,6 +851,11 @@ static inline int accel_is_inactive(void)
 {
 #ifdef ZEND_WIN32
 	if (LOCKVAL(mem_usage) == 0) {
+		return SUCCESS;
+	}
+#elif defined USE_PTHREAD_LOCK
+	if (pthread_rwlock_trywrlock(&opcache_locks->mem_usage) == 0) {
+		pthread_rwlock_unlock(&opcache_locks->mem_usage);
 		return SUCCESS;
 	}
 #else
