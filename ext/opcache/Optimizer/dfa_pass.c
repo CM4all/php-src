@@ -575,11 +575,19 @@ static void replace_predecessor(zend_ssa *ssa, int block_id, int old_pred, int n
 
 		/* Also remove the corresponding phi node entries */
 		for (phi = ssa->blocks[block_id].phis; phi; phi = phi->next) {
-			memmove(
-				phi->sources + old_pred_idx,
-				phi->sources + old_pred_idx + 1,
-				sizeof(int) * (block->predecessors_count - old_pred_idx - 1)
-			);
+			if (phi->pi >= 0) {
+				if (phi->pi == old_pred) {
+					zend_ssa_rename_var_uses(
+						ssa, phi->ssa_var, phi->sources[0], /* update_types */ 0);
+					zend_ssa_remove_phi(ssa, phi);
+				}
+			} else {
+				memmove(
+					phi->sources + old_pred_idx,
+					phi->sources + old_pred_idx + 1,
+					sizeof(int) * (block->predecessors_count - old_pred_idx - 1)
+				);
+			}
 		}
 
 		block->predecessors_count--;
@@ -1388,7 +1396,7 @@ void zend_dfa_optimize_op_array(zend_op_array *op_array, zend_optimizer_ctx *ctx
 					 && (ssa->var_info[result_var].type & ((MAY_BE_ANY|MAY_BE_REF|MAY_BE_UNDEF) - (MAY_BE_LONG|MAY_BE_DOUBLE))) == 0) {
 						int use = ssa->vars[result_var].use_chain;
 
-						if (op_array->opcodes[use].opcode == ZEND_IS_SMALLER
+						if (use >= 0 && op_array->opcodes[use].opcode == ZEND_IS_SMALLER
 						 && ssa->ops[use].op1_use == result_var
 						 && zend_dfa_try_to_replace_result(op_array, ssa, op_1, v)) {
 							opline->opcode = ZEND_PRE_INC;
@@ -1402,7 +1410,7 @@ void zend_dfa_optimize_op_array(zend_op_array *op_array, zend_optimizer_ctx *ctx
 					 && (ssa->var_info[result_var].type & ((MAY_BE_ANY|MAY_BE_REF|MAY_BE_UNDEF) - (MAY_BE_LONG|MAY_BE_DOUBLE))) == 0) {
 						int use = ssa->vars[result_var].use_chain;
 
-						if (op_array->opcodes[use].opcode == ZEND_IS_SMALLER
+						if (use >= 0 && op_array->opcodes[use].opcode == ZEND_IS_SMALLER
 						 && ssa->ops[use].op2_use == result_var
 						 && zend_dfa_try_to_replace_result(op_array, ssa, op_1, v)) {
 							opline->opcode = ZEND_PRE_DEC;

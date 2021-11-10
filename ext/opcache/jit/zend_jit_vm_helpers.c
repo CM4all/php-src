@@ -308,7 +308,10 @@ static zend_always_inline ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL zend_jit_trace_c
 	if (UNEXPECTED(*(ZEND_OP_TRACE_INFO(opline, offset)->counter) <= 0)) {
 		*(ZEND_OP_TRACE_INFO(opline, offset)->counter) = ZEND_JIT_COUNTER_INIT;
 		if (UNEXPECTED(zend_jit_trace_hot_root(execute_data, opline) < 0)) {
-#ifndef HAVE_GCC_GLOBAL_REGS
+#ifdef HAVE_GCC_GLOBAL_REGS
+			opline = NULL;
+			return;
+#else
 			return -1;
 #endif
 		}
@@ -347,7 +350,7 @@ ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL zend_jit_loop_trace_helper(ZEND_OPCODE_HAN
 	trace_buffer[idx].info = _op | (_info); \
 	trace_buffer[idx].ptr = _ptr; \
 	idx++; \
-	if (idx >= ZEND_JIT_TRACE_MAX_LENGTH - 1) { \
+	if (idx >= ZEND_JIT_TRACE_MAX_LENGTH - 2) { \
 		stop = ZEND_JIT_TRACE_STOP_TOO_LONG; \
 		break; \
 	}
@@ -359,7 +362,7 @@ ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL zend_jit_loop_trace_helper(ZEND_OPCODE_HAN
 	trace_buffer[idx].op3_type = _op3_type; \
 	trace_buffer[idx].ptr = _ptr; \
 	idx++; \
-	if (idx >= ZEND_JIT_TRACE_MAX_LENGTH - 1) { \
+	if (idx >= ZEND_JIT_TRACE_MAX_LENGTH - 2) { \
 		stop = ZEND_JIT_TRACE_STOP_TOO_LONG; \
 		break; \
 	}

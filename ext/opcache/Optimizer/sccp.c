@@ -704,6 +704,10 @@ static inline int ct_eval_assign_obj(zval *result, zval *value, zval *key) {
 }
 
 static inline int ct_eval_incdec(zval *result, zend_uchar opcode, zval *op1) {
+	if (Z_TYPE_P(op1) == IS_ARRAY || IS_PARTIAL_ARRAY(op1)) {
+		return FAILURE;
+	}
+
 	ZVAL_COPY(result, op1);
 	if (opcode == ZEND_PRE_INC
 			|| opcode == ZEND_POST_INC
@@ -1009,14 +1013,15 @@ static void sccp_visit_instr(scdf_ctx *scdf, zend_op *opline, zend_ssa_op *ssa_o
 	switch (opline->opcode) {
 		case ZEND_ASSIGN:
 			/* The value of op1 is irrelevant here, because we are overwriting it
-			 * -- unless it can be a reference, in which case we propagate a BOT. */
+			 * -- unless it can be a reference, in which case we propagate a BOT.
+			 * The result is also BOT in this case, because it might be a typed reference. */
 			if (IS_BOT(op1) && (ctx->scdf.ssa->var_info[ssa_op->op1_use].type & MAY_BE_REF)) {
 				SET_RESULT_BOT(op1);
+				SET_RESULT_BOT(result);
 			} else {
 				SET_RESULT(op1, op2);
+				SET_RESULT(result, op2);
 			}
-
-			SET_RESULT(result, op2);
 			return;
 		case ZEND_TYPE_CHECK:
 			/* We may be able to evaluate TYPE_CHECK based on type inference info,
@@ -2132,6 +2137,12 @@ static zval *value_from_type_and_range(sccp_ctx *ctx, int var_num, zval *tmp) {
 	zend_ssa_var_info *info = &ssa->var_info[var_num];
 
 	if (info->type & MAY_BE_UNDEF) {
+		return NULL;
+	}
+
+	if (!(info->type & MAY_BE_ANY)) {
+		/* This code must be unreachable. We could replace operands with NULL, but this doesn't
+		 * really make things better. It would be better to later remove this code entirely. */
 		return NULL;
 	}
 

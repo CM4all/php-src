@@ -2067,6 +2067,35 @@ failure:
 	return NULL;
 }
 
+
+static bool zend_jit_supported_binary_op(zend_uchar op, uint32_t op1_info, uint32_t op2_info)
+{
+	if ((op1_info & MAY_BE_UNDEF) || (op2_info & MAY_BE_UNDEF)) {
+		return false;
+	}
+	switch (op) {
+		case ZEND_POW:
+		case ZEND_DIV:
+			// TODO: check for division by zero ???
+			return false;
+		case ZEND_ADD:
+		case ZEND_SUB:
+		case ZEND_MUL:
+			return (op1_info & (MAY_BE_LONG|MAY_BE_DOUBLE))
+				&& (op2_info & (MAY_BE_LONG|MAY_BE_DOUBLE));
+		case ZEND_BW_OR:
+		case ZEND_BW_AND:
+		case ZEND_BW_XOR:
+		case ZEND_SL:
+		case ZEND_SR:
+		case ZEND_MOD:
+			return (op1_info & MAY_BE_LONG) && (op2_info & MAY_BE_LONG);
+		case ZEND_CONCAT:
+			return (op1_info & MAY_BE_STRING) && (op2_info & MAY_BE_STRING);
+		EMPTY_SWITCH_DEFAULT_CASE()
+	}
+}
+
 static int zend_jit(const zend_op_array *op_array, zend_ssa *ssa, const zend_op *rt_opline)
 {
 	int b, i, end;
@@ -2488,11 +2517,6 @@ static int zend_jit(const zend_op_array *op_array, zend_ssa *ssa, const zend_op 
 						}
 						goto done;
 					case ZEND_ASSIGN_OP:
-						if (opline->extended_value == ZEND_POW
-						 || opline->extended_value == ZEND_DIV) {
-							// TODO: check for division by zero ???
-							break;
-						}
 						if (opline->op1_type != IS_CV || opline->result_type != IS_UNUSED) {
 							break;
 						}
@@ -2501,32 +2525,9 @@ static int zend_jit(const zend_op_array *op_array, zend_ssa *ssa, const zend_op 
 						}
 						op1_info = OP1_INFO();
 						op2_info = OP2_INFO();
-						if ((op1_info & MAY_BE_UNDEF) || (op2_info & MAY_BE_UNDEF)) {
+						if (!zend_jit_supported_binary_op(
+								opline->extended_value, op1_info, op2_info)) {
 							break;
-						}
-						if (opline->extended_value == ZEND_ADD
-						 || opline->extended_value == ZEND_SUB
-						 || opline->extended_value == ZEND_MUL
-						 || opline->extended_value == ZEND_DIV) {
-							if (!(op1_info & (MAY_BE_LONG|MAY_BE_DOUBLE))
-							 || !(op2_info & (MAY_BE_LONG|MAY_BE_DOUBLE))) {
-								break;
-							}
-						} else if (opline->extended_value == ZEND_BW_OR
-						 || opline->extended_value == ZEND_BW_AND
-						 || opline->extended_value == ZEND_BW_XOR
-						 || opline->extended_value == ZEND_SL
-						 || opline->extended_value == ZEND_SR
-						 || opline->extended_value == ZEND_MOD) {
-							if (!(op1_info & MAY_BE_LONG)
-							 || !(op2_info & MAY_BE_LONG)) {
-								break;
-							}
-						} else if (opline->extended_value == ZEND_CONCAT) {
-							if (!(op1_info & MAY_BE_STRING)
-							 || !(op2_info & MAY_BE_STRING)) {
-								break;
-							}
 						}
 						op1_def_info = OP1_DEF_INFO();
 						if (!zend_jit_assign_op(&dasm_state, opline,
@@ -2538,15 +2539,14 @@ static int zend_jit(const zend_op_array *op_array, zend_ssa *ssa, const zend_op 
 						}
 						goto done;
 					case ZEND_ASSIGN_DIM_OP:
-						if (opline->extended_value == ZEND_POW
-						 || opline->extended_value == ZEND_DIV) {
-							// TODO: check for division by zero ???
-							break;
-						}
 						if (opline->op1_type != IS_CV || opline->result_type != IS_UNUSED) {
 							break;
 						}
 						if (PROFITABILITY_CHECKS && (!ssa->ops || !ssa->var_info)) {
+							break;
+						}
+						if (!zend_jit_supported_binary_op(
+								opline->extended_value, MAY_BE_ANY, OP1_DATA_INFO())) {
 							break;
 						}
 						if (!zend_jit_assign_dim_op(&dasm_state, opline,
@@ -2613,11 +2613,6 @@ static int zend_jit(const zend_op_array *op_array, zend_ssa *ssa, const zend_op 
 						}
 						goto done;
 					case ZEND_ASSIGN_OBJ_OP:
-						if (opline->extended_value == ZEND_POW
-						 || opline->extended_value == ZEND_DIV) {
-							// TODO: check for division by zero ???
-							break;
-						}
 						if (opline->result_type != IS_UNUSED) {
 							break;
 						}
@@ -2627,6 +2622,10 @@ static int zend_jit(const zend_op_array *op_array, zend_ssa *ssa, const zend_op 
 							break;
 						}
 						if (PROFITABILITY_CHECKS && (!ssa->ops || !ssa->var_info)) {
+							break;
+						}
+						if (!zend_jit_supported_binary_op(
+								opline->extended_value, MAY_BE_ANY, OP1_DATA_INFO())) {
 							break;
 						}
 						ce = NULL;
@@ -3283,7 +3282,7 @@ static int zend_jit(const zend_op_array *op_array, zend_ssa *ssa, const zend_op 
 						goto done;
 					case ZEND_FE_RESET_R:
 						op1_info = OP1_INFO();
-						if ((op1_info & (MAY_BE_ANY|MAY_BE_REF)) != MAY_BE_ARRAY) {
+						if ((op1_info & (MAY_BE_ANY|MAY_BE_REF|MAY_BE_UNDEF)) != MAY_BE_ARRAY) {
 							break;
 						}
 						if (!zend_jit_fe_reset(&dasm_state, opline, op1_info)) {
@@ -3791,6 +3790,9 @@ static int zend_jit_setup_hot_counters(zend_op_array *op_array)
 	}
 
 	jit_extension = (zend_jit_op_array_hot_extension*)zend_shared_alloc(sizeof(zend_jit_op_array_hot_extension) + (op_array->last - 1) * sizeof(void*));
+	if (!jit_extension) {
+		return FAILURE;
+	}
 	memset(&jit_extension->func_info, 0, sizeof(zend_func_info));
 	jit_extension->func_info.flags = ZEND_FUNC_JIT_ON_HOT_COUNTERS;
 	jit_extension->counter = &zend_jit_hot_counters[zend_jit_op_array_hash(op_array) & (ZEND_HOT_COUNTERS_COUNT - 1)];
@@ -3832,6 +3834,9 @@ ZEND_EXT_API int zend_jit_op_array(zend_op_array *op_array, zend_script *script)
 			}
 		}
 		jit_extension = (zend_jit_op_array_extension*)zend_shared_alloc(sizeof(zend_jit_op_array_extension));
+		if (!jit_extension) {
+			return FAILURE;
+		}
 		memset(&jit_extension->func_info, 0, sizeof(zend_func_info));
 		jit_extension->func_info.flags = ZEND_FUNC_JIT_ON_FIRST_EXEC;
 		jit_extension->orig_handler = (void*)opline->handler;
@@ -3858,6 +3863,9 @@ ZEND_EXT_API int zend_jit_op_array(zend_op_array *op_array, zend_script *script)
 				}
 			}
 			jit_extension = (zend_jit_op_array_extension*)zend_shared_alloc(sizeof(zend_jit_op_array_extension));
+			if (!jit_extension) {
+				return FAILURE;
+			}
 			memset(&jit_extension->func_info, 0, sizeof(zend_func_info));
 			jit_extension->func_info.flags = ZEND_FUNC_JIT_ON_PROF_REQUEST;
 			jit_extension->orig_handler = (void*)opline->handler;
