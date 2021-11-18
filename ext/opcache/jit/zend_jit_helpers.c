@@ -347,7 +347,7 @@ static zval* ZEND_FASTCALL zend_jit_symtable_lookup_rw(HashTable *ht, zend_strin
 		if (_zend_handle_numeric_str_ex(str->val, str->len, &idx)) {
 			retval = zend_hash_index_find(ht, idx);
 			if (!retval) {
-				if (UNEXPECTED(zend_undefined_index_write(ht, str) == FAILURE)) {
+				if (UNEXPECTED(zend_undefined_offset_write(ht, idx) == FAILURE)) {
 					return NULL;
 				}
 				retval = zend_hash_index_add_new(ht, idx, &EG(uninitialized_zval));
@@ -1264,6 +1264,12 @@ static void ZEND_FASTCALL zend_jit_fetch_dim_obj_rw_helper(zval *object_ptr, zva
 
 static void ZEND_FASTCALL zend_jit_assign_dim_helper(zval *object_ptr, zval *dim, zval *value, zval *result)
 {
+	if (dim && UNEXPECTED(Z_TYPE_P(dim) == IS_UNDEF)) {
+		const zend_op *opline = EG(current_execute_data)->opline;
+		zend_jit_undefined_op_helper(opline->op2.var);
+		dim = &EG(uninitialized_zval);
+	}
+
 	if (UNEXPECTED(Z_TYPE_P(value) == IS_UNDEF)) {
 		const zend_op *op_data = EG(current_execute_data)->opline + 1;
 		ZEND_ASSERT(op_data->opcode == ZEND_OP_DATA && op_data->op1_type == IS_CV);
@@ -2367,12 +2373,14 @@ static void ZEND_FASTCALL zend_jit_dec_typed_prop(zval *var_ptr, zend_property_i
 
 static void ZEND_FASTCALL zend_jit_pre_inc_typed_prop(zval *var_ptr, zend_property_info *prop_info, zval *result)
 {
+	ZVAL_DEREF(var_ptr);
 	zend_jit_inc_typed_prop(var_ptr, prop_info);
 	ZVAL_COPY(result, var_ptr);
 }
 
 static void ZEND_FASTCALL zend_jit_pre_dec_typed_prop(zval *var_ptr, zend_property_info *prop_info, zval *result)
 {
+	ZVAL_DEREF(var_ptr);
 	zend_jit_dec_typed_prop(var_ptr, prop_info);
 	ZVAL_COPY(result, var_ptr);
 }

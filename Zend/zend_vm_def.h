@@ -1708,7 +1708,9 @@ ZEND_VM_HELPER(zend_fetch_var_address_helper, CONST|TMPVAR|CV, UNUSED, int type)
 		}
 		name = zval_try_get_tmp_string(varname, &tmp_name);
 		if (UNEXPECTED(!name)) {
-			FREE_OP1();
+			if (!(opline->extended_value & ZEND_FETCH_GLOBAL_LOCK)) {
+				FREE_OP1();
+			}
 			ZVAL_UNDEF(EX_VAR(opline->result.var));
 			HANDLE_EXCEPTION();
 		}
@@ -7712,9 +7714,8 @@ ZEND_VM_HELPER(zend_dispatch_try_catch_finally_helper, ANY, ANY, uint32_t try_ca
 				if (ex) {
 					zend_exception_set_previous(ex, Z_OBJ_P(fast_call));
 				} else {
-					EG(exception) = Z_OBJ_P(fast_call);
+					ex = EG(exception) = Z_OBJ_P(fast_call);
 				}
-				ex = Z_OBJ_P(fast_call);
 			}
 		}
 	}

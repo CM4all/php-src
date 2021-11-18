@@ -360,6 +360,26 @@ static zend_bool opline_supports_assign_contraction(
 	return 1;
 }
 
+static bool variable_redefined_in_range(zend_ssa *ssa, int var, int start, int end)
+{
+	while (start < end) {
+		if (ssa->ops[start].op1_def >= 0
+		 && ssa->vars[ssa->ops[start].op1_def].var == var) {
+			return 1;
+		}
+		if (ssa->ops[start].op2_def >= 0
+		 && ssa->vars[ssa->ops[start].op2_def].var == var) {
+			return 1;
+		}
+		if (ssa->ops[start].result_def >= 0
+		 && ssa->vars[ssa->ops[start].result_def].var == var) {
+			return 1;
+		}
+		start++;
+	}
+	return 0;
+}
+
 int zend_dfa_optimize_calls(zend_op_array *op_array, zend_ssa *ssa)
 {
 	zend_func_info *func_info = ZEND_FUNC_INFO(op_array);
@@ -1010,7 +1030,8 @@ static int zend_dfa_try_to_replace_result(zend_op_array *op_array, zend_ssa *ssa
 		 && op_array->opcodes[use].opcode != ZEND_FREE
 		 && op_array->opcodes[use].opcode != ZEND_SEND_VAL
 		 && op_array->opcodes[use].opcode != ZEND_SEND_VAL_EX
-		 && op_array->opcodes[use].opcode != ZEND_VERIFY_RETURN_TYPE) {
+		 && op_array->opcodes[use].opcode != ZEND_VERIFY_RETURN_TYPE
+		 && op_array->opcodes[use].opcode != ZEND_YIELD) {
 			if (use > def) {
 				int i = use;
 				const zend_op *opline = &op_array->opcodes[use];
@@ -1289,6 +1310,8 @@ void zend_dfa_optimize_op_array(zend_op_array *op_array, zend_optimizer_ctx *ctx
 				 && opline_supports_assign_contraction(
 					 ssa, &op_array->opcodes[ssa->vars[src_var].definition],
 					 src_var, opline->result.var)
+				 && !variable_redefined_in_range(ssa, EX_VAR_TO_NUM(opline->result.var),
+						ssa->vars[src_var].definition+1, op_1)
 				) {
 
 					int orig_var = ssa->ops[op_1].result_use;
@@ -1444,6 +1467,8 @@ void zend_dfa_optimize_op_array(zend_op_array *op_array, zend_optimizer_ctx *ctx
 					 && opline_supports_assign_contraction(
 						 ssa, &op_array->opcodes[ssa->vars[src_var].definition],
 						 src_var, opline->op1.var)
+					 && !variable_redefined_in_range(ssa, EX_VAR_TO_NUM(opline->op1.var),
+							ssa->vars[src_var].definition+1, op_1)
 					) {
 
 						int op_2 = ssa->vars[src_var].definition;

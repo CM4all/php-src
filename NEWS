@@ -1,5 +1,33 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+18 Nov 2021, PHP 8.0.13
+
+- Core:
+  . Fixed bug #81518 (Header injection via default_mimetype / default_charset).
+    (cmb)
+
+- Date:
+  . Fixed bug #81500 (Interval serialization regression since 7.3.14 / 7.4.2).
+    (cmb)
+
+- MBString:
+  . Fixed bug #76167 (mbstring may use pointer from some previous request).
+    (cmb, cataphract)
+
+- Opcache:
+  . Fixed bug #81512 (Unexpected behavior with arrays and JIT). (Dmitry)
+
+- PCRE:
+  . Fixed bug #81424 (PCRE2 10.35 JIT performance regression). (cmb)
+
+- XML:
+  . Fixed bug #79971 (special character is breaking the path in xml function).
+    (CVE-2021-21707) (cmb)
+
+- XMLReader:
+  . Fixed bug #81521 (XMLReader::getParserProperty may throw with a valid
+    property). (Nikita)
+
 21 Oct 2021, PHP 8.0.12
 
 - CLI:
@@ -28,6 +56,10 @@ PHP                                                                        NEWS
 - Filter:
   . Fixed bug #61700 (FILTER_FLAG_IPV6/FILTER_FLAG_NO_PRIV|RES_RANGE failing).
     (cmb, Nikita)
+
+- FPM:
+  . Fixed bug #81026 (PHP-FPM oob R/W in root process leading to privilege
+    escalation) (CVE-2021-21703). (Jakub Zelenka)
 
 - Opcache:
   . Fixed bug #81472 (Cannot support large linux major/minor device number when
