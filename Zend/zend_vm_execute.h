@@ -3384,6 +3384,20 @@ static zend_never_inline ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL zend_interrupt_he
 		zend_timeout();
 	} else if (zend_interrupt_function) {
 		zend_interrupt_function(execute_data);
+		if (EG(exception)) {
+			/* We have to UNDEF result, because ZEND_HANDLE_EXCEPTION is going to free it */
+			const zend_op *throw_op = EG(opline_before_exception);
+
+			if (throw_op
+			 && throw_op->result_type & (IS_TMP_VAR|IS_VAR)
+			 && throw_op->opcode != ZEND_ADD_ARRAY_ELEMENT
+			 && throw_op->opcode != ZEND_ADD_ARRAY_UNPACK
+			 && throw_op->opcode != ZEND_ROPE_INIT
+			 && throw_op->opcode != ZEND_ROPE_ADD) {
+				ZVAL_UNDEF(ZEND_CALL_VAR(EG(current_execute_data), throw_op->result.var));
+
+			}
+		}
 		ZEND_VM_ENTER();
 	}
 	ZEND_VM_CONTINUE();
@@ -14524,8 +14538,8 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_FETCH_CLASS_NAME_SPEC_TMPVAR_H
 	USE_OPLINE
 
 	if ((IS_TMP_VAR|IS_VAR) != IS_UNUSED) {
-		zval *op = _get_zval_ptr_var(opline->op1.var EXECUTE_DATA_CC);
 		SAVE_OPLINE();
+		zval *op = _get_zval_ptr_var(opline->op1.var EXECUTE_DATA_CC);
 		if (UNEXPECTED(Z_TYPE_P(op) != IS_OBJECT)) {
 			ZVAL_DEREF(op);
 			if (Z_TYPE_P(op) != IS_OBJECT) {
@@ -23462,7 +23476,7 @@ try_assign_dim_array:
 				UNDEF_RESULT();
 			} else {
 				dim = RT_CONSTANT(opline, opline->op2);
-				value = _get_zval_ptr_var_deref((opline+1)->op1.var EXECUTE_DATA_CC);
+				value = _get_zval_ptr_var((opline+1)->op1.var EXECUTE_DATA_CC);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
 			}
@@ -23574,7 +23588,7 @@ try_assign_dim_array:
 				UNDEF_RESULT();
 			} else {
 				dim = RT_CONSTANT(opline, opline->op2);
-				value = _get_zval_ptr_cv_deref_BP_VAR_R((opline+1)->op1.var EXECUTE_DATA_CC);
+				value = EX_VAR((opline+1)->op1.var);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 
 			}
@@ -25974,7 +25988,7 @@ try_assign_dim_array:
 				UNDEF_RESULT();
 			} else {
 				dim = _get_zval_ptr_var(opline->op2.var EXECUTE_DATA_CC);
-				value = _get_zval_ptr_var_deref((opline+1)->op1.var EXECUTE_DATA_CC);
+				value = _get_zval_ptr_var((opline+1)->op1.var EXECUTE_DATA_CC);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
 			}
@@ -26086,7 +26100,7 @@ try_assign_dim_array:
 				UNDEF_RESULT();
 			} else {
 				dim = _get_zval_ptr_var(opline->op2.var EXECUTE_DATA_CC);
-				value = _get_zval_ptr_cv_deref_BP_VAR_R((opline+1)->op1.var EXECUTE_DATA_CC);
+				value = EX_VAR((opline+1)->op1.var);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 
 			}
@@ -27342,7 +27356,7 @@ try_assign_dim_array:
 				UNDEF_RESULT();
 			} else {
 				dim = NULL;
-				value = _get_zval_ptr_var_deref((opline+1)->op1.var EXECUTE_DATA_CC);
+				value = _get_zval_ptr_var((opline+1)->op1.var EXECUTE_DATA_CC);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
 			}
@@ -27454,7 +27468,7 @@ try_assign_dim_array:
 				UNDEF_RESULT();
 			} else {
 				dim = NULL;
-				value = _get_zval_ptr_cv_deref_BP_VAR_R((opline+1)->op1.var EXECUTE_DATA_CC);
+				value = EX_VAR((opline+1)->op1.var);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 
 			}
@@ -29642,7 +29656,7 @@ try_assign_dim_array:
 
 				UNDEF_RESULT();
 			} else {
-				dim = _get_zval_ptr_cv_BP_VAR_R(opline->op2.var EXECUTE_DATA_CC);
+				dim = EX_VAR(opline->op2.var);
 				value = RT_CONSTANT((opline+1), (opline+1)->op1);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 
@@ -29755,7 +29769,7 @@ try_assign_dim_array:
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
 				UNDEF_RESULT();
 			} else {
-				dim = _get_zval_ptr_cv_BP_VAR_R(opline->op2.var EXECUTE_DATA_CC);
+				dim = EX_VAR(opline->op2.var);
 				value = _get_zval_ptr_tmp((opline+1)->op1.var EXECUTE_DATA_CC);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
@@ -29868,8 +29882,8 @@ try_assign_dim_array:
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
 				UNDEF_RESULT();
 			} else {
-				dim = _get_zval_ptr_cv_BP_VAR_R(opline->op2.var EXECUTE_DATA_CC);
-				value = _get_zval_ptr_var_deref((opline+1)->op1.var EXECUTE_DATA_CC);
+				dim = EX_VAR(opline->op2.var);
+				value = _get_zval_ptr_var((opline+1)->op1.var EXECUTE_DATA_CC);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
 			}
@@ -29980,8 +29994,8 @@ try_assign_dim_array:
 
 				UNDEF_RESULT();
 			} else {
-				dim = _get_zval_ptr_cv_BP_VAR_R(opline->op2.var EXECUTE_DATA_CC);
-				value = _get_zval_ptr_cv_deref_BP_VAR_R((opline+1)->op1.var EXECUTE_DATA_CC);
+				dim = EX_VAR(opline->op2.var);
+				value = EX_VAR((opline+1)->op1.var);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 
 			}
@@ -30841,8 +30855,8 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_FETCH_CLASS_NAME_SPEC_UNUSED_H
 	USE_OPLINE
 
 	if (IS_UNUSED != IS_UNUSED) {
-		zval *op = NULL;
 		SAVE_OPLINE();
+		zval *op = NULL;
 		if (UNEXPECTED(Z_TYPE_P(op) != IS_OBJECT)) {
 			ZVAL_DEREF(op);
 			if (Z_TYPE_P(op) != IS_OBJECT) {
@@ -38386,8 +38400,8 @@ static ZEND_OPCODE_HANDLER_RET ZEND_FASTCALL ZEND_FETCH_CLASS_NAME_SPEC_CV_HANDL
 	USE_OPLINE
 
 	if (IS_CV != IS_UNUSED) {
-		zval *op = _get_zval_ptr_cv_BP_VAR_R(opline->op1.var EXECUTE_DATA_CC);
 		SAVE_OPLINE();
+		zval *op = _get_zval_ptr_cv_BP_VAR_R(opline->op1.var EXECUTE_DATA_CC);
 		if (UNEXPECTED(Z_TYPE_P(op) != IS_OBJECT)) {
 			ZVAL_DEREF(op);
 			if (Z_TYPE_P(op) != IS_OBJECT) {
@@ -40720,7 +40734,7 @@ try_assign_dim_array:
 				UNDEF_RESULT();
 			} else {
 				dim = RT_CONSTANT(opline, opline->op2);
-				value = _get_zval_ptr_var_deref((opline+1)->op1.var EXECUTE_DATA_CC);
+				value = _get_zval_ptr_var((opline+1)->op1.var EXECUTE_DATA_CC);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
 			}
@@ -40832,7 +40846,7 @@ try_assign_dim_array:
 				UNDEF_RESULT();
 			} else {
 				dim = RT_CONSTANT(opline, opline->op2);
-				value = _get_zval_ptr_cv_deref_BP_VAR_R((opline+1)->op1.var EXECUTE_DATA_CC);
+				value = EX_VAR((opline+1)->op1.var);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 
 			}
@@ -44306,7 +44320,7 @@ try_assign_dim_array:
 				UNDEF_RESULT();
 			} else {
 				dim = _get_zval_ptr_var(opline->op2.var EXECUTE_DATA_CC);
-				value = _get_zval_ptr_var_deref((opline+1)->op1.var EXECUTE_DATA_CC);
+				value = _get_zval_ptr_var((opline+1)->op1.var EXECUTE_DATA_CC);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
 			}
@@ -44418,7 +44432,7 @@ try_assign_dim_array:
 				UNDEF_RESULT();
 			} else {
 				dim = _get_zval_ptr_var(opline->op2.var EXECUTE_DATA_CC);
-				value = _get_zval_ptr_cv_deref_BP_VAR_R((opline+1)->op1.var EXECUTE_DATA_CC);
+				value = EX_VAR((opline+1)->op1.var);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 
 			}
@@ -46120,7 +46134,7 @@ try_assign_dim_array:
 				UNDEF_RESULT();
 			} else {
 				dim = NULL;
-				value = _get_zval_ptr_var_deref((opline+1)->op1.var EXECUTE_DATA_CC);
+				value = _get_zval_ptr_var((opline+1)->op1.var EXECUTE_DATA_CC);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
 			}
@@ -46232,7 +46246,7 @@ try_assign_dim_array:
 				UNDEF_RESULT();
 			} else {
 				dim = NULL;
-				value = _get_zval_ptr_cv_deref_BP_VAR_R((opline+1)->op1.var EXECUTE_DATA_CC);
+				value = EX_VAR((opline+1)->op1.var);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 
 			}
@@ -49088,7 +49102,7 @@ try_assign_dim_array:
 
 				UNDEF_RESULT();
 			} else {
-				dim = _get_zval_ptr_cv_BP_VAR_R(opline->op2.var EXECUTE_DATA_CC);
+				dim = EX_VAR(opline->op2.var);
 				value = RT_CONSTANT((opline+1), (opline+1)->op1);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 
@@ -49201,7 +49215,7 @@ try_assign_dim_array:
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
 				UNDEF_RESULT();
 			} else {
-				dim = _get_zval_ptr_cv_BP_VAR_R(opline->op2.var EXECUTE_DATA_CC);
+				dim = EX_VAR(opline->op2.var);
 				value = _get_zval_ptr_tmp((opline+1)->op1.var EXECUTE_DATA_CC);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
@@ -49314,8 +49328,8 @@ try_assign_dim_array:
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
 				UNDEF_RESULT();
 			} else {
-				dim = _get_zval_ptr_cv_BP_VAR_R(opline->op2.var EXECUTE_DATA_CC);
-				value = _get_zval_ptr_var_deref((opline+1)->op1.var EXECUTE_DATA_CC);
+				dim = EX_VAR(opline->op2.var);
+				value = _get_zval_ptr_var((opline+1)->op1.var EXECUTE_DATA_CC);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 				zval_ptr_dtor_nogc(EX_VAR((opline+1)->op1.var));
 			}
@@ -49426,8 +49440,8 @@ try_assign_dim_array:
 
 				UNDEF_RESULT();
 			} else {
-				dim = _get_zval_ptr_cv_BP_VAR_R(opline->op2.var EXECUTE_DATA_CC);
-				value = _get_zval_ptr_cv_deref_BP_VAR_R((opline+1)->op1.var EXECUTE_DATA_CC);
+				dim = EX_VAR(opline->op2.var);
+				value = EX_VAR((opline+1)->op1.var);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 
 			}

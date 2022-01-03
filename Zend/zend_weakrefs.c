@@ -214,7 +214,7 @@ found_weakref:
 	}
 
 	if (tag == ZEND_WEAKREF_TAG_HT) {
-		ZEND_HASH_FOREACH(ptr, tagged_ptr) {
+		ZEND_HASH_FOREACH_PTR(ptr, tagged_ptr) {
 			if (ZEND_WEAKREF_GET_TAG(tagged_ptr) == ZEND_WEAKREF_TAG_REF) {
 				ptr = ZEND_WEAKREF_GET_PTR(tagged_ptr);
 				goto found_weakref;
@@ -351,8 +351,12 @@ static void zend_weakmap_write_dimension(zend_object *object, zval *offset, zval
 
 	zval *zv = zend_hash_index_find(&wm->ht, (zend_ulong) obj_key);
 	if (zv) {
-		zval_ptr_dtor(zv);
+		/* Because the destructors can have side effects such as resizing or rehashing the WeakMap storage,
+		 * free the zval only after overwriting the original value. */
+		zval zv_orig;
+		ZVAL_COPY_VALUE(&zv_orig, zv);
 		ZVAL_COPY_VALUE(zv, value);
+		zval_ptr_dtor(&zv_orig);
 		return;
 	}
 

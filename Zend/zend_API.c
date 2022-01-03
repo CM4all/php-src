@@ -2233,6 +2233,7 @@ ZEND_API void zend_check_magic_method_implementation(const zend_class_entry *ce,
 		zend_check_magic_method_args(0, ce, fptr, error_type);
 		zend_check_magic_method_non_static(ce, fptr, error_type);
 		zend_check_magic_method_public(ce, fptr, error_type);
+		zend_check_magic_method_return_type(ce, fptr, error_type, MAY_BE_STRING);
 	} else if (zend_string_equals_literal(lcname, ZEND_DEBUGINFO_FUNC_NAME)) {
 		zend_check_magic_method_args(0, ce, fptr, error_type);
 		zend_check_magic_method_non_static(ce, fptr, error_type);
@@ -2309,6 +2310,9 @@ ZEND_API void zend_add_magic_method(zend_class_entry *ce, zend_function *fptr, z
 		ce->__unserialize = fptr;
 	}
 }
+
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arg_info_toString, 0, 0, IS_STRING, 0)
+ZEND_END_ARG_INFO()
 
 /* registers all functions in *library_functions in the function hash */
 ZEND_API zend_result zend_register_functions(zend_class_entry *scope, const zend_function_entry *functions, HashTable *function_table, int type) /* {{{ */
@@ -2391,6 +2395,16 @@ ZEND_API zend_result zend_register_functions(zend_class_entry *scope, const zend
 			internal_function->num_args = 0;
 			internal_function->required_num_args = 0;
 		}
+
+		/* If not specified, add __toString() return type for compatibility with Stringable
+		 * interface. */
+		if (scope && zend_string_equals_literal_ci(internal_function->function_name, "__tostring") &&
+				!(internal_function->fn_flags & ZEND_ACC_HAS_RETURN_TYPE)) {
+			internal_function->arg_info = (zend_internal_arg_info *) arg_info_toString + 1;
+			internal_function->fn_flags |= ZEND_ACC_HAS_RETURN_TYPE;
+			internal_function->num_args = internal_function->required_num_args = 0;
+		}
+
 
 		zend_set_function_arg_flags((zend_function*)internal_function);
 		if (ptr->flags & ZEND_ACC_ABSTRACT) {
@@ -2766,6 +2780,13 @@ static zend_class_entry *do_register_internal_class(zend_class_entry *orig_class
 	lowercase_name = zend_new_interned_string(lowercase_name);
 	zend_hash_update_ptr(CG(class_table), lowercase_name, class_entry);
 	zend_string_release_ex(lowercase_name, 1);
+
+	if (class_entry->__tostring && !zend_string_equals_literal(class_entry->name, "Stringable")
+			&& !(class_entry->ce_flags & ZEND_ACC_TRAIT)) {
+		ZEND_ASSERT(zend_ce_stringable
+			&& "Should be registered before first class using __toString()");
+		zend_do_implement_interface(class_entry, zend_ce_stringable);
+	}
 	return class_entry;
 }
 /* }}} */
@@ -2785,6 +2806,7 @@ ZEND_API zend_class_entry *zend_register_internal_class_ex(zend_class_entry *cla
 		zend_do_inheritance(register_class, parent_ce);
 		zend_build_properties_info_table(register_class);
 	}
+
 	return register_class;
 }
 /* }}} */
@@ -2797,6 +2819,13 @@ ZEND_API void zend_class_implements(zend_class_entry *class_entry, int num_inter
 
 	while (num_interfaces--) {
 		interface_entry = va_arg(interface_list, zend_class_entry *);
+		if (interface_entry == zend_ce_stringable
+				&& zend_class_implements_interface(class_entry, zend_ce_stringable)) {
+			/* Stringable is implemented automatically,
+			 * silently ignore an explicit implementation. */
+			continue;
+		}
+
 		zend_do_implement_interface(class_entry, interface_entry);
 	}
 

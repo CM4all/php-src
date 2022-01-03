@@ -2590,8 +2590,8 @@ ZEND_VM_C_LABEL(try_assign_dim_array):
 				FREE_OP_DATA();
 				UNDEF_RESULT();
 			} else {
-				dim = GET_OP2_ZVAL_PTR(BP_VAR_R);
-				value = GET_OP_DATA_ZVAL_PTR_DEREF(BP_VAR_R);
+				dim = GET_OP2_ZVAL_PTR_UNDEF(BP_VAR_R);
+				value = GET_OP_DATA_ZVAL_PTR_UNDEF(BP_VAR_R);
 				zend_assign_to_string_offset(object_ptr, dim, value OPLINE_CC EXECUTE_DATA_CC);
 				FREE_OP_DATA();
 			}
@@ -8415,8 +8415,8 @@ ZEND_VM_HANDLER(157, ZEND_FETCH_CLASS_NAME, CV|TMPVAR|UNUSED|CLASS_FETCH, ANY)
 	USE_OPLINE
 
 	if (OP1_TYPE != IS_UNUSED) {
-		zval *op = GET_OP1_ZVAL_PTR(BP_VAR_R);
 		SAVE_OPLINE();
+		zval *op = GET_OP1_ZVAL_PTR(BP_VAR_R);
 		if (UNEXPECTED(Z_TYPE_P(op) != IS_OBJECT)) {
 			ZVAL_DEREF(op);
 			if (Z_TYPE_P(op) != IS_OBJECT) {
@@ -9680,6 +9680,20 @@ ZEND_VM_HELPER(zend_interrupt_helper, ANY, ANY)
 		zend_timeout();
 	} else if (zend_interrupt_function) {
 		zend_interrupt_function(execute_data);
+		if (EG(exception)) {
+			/* We have to UNDEF result, because ZEND_HANDLE_EXCEPTION is going to free it */
+			const zend_op *throw_op = EG(opline_before_exception);
+
+			if (throw_op
+			 && throw_op->result_type & (IS_TMP_VAR|IS_VAR)
+			 && throw_op->opcode != ZEND_ADD_ARRAY_ELEMENT
+			 && throw_op->opcode != ZEND_ADD_ARRAY_UNPACK
+			 && throw_op->opcode != ZEND_ROPE_INIT
+			 && throw_op->opcode != ZEND_ROPE_ADD) {
+				ZVAL_UNDEF(ZEND_CALL_VAR(EG(current_execute_data), throw_op->result.var));
+
+			}
+		}
 		ZEND_VM_ENTER();
 	}
 	ZEND_VM_CONTINUE();

@@ -1,5 +1,44 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+16 Dec 2021, PHP 8.0.14
+
+- Core:
+  . Fixed bug #81582 (Stringable not implicitly declared if __toString() came
+    from a trait). (Nikita)
+  . Fixed bug #81591 (Fatal Error not properly logged in particular cases).
+    (Nikita)
+  . Fixed bug #81626 (Error on use static:: in __сallStatic() wrapped to
+    Closure::fromCallable()). (Nikita)
+  . Fixed bug #81631 (::class with dynamic class name may yield wrong line
+    number). (Nikita)
+
+- FPM:
+  . Fixed bug #81513 (Future possibility for heap overflow in FPM zlog).
+    (Jakub Zelenka)
+
+- GD:
+  . Fixed bug #71316 (libpng warning from imagecreatefromstring). (cmb)
+
+- IMAP:
+  . Fixed bug #81649 (imap_(un)delete accept sequences, not single numbers).
+    (cmb)
+
+- OpenSSL:
+  . Fixed bug #75725 (./configure: detecting RAND_egd). (Dilyan Palauzov)
+
+- PCRE:
+  . Fixed bug #74604 (Out of bounds in php_pcre_replace_impl). (cmb, Dmitry)
+
+- SPL:
+  . Fixed bug #81587 (MultipleIterator Segmentation fault w/ SimpleXMLElement
+    attached). (Nikita)
+
+- Standard:
+  . Fixed bug #81618 (dns_get_record fails on FreeBSD for missing type).
+    (fsbruva)
+  . Fixed bug #81659 (stream_get_contents() may unnecessarily overallocate).
+    (cmb)
+
 18 Nov 2021, PHP 8.0.13
 
 - Core:
@@ -10,12 +49,16 @@ PHP                                                                        NEWS
   . Fixed bug #81500 (Interval serialization regression since 7.3.14 / 7.4.2).
     (cmb)
 
+- DBA:
+  . Fixed bug #81588 (TokyoCabinet driver leaks memory). (girgias)
+
 - MBString:
   . Fixed bug #76167 (mbstring may use pointer from some previous request).
     (cmb, cataphract)
 
 - Opcache:
   . Fixed bug #81512 (Unexpected behavior with arrays and JIT). (Dmitry)
+  . Fixed bug #81652 (The value of error_reporting() gets overridden). (Nikita)
 
 - PCRE:
   . Fixed bug #81424 (PCRE2 10.35 JIT performance regression). (cmb)

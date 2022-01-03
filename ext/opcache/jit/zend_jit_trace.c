@@ -953,7 +953,8 @@ static const zend_op *zend_jit_trace_find_init_fcall_op(zend_jit_trace_rec *p, c
 
 static int is_checked_guard(const zend_ssa *tssa, const zend_op **ssa_opcodes, uint32_t var, uint32_t phi_var)
 {
-	if ((tssa->var_info[phi_var].type & MAY_BE_ANY) == MAY_BE_LONG) {
+	if ((tssa->var_info[phi_var].type & MAY_BE_ANY) == MAY_BE_LONG
+	 && !(tssa->var_info[var].type & MAY_BE_REF)) {
 		int idx = tssa->vars[var].definition;
 
 		if (idx >= 0) {
@@ -963,11 +964,20 @@ static int is_checked_guard(const zend_ssa *tssa, const zend_op **ssa_opcodes, u
 				 || opline->opcode == ZEND_PRE_INC
 				 || opline->opcode == ZEND_POST_DEC
 				 || opline->opcode == ZEND_POST_INC) {
+					if (tssa->ops[idx].op1_use >= 0
+					 && (tssa->var_info[tssa->ops[idx].op1_use].type & MAY_BE_STRING)) {
+						return 0;
+					}
 					return 1;
 				} else if (opline->opcode == ZEND_ASSIGN_OP
 				 && (opline->extended_value == ZEND_ADD
 				  || opline->extended_value == ZEND_SUB
 				  || opline->extended_value == ZEND_MUL)) {
+					if ((opline->op2_type & (IS_VAR|IS_CV))
+					  && tssa->ops[idx].op2_use >= 0
+					  && (tssa->var_info[tssa->ops[idx].op2_use].type & MAY_BE_REF)) {
+						return 0;
+					}
 					return 1;
 				}
 			}
@@ -980,6 +990,16 @@ static int is_checked_guard(const zend_ssa *tssa, const zend_op **ssa_opcodes, u
 				 || opline->opcode == ZEND_PRE_INC
 				 || opline->opcode == ZEND_POST_DEC
 				 || opline->opcode == ZEND_POST_INC) {
+					if ((opline->op1_type & (IS_VAR|IS_CV))
+					  && tssa->ops[idx].op1_use >= 0
+					  && (tssa->var_info[tssa->ops[idx].op1_use].type & MAY_BE_REF)) {
+						return 0;
+					}
+					if ((opline->op2_type & (IS_VAR|IS_CV))
+					  && tssa->ops[idx].op2_use >= 0
+					  && (tssa->var_info[tssa->ops[idx].op2_use].type & MAY_BE_REF)) {
+						return 0;
+					}
 					return 1;
 				}
 			}
@@ -1403,7 +1423,7 @@ static zend_ssa *zend_jit_trace_build_tssa(zend_jit_trace_rec *trace_buffer, uin
 		while (i < op_array->last_var + op_array->T) {
 			if (!ssa->var_info
 			 || !zend_jit_trace_copy_ssa_var_info(op_array, ssa, ssa_opcodes, tssa, i)) {
-				if (ssa->vars) {
+				if (ssa->vars && i < ssa->vars_count) {
 					ssa_vars[i].alias = ssa->vars[i].alias;
 				} else {
 					ssa_vars[i].alias = zend_jit_var_may_alias(op_array, ssa, i);
@@ -1420,6 +1440,12 @@ static zend_ssa *zend_jit_trace_build_tssa(zend_jit_trace_rec *trace_buffer, uin
 
 				if (op_type != IS_UNKNOWN) {
 					ssa_var_info[i].type &= zend_jit_trace_type_to_info(op_type);
+					if (!ssa_var_info[i].type
+					 && op_type == IS_UNDEF
+					 && i >= op_array->last_var) {
+						// TODO: It's better to use NULL instead of UNDEF for temporary variables
+						ssa_var_info[i].type |= MAY_BE_UNDEF;
+					}
 				}
 			}
 			i++;
@@ -3952,14 +3978,16 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 								zend_may_throw(opline, ssa_op, op_array, ssa))) {
 							goto jit_failure;
 						}
-						if ((op1_def_info & (MAY_BE_ANY|MAY_BE_GUARD)) == (MAY_BE_LONG|MAY_BE_GUARD)) {
+						if ((op1_def_info & (MAY_BE_ANY|MAY_BE_GUARD)) == (MAY_BE_LONG|MAY_BE_GUARD)
+						 && !(op1_info & MAY_BE_STRING)) {
 							ssa->var_info[ssa_op->op1_def].type &= ~MAY_BE_GUARD;
 							if (opline->result_type != IS_UNUSED) {
 								ssa->var_info[ssa_op->result_def].type &= ~MAY_BE_GUARD;
 							}
 						}
 						if (opline->result_type != IS_UNUSED
-						 && (res_info & (MAY_BE_ANY|MAY_BE_GUARD)) == (MAY_BE_LONG|MAY_BE_GUARD)) {
+						 && (res_info & (MAY_BE_ANY|MAY_BE_GUARD)) == (MAY_BE_LONG|MAY_BE_GUARD)
+						 && !(op1_info & MAY_BE_STRING)) {
 							ssa->var_info[ssa_op->result_def].type &= ~MAY_BE_GUARD;
 						}
 						goto done;
@@ -4130,8 +4158,10 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 									zend_may_throw(opline, ssa_op, op_array, ssa))) {
 								goto jit_failure;
 							}
-							if ((res_info & (MAY_BE_ANY|MAY_BE_GUARD)) == (MAY_BE_LONG|MAY_BE_GUARD)
-							 || (res_info & (MAY_BE_ANY|MAY_BE_GUARD)) == (MAY_BE_DOUBLE|MAY_BE_GUARD)) {
+							if (((res_info & (MAY_BE_ANY|MAY_BE_GUARD)) == (MAY_BE_LONG|MAY_BE_GUARD)
+							  || (res_info & (MAY_BE_ANY|MAY_BE_GUARD)) == (MAY_BE_DOUBLE|MAY_BE_GUARD))
+							 && has_concrete_type(op1_info)
+							 && has_concrete_type(op2_info)) {
 								ssa->var_info[ssa_op->result_def].type &= ~MAY_BE_GUARD;
 							}
 						}
@@ -4215,7 +4245,9 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 								zend_may_throw(opline, ssa_op, op_array, ssa))) {
 							goto jit_failure;
 						}
-						if ((op1_def_info & (MAY_BE_ANY|MAY_BE_GUARD)) == (MAY_BE_LONG|MAY_BE_GUARD)) {
+						if ((op1_def_info & (MAY_BE_ANY|MAY_BE_GUARD)) == (MAY_BE_LONG|MAY_BE_GUARD)
+						 && has_concrete_type(op1_info)
+						 && has_concrete_type(op2_info)) {
 							ssa->var_info[ssa_op->op1_def].type &= ~MAY_BE_GUARD;
 							if (opline->result_type != IS_UNUSED) {
 								ssa->var_info[ssa_op->result_def].type &= ~MAY_BE_GUARD;
@@ -5872,7 +5904,10 @@ done:
 						ssa->var_info[ssa_op->result_def].has_range = 1;
 					}
 				}
-				if (ssa_op->op1_def >= 0) {
+				if (ssa_op->op1_def >= 0
+				 && (opline->opcode != ZEND_QM_ASSIGN
+				  || opline->result_type != IS_CV
+				  || opline->result.var != opline->op1.var)) {
 					zend_uchar type = IS_UNKNOWN;
 
 					if (!(ssa->var_info[ssa_op->op1_def].type & MAY_BE_GUARD)
@@ -5898,7 +5933,8 @@ done:
 					}
 					SET_STACK_TYPE(stack, EX_VAR_TO_NUM(opline->op1.var), type,
 						(type == IS_UNKNOWN || !ra ||
-							(!ra[ssa_op->op1_def] && !ssa->vars[ssa_op->op1_def].no_val)));
+							(!ra[ssa_op->op1_def] &&
+								(opline->opcode == ZEND_ASSIGN || !ssa->vars[ssa_op->op1_def].no_val))));
 					if (type != IS_UNKNOWN) {
 						ssa->var_info[ssa_op->op1_def].type &= ~MAY_BE_GUARD;
 						if (ra && ra[ssa_op->op1_def]) {
@@ -5930,7 +5966,10 @@ done:
 						ssa->var_info[ssa_op->op1_def].has_range = 1;
 					}
 				}
-				if (ssa_op->op2_def >= 0) {
+				if (ssa_op->op2_def >= 0
+				 && (opline->opcode != ZEND_ASSIGN
+				  || opline->op1_type != IS_CV
+				  || opline->op1.var != opline->op2.var)) {
 					zend_uchar type = IS_UNKNOWN;
 
 					if (!(ssa->var_info[ssa_op->op2_def].type & MAY_BE_GUARD)
