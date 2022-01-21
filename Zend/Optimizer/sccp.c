@@ -1526,6 +1526,7 @@ static void sccp_visit_instr(scdf_ctx *scdf, zend_op *opline, zend_ssa_op *ssa_o
 						if (opline->opcode == ZEND_PRE_INC_OBJ
 								|| opline->opcode == ZEND_PRE_DEC_OBJ) {
 							SET_RESULT(result, &tmp2);
+							zval_ptr_dtor_nogc(&tmp1);
 						} else {
 							SET_RESULT(result, &tmp1);
 						}
@@ -2258,7 +2259,9 @@ static int try_remove_definition(sccp_ctx *ctx, int var_num, zend_ssa_var *var, 
 					removed_ops = remove_call(ctx, opline, ssa_op);
 				} else if (opline->opcode == ZEND_TYPE_CHECK
 						&& (opline->op1_type & (IS_VAR|IS_TMP_VAR))
-						&& !value_known(&ctx->values[ssa_op->op1_use])) {
+						&& (!value_known(&ctx->values[ssa_op->op1_use])
+							|| IS_PARTIAL_ARRAY(&ctx->values[ssa_op->op1_use])
+							|| IS_PARTIAL_OBJECT(&ctx->values[ssa_op->op1_use]))) {
 					/* For TYPE_CHECK we may compute the result value without knowing the
 					 * operand, based on type inference information. Make sure the operand is
 					 * freed and leave further cleanup to DCE. */

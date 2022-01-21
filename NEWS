@@ -1,6 +1,74 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-16 Dec 2021, PHP 8.1.1
+20 Jan 2022, PHP 8.1.2
+
+- Core:
+  . Fixed bug #81216 (Nullsafe operator leaks dynamic property name). (Dmitry)
+  . Fixed bug #81684 (Using null coalesce assignment with $GLOBALS["x"] produces
+    opcode error). (ilutov)
+  . Fixed bug #81656 (GCC-11 silently ignores -R). (Michael Wallner)
+  . Fixed bug #81683 (Misleading "access type ... must be public" error message
+    on final or abstract interface methods). (ilutov)
+  . Fixed bug #81585 (cached_chunks are not counted to real_size on shutdown).
+    (cmb)
+  . Fixed bug GH-7757 (Multi-inherited final constant causes fatal error).
+    (cmb)
+  . Fixed zend_fibers.c build with ZEND_FIBER_UCONTEXT. (Petr Sumbera)
+  . Added riscv64 support for fibers. (Jeremie Courreges-Anglas)
+
+- Filter:
+  . Fixed FILTER_FLAG_NO_RES_RANGE flag. (Yifan Tong)
+
+- Hash:
+  . Fixed bug GH-7759 (Incorrect return types for hash() and hash_hmac()).
+    (cmb)
+  . Fixed bug GH-7826 (Inconsistent argument name in hash_hmac_file and
+    hash_file). (cmb)
+
+- MBString:
+  . Fixed bug #81693 (mb_check_encoding(7bit) segfaults). (cmb)
+
+- MySQLi:
+  . Fixed bug #81658 (MYSQL_OPT_LOAD_DATA_LOCAL_DIR not available in MariaDB).
+    (devnexen)
+  . Introduced MYSQLI_IS_MARIADB. (devnexen)
+  . Fixed bug GH-7746 (mysqli_sql_exception->getSqlState()). (Kamil Tekiela)
+
+- MySQLnd:
+  . Fixed bug where large bigints may be truncated. (Nathan Freeman, cmb)
+
+- OCI8:
+  . Fixed bug GH-7765 (php_oci_cleanup_global_handles segfaults at second
+    call). (cmb)
+
+- OPcache:
+  . Fixed bug #81679 (Tracing JIT crashes on reattaching). (cmb)
+
+- Readline:
+  . Fixed bug #81598 (Cannot input unicode characters in PHP 8 interactive
+    shell). (Nikita)
+
+- Reflection:
+  . Fixed bug #81681 (ReflectionEnum throwing exceptions). (cmb)
+
+- PDO_PGSQL:
+  . Fixed error message allocation of PDO PgSQL. (SATO Kentaro)
+
+- Sockets:
+  . Avoid void* arithmetic in sockets/multicast.c on NetBSD. (David Carlier)
+  . Fixed ext/sockets build on Haiku. (David Carlier)
+
+- Spl:
+  . Fixed bug #75917 (SplFileObject::seek broken with CSV flags). (Aliaksandr
+    Bystry)
+  . Fixed bug GH-7809 (Cloning a faked SplFileInfo object may segfault). (cmb)
+
+- Standard:
+  . Fixed bug GH-7748 (gethostbyaddr outputs binary string). (cmb)
+  . Fixed bug GH-7815 (php_uname doesn't recognise latest Windows versions).
+    (David Warner)
+
+02 Dec 2021, PHP 8.1.1
 
 - IMAP:
   . Fixed bug #81649 (imap_(un)delete accept sequences, not single numbers).
