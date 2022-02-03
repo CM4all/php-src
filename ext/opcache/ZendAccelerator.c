@@ -169,6 +169,34 @@ static inline int is_cacheable_stream_path(const char *filename)
 	       memcmp(filename, "phar://", sizeof("phar://") - 1) == 0;
 }
 
+static int string_starts_with(const char *s, size_t length, const char *prefix)
+{
+	size_t prefix_length = strlen(prefix);
+	return length >= prefix_length &&
+		memcmp(s, prefix, prefix_length) == 0;
+}
+
+static int check_validate_timestamps(const char *filename, size_t length)
+{
+	return ZCG(accel_directives).validate_timestamps &&
+		(ZCG(accel_directives).no_validate_timestamps_in == NULL ||
+		 *ZCG(accel_directives).no_validate_timestamps_in == 0 ||
+		 !string_starts_with(filename, length, ZCG(accel_directives).no_validate_timestamps_in));
+}
+
+int check_validate_timestamps_zstr(zend_string *filename)
+{
+	return check_validate_timestamps(ZSTR_VAL(filename), ZSTR_LEN(filename));
+}
+
+static int check_validate_timestamps_fh(const zend_file_handle *file_handle)
+{
+	if (file_handle->opened_path == NULL)
+		return ZCG(accel_directives).validate_timestamps;
+
+	return check_validate_timestamps_zstr(file_handle->opened_path);
+}
+
 /* O+ overrides PHP chdir() function and remembers the current working directory
  * in ZCG(cwd) and ZCG(cwd_len). Later accel_getcwd() can use stored value and
  * avoid getcwd() call.
@@ -1307,7 +1335,7 @@ int zend_accel_invalidate(const char *filename, size_t filename_len, zend_bool f
 		file_handle.opened_path = realpath;
 
 		if (force ||
-			!ZCG(accel_directives).validate_timestamps ||
+			!check_validate_timestamps_fh(&file_handle) ||
 			do_validate_timestamps(persistent_script, &file_handle) == FAILURE) {
 			HANDLE_BLOCK_INTERRUPTIONS();
 			SHM_UNPROTECT();
@@ -1734,7 +1762,7 @@ static zend_persistent_script *opcache_compile_file(zend_file_handle *file_handl
 		return NULL;
 	}
 
-	if (ZCG(accel_directives).validate_timestamps ||
+	if (check_validate_timestamps_fh(file_handle) ||
 	    ZCG(accel_directives).file_update_protection ||
 	    ZCG(accel_directives).max_file_size > 0) {
 		size_t size = 0;
@@ -1839,7 +1867,7 @@ static zend_persistent_script *opcache_compile_file(zend_file_handle *file_handl
 		new_persistent_script->ping_auto_globals_mask = zend_accel_get_auto_globals_no_jit();
 	}
 
-	if (ZCG(accel_directives).validate_timestamps) {
+	if (check_validate_timestamps_fh(file_handle)) {
 		/* Obtain the file timestamps, *before* actually compiling them,
 		 * otherwise we have a race-condition.
 		 */
@@ -2099,7 +2127,7 @@ zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int type)
 	SHM_UNPROTECT();
 
 	/* If script is found then validate_timestamps if option is enabled */
-	if (persistent_script && ZCG(accel_directives).validate_timestamps) {
+	if (persistent_script && check_validate_timestamps_fh(file_handle)) {
 		if (validate_timestamp_and_record(persistent_script, file_handle) == FAILURE) {
 			zend_shared_alloc_lock();
 			if (!persistent_script->corrupted) {

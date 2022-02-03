@@ -181,6 +181,9 @@ typedef struct _zend_accel_directives {
 	zend_long           opt_debug_level;
 	zend_long           max_file_size;
 	zend_long           interned_strings_buffer;
+
+	char *no_validate_timestamps_in;
+
 	char          *restrict_api;
 #ifndef ZEND_WIN32
 	char          *lockfile_path;
@@ -317,6 +320,8 @@ extern zend_accel_globals accel_globals;
 #endif
 
 extern char *zps_api_failure_reason;
+
+int check_validate_timestamps_zstr(zend_string *filename);
 
 void accel_shutdown(void);
 zend_result  accel_activate(INIT_FUNC_ARGS);
