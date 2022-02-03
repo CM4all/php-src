@@ -230,6 +230,7 @@ ZEND_INI_BEGIN()
 	STD_PHP_INI_BOOLEAN("opcache.enable"             , "1", PHP_INI_ALL,    OnEnable,     enabled                             , zend_accel_globals, accel_globals)
 	STD_PHP_INI_BOOLEAN("opcache.use_cwd"            , "1", PHP_INI_SYSTEM, OnUpdateBool, accel_directives.use_cwd            , zend_accel_globals, accel_globals)
 	STD_PHP_INI_BOOLEAN("opcache.validate_timestamps", "1", PHP_INI_ALL   , OnUpdateBool, accel_directives.validate_timestamps, zend_accel_globals, accel_globals)
+	STD_PHP_INI_ENTRY("opcache.no_validate_timestamps_in", "", PHP_INI_SYSTEM, OnUpdateString, accel_directives.no_validate_timestamps_in, zend_accel_globals, accel_globals)
 	STD_PHP_INI_BOOLEAN("opcache.validate_permission", "0", PHP_INI_SYSTEM, OnUpdateBool, accel_directives.validate_permission, zend_accel_globals, accel_globals)
 #ifndef ZEND_WIN32
 	STD_PHP_INI_BOOLEAN("opcache.validate_root"      , "0", PHP_INI_SYSTEM, OnUpdateBool, accel_directives.validate_root      , zend_accel_globals, accel_globals)
@@ -313,7 +314,7 @@ static int filename_is_in_cache(zend_string *filename)
 	if (key != NULL) {
 		zend_persistent_script *persistent_script = zend_accel_hash_find(&ZCSG(hash), key);
 		if (persistent_script && !persistent_script->corrupted) {
-			if (ZCG(accel_directives).validate_timestamps) {
+			if (check_validate_timestamps_zstr(filename)) {
 				zend_file_handle handle;
 				int ret;
 
