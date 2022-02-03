@@ -197,6 +197,28 @@ static inline bool is_cacheable_stream_path(const char *filename)
 	       memcmp(filename, "phar://", sizeof("phar://") - 1) == 0;
 }
 
+bool check_no_validate_timestamps_in(const zend_string *filename)
+{
+	return ZCG(accel_directives).no_validate_timestamps_in != NULL &&
+		*ZCG(accel_directives).no_validate_timestamps_in != 0 &&
+		zend_string_starts_with_cstr(filename, ZCG(accel_directives).no_validate_timestamps_in, strlen(ZCG(accel_directives).no_validate_timestamps_in));
+}
+
+bool check_validate_timestamps_zstr(const zend_string *filename)
+{
+	return ZCG(accel_directives).validate_timestamps &&
+		!check_no_validate_timestamps_in(filename);
+}
+
+static bool check_validate_timestamps_fh(const zend_file_handle *file_handle)
+{
+	const zend_string *path = file_handle->opened_path != NULL
+		? file_handle->opened_path
+		: file_handle->filename;
+
+	return check_validate_timestamps_zstr(path);
+}
+
 /* O+ overrides PHP chdir() function and remembers the current working directory
  * in ZCG(cwd) and ZCG(cwd_len). Later accel_getcwd() can use stored value and
  * avoid getcwd() call.
@@ -1421,7 +1443,7 @@ zend_result zend_accel_invalidate(zend_string *filename, bool force)
 		file_handle.opened_path = realpath;
 
 		if (force ||
-			!ZCG(accel_directives).validate_timestamps ||
+			!check_validate_timestamps_fh(&file_handle) ||
 			do_validate_timestamps(persistent_script, &file_handle) == FAILURE) {
 			HANDLE_BLOCK_INTERRUPTIONS();
 			SHM_UNPROTECT();
@@ -1761,7 +1783,7 @@ static zend_persistent_script *opcache_compile_file(zend_file_handle *file_handl
 		return NULL;
 	}
 
-	if (ZCG(accel_directives).validate_timestamps ||
+	if (check_validate_timestamps_fh(file_handle) ||
 	    ZCG(accel_directives).file_update_protection ||
 	    ZCG(accel_directives).max_file_size > 0) {
 		size_t size = 0;
@@ -1862,7 +1884,7 @@ static zend_persistent_script *opcache_compile_file(zend_file_handle *file_handl
 		new_persistent_script->ping_auto_globals_mask = zend_accel_get_auto_globals();
 	}
 
-	if (ZCG(accel_directives).validate_timestamps) {
+	if (check_validate_timestamps_fh(file_handle)) {
 		/* Obtain the file timestamps, *before* actually compiling them,
 		 * otherwise we have a race-condition.
 		 */
@@ -2116,7 +2138,7 @@ zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int type)
 	SHM_UNPROTECT();
 
 	/* If script is found then validate_timestamps if option is enabled */
-	if (persistent_script && ZCG(accel_directives).validate_timestamps) {
+	if (persistent_script && check_validate_timestamps_fh(file_handle)) {
 		if (validate_timestamp_and_record(persistent_script, file_handle) == FAILURE) {
 			zend_accel_lock_discard_script(persistent_script);
 			persistent_script = NULL;
@@ -2498,11 +2520,75 @@ static zend_result persistent_stream_open_function(zend_file_handle *handle)
 	return accelerator_orig_zend_stream_open_function(handle);
 }
 
+/**
+ * Normalize a path name by eliminating double slashes and replacing
+ * "/./" with "/".
+ */
+static zend_string* normalize_path(const zend_string *src)
+{
+	const size_t src_length = ZSTR_LEN(src);
+	zend_string *dest = zend_string_alloc(src_length, 0);
+
+	const char *s = ZSTR_VAL(src), *const s_end = s + src_length;
+	char *const d0 = ZSTR_VAL(dest), *d = d0;
+
+	bool was_slash = false;
+
+	while (s < s_end) {
+		const char ch = *s++;
+
+		if (was_slash && ch == '.' && s[0] == '.' && IS_SLASH(s[1])) {
+			/* "/../": backtrack to last slash */
+
+			size_t d_length = d - d0 - 1;
+
+			char *d_slash = memrchr(d0, '/', d_length);
+			if (d_slash != NULL) {
+				d = d_slash + 1;
+				s += 2;
+				continue;
+			}
+		}
+
+		if (IS_SLASH(ch)) {
+			if (s[0] == '.' && IS_SLASH(s[1]))
+				/* replace "/./" with just "/" */
+				s += 2;
+
+			if (was_slash)
+				/* compress multiple slashes into
+				   one */
+				continue;
+
+			was_slash = true;
+		} else {
+			was_slash = false;
+		}
+
+		*d++ = ch;
+	}
+
+	*d = 0;
+
+	size_t dest_length = d - d0;
+	if (dest_length < src_length)
+		dest = zend_string_truncate(dest, dest_length, 0);
+
+	return dest;
+}
+
 /* zend_resolve_path() replacement for PHP 5.3 and above */
 static zend_string* persistent_zend_resolve_path(zend_string *filename)
 {
 	if (!file_cache_only &&
 	    ZCG(accelerator_enabled)) {
+
+		if (filename != NULL && !check_validate_timestamps_zstr(filename))
+			/* since we're not going through
+			   php_resolve_path() here to avoid system
+			   calls, we need to normalize the given path
+			   manually */
+			return normalize_path(filename);
 
 		/* check if callback is called from include_once or it's a main request */
 		if ((!EG(current_execute_data)) ||
