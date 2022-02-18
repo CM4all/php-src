@@ -1,5 +1,11 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+17 Feb 2022, PHP 7.4.28
+
+- Filter:
+  . Fix #81708: UAF due to php_filter_float() failing for ints
+
+
 16 Dec 2021, PHP 7.4.27
 
 - Core:
@@ -100,7 +106,7 @@ PHP                                                                        NEWS
     (cmb)
   . Fixed bug #73122 (Integer Overflow when concatenating strings). (cmb)
 
-- GD:
+-GD:
   . Fixed bug #53580 (During resize gdImageCopyResampled cause colors change).
     (cmb)
 
@@ -152,9 +158,6 @@ PHP                                                                        NEWS
 
 - PDO_ODBC:
   . Fixed bug #81252 (PDO_ODBC doesn't account for SQL_NO_TOTAL). (cmb)
-
-- Phar:
-  . Fixed bug #81211: Symlinks are followed when creating PHAR archive.(cmb)
 
 - Shmop:
   . Fixed bug #81283 (shmop can't read beyond 2147483647 bytes). (cmb, Nikita)
