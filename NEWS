@@ -1,5 +1,36 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+17 Feb 2022, PHP 8.0.16RC1
+
+- Core:
+  . Fixed bug #81430 (Attribute instantiation leaves dangling pointer).
+    (beberlei)
+  . Fixed bug GH-7896 (Environment vars may be mangled on Windows). (cmb)
+
+- FFI:
+  . Fixed bug GH-7867 (FFI::cast() from pointer to array is broken). (cmb,
+    dmitry)
+
+- Filter:
+  . Fix #81708: UAF due to php_filter_float() failing for ints. (stas)
+
+- FPM:
+  . Fixed memory leak on invalid port. (David Carlier)
+
+- MBString:
+  . Fixed bug GH-7902 (mb_send_mail may delimit headers with LF only). (cmb)
+
+- MySQLnd:
+  . Fixed bug GH-7972 (MariaDB version prefix 5.5.5- is not stripped). (Kamil Tekiela)
+
+- Sockets:
+  . Fixed ext/sockets build on Haiku. (David Carlier)
+  . Fixed bug GH-7978 (sockets extension compilation errors). (David Carlier)
+
+- Standard:
+  . Fixed bug GH-7875 (mails are sent even if failure to log throws exception).
+    (cmb)
+
 20 Jan 2022, PHP 8.0.15
 
 - Core:
@@ -125,10 +156,6 @@ PHP                                                                        NEWS
   . Fixed bug #79576 ("TYPE *" shows unhelpful message when type is not
     defined). (Dmitry)
 
-- FPM:
-  . Fixed bug #81026 (PHP-FPM oob R/W in root process leading to privilege
-    escalation) (CVE-2021-21703). (Jakub Zelenka)
-
 - Fileinfo:
   . Fixed bug #78987 (High memory usage during encoding detection). (Anatol)
 
@@ -251,9 +278,6 @@ PHP                                                                        NEWS
 - PDO_ODBC:
   . Fixed bug #81252 (PDO_ODBC doesn't account for SQL_NO_TOTAL). (cmb)
 
-- Phar:
-  . Fixed bug #81211: Symlinks are followed when creating PHAR archive (cmb)
-
 - Shmop:
   . Fixed bug #81283 (shmop can't read beyond 2147483647 bytes). (cmb, Nikita)
 
@@ -353,16 +377,6 @@ PHP                                                                        NEWS
   . Fixed bug #76449: SIGSEGV in firebird_handle_doer. (CVE-2021-21704) (cmb)
   . Fixed bug #76450: SIGSEGV in firebird_stmt_execute. (CVE-2021-21704) (cmb)
   . Fixed bug #76452: Crash while parsing blob data in firebird_fetch_blob.
-    (CVE-2021-21704) (cmb)
-
-- PDO_Firebird:
-   . Fixed bug #76448 (Stack buffer overflow in firebird_info_cb).
-    (CVE-2021-21704) (cmb)
-   . Fixed bug #76449 (SIGSEGV in firebird_handle_doer).
-    (CVE-2021-21704) (cmb)
-   . Fixed bug #76450 (SIGSEGV in firebird_stmt_execute).
-    (CVE-2021-21704) (cmb)
-   . Fixed bug #76452 (Crash while parsing blob data in firebird_fetch_blob).
     (CVE-2021-21704) (cmb)
 
 - readline:
