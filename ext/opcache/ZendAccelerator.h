@@ -26,6 +26,9 @@
 # include <config.h>
 #endif
 
+#define USE_C11_ATOMICS
+#include <stdatomic.h>
+
 #define ACCELERATOR_PRODUCT_NAME	"Zend OPcache"
 /* 2 - added Profiler support, on 20010712 */
 /* 3 - added support for Optimizer's encoded-only-files mode */
@@ -259,7 +262,10 @@ typedef struct _zend_accel_shared_globals {
 	bool       restart_pending;
 	zend_accel_restart_reason restart_reason;
 	bool       cache_status_before_restart;
-#ifdef ZEND_WIN32
+#ifdef USE_C11_ATOMICS
+	atomic_llong mem_usage;
+	atomic_llong restart_in;
+#elif defined(ZEND_WIN32)
 	LONGLONG   mem_usage;
 	LONGLONG   restart_in;
 #endif

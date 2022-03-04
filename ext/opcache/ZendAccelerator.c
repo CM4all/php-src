@@ -133,7 +133,11 @@ static void preload_shutdown(void);
 static void preload_activate(void);
 static void preload_restart(void);
 
-#ifdef ZEND_WIN32
+#ifdef USE_C11_ATOMICS
+# define INCREMENT(v) (++ZCSG(v))
+# define DECREMENT(v) (--ZCSG(v))
+# define LOCKVAL(v)   atomic_load(&ZCSG(v))
+#elif defined(ZEND_WIN32)
 # define INCREMENT(v) InterlockedIncrement64(&ZCSG(v))
 # define DECREMENT(v) InterlockedDecrement64(&ZCSG(v))
 # define LOCKVAL(v)   (ZCSG(v))
@@ -265,7 +269,7 @@ static ZEND_INI_MH(accel_include_path_on_modify)
 
 static inline void accel_restart_enter(void)
 {
-#ifdef ZEND_WIN32
+#if defined(USE_C11_ATOMICS) || defined(ZEND_WIN32)
 	INCREMENT(restart_in);
 #else
 	struct flock restart_in_progress;
@@ -284,7 +288,7 @@ static inline void accel_restart_enter(void)
 
 static inline void accel_restart_leave(void)
 {
-#ifdef ZEND_WIN32
+#if defined(USE_C11_ATOMICS) || defined(ZEND_WIN32)
 	ZCSG(restart_in_progress) = 0;
 	DECREMENT(restart_in);
 #else
@@ -305,7 +309,7 @@ static inline void accel_restart_leave(void)
 static inline int accel_restart_is_active(void)
 {
 	if (ZCSG(restart_in_progress)) {
-#ifndef ZEND_WIN32
+#if !defined(USE_C11_ATOMICS) && !defined(ZEND_WIN32)
 		struct flock restart_check;
 
 		restart_check.l_type = F_WRLCK;
@@ -333,7 +337,7 @@ static inline int accel_restart_is_active(void)
 /* Creates a read lock for SHM access */
 static inline zend_result accel_activate_add(void)
 {
-#ifdef ZEND_WIN32
+#if defined(USE_C11_ATOMICS) || defined(ZEND_WIN32)
 	SHM_UNPROTECT();
 	INCREMENT(mem_usage);
 	SHM_PROTECT();
@@ -356,7 +360,7 @@ static inline zend_result accel_activate_add(void)
 /* Releases a lock for SHM access */
 static inline void accel_deactivate_sub(void)
 {
-#ifdef ZEND_WIN32
+#if defined(USE_C11_ATOMICS) || defined(ZEND_WIN32)
 	if (ZCG(counted)) {
 		SHM_UNPROTECT();
 		DECREMENT(mem_usage);
@@ -379,7 +383,7 @@ static inline void accel_deactivate_sub(void)
 
 static inline void accel_unlock_all(void)
 {
-#ifdef ZEND_WIN32
+#if defined(USE_C11_ATOMICS) || defined(ZEND_WIN32)
 	accel_deactivate_sub();
 #else
 	struct flock mem_usage_unlock_all;
@@ -807,7 +811,7 @@ static void accel_use_shm_interned_strings(void)
 	HANDLE_UNBLOCK_INTERRUPTIONS();
 }
 
-#ifndef ZEND_WIN32
+#if !defined(USE_C11_ATOMICS) && !defined(ZEND_WIN32)
 static inline void kill_all_lockers(struct flock *mem_usage_check)
 {
 	int success, tries;
@@ -874,7 +878,7 @@ static inline void kill_all_lockers(struct flock *mem_usage_check)
 
 static inline int accel_is_inactive(void)
 {
-#ifdef ZEND_WIN32
+#if defined(USE_C11_ATOMICS) || defined(ZEND_WIN32)
 	if (LOCKVAL(mem_usage) == 0) {
 		return SUCCESS;
 	}
