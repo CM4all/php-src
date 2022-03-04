@@ -82,6 +82,8 @@ AS_VAR_IF([PHP_OPCACHE_JIT], [yes], [
       TLS_TARGET="aarch64"
     ])
 
+  AC_CHECK_HEADERS([stdatomic.h])
+
   AS_VAR_IF([PHP_CAPSTONE], [yes],
     [PKG_CHECK_MODULES([CAPSTONE], [capstone >= 3.0.0], [
       AC_DEFINE([HAVE_CAPSTONE], [1], [Define to 1 if Capstone is available.])
