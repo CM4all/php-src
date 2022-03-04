@@ -149,7 +149,11 @@ static void preload_activate(void);
 static void preload_restart(void);
 #endif
 
-#ifdef ZEND_WIN32
+#ifdef HAVE_STDATOMIC_H
+# define INCREMENT(v) (++ZCSG(v))
+# define DECREMENT(v) (--ZCSG(v))
+# define LOCKVAL(v)   atomic_load(&ZCSG(v))
+#elif defined(ZEND_WIN32)
 # define INCREMENT(v) InterlockedIncrement64(&ZCSG(v))
 # define DECREMENT(v) InterlockedDecrement64(&ZCSG(v))
 # define LOCKVAL(v)   (ZCSG(v))
@@ -276,7 +280,7 @@ static ZEND_INI_MH(accel_include_path_on_modify)
 
 static inline void accel_restart_enter(void)
 {
-#ifdef ZEND_WIN32
+#if defined(HAVE_STDATOMIC_H) || defined(ZEND_WIN32)
 	INCREMENT(restart_in);
 #else
 	struct flock restart_in_progress;
@@ -295,7 +299,7 @@ static inline void accel_restart_enter(void)
 
 static inline void accel_restart_leave(void)
 {
-#ifdef ZEND_WIN32
+#if defined(HAVE_STDATOMIC_H) || defined(ZEND_WIN32)
 	ZCSG(restart_in_progress) = false;
 	DECREMENT(restart_in);
 #else
@@ -316,7 +320,7 @@ static inline void accel_restart_leave(void)
 static inline bool accel_restart_is_active(void)
 {
 	if (ZCSG(restart_in_progress)) {
-#ifndef ZEND_WIN32
+#if !defined(HAVE_STDATOMIC_H) && !defined(ZEND_WIN32)
 		struct flock restart_check;
 
 		restart_check.l_type = F_WRLCK;
@@ -344,7 +348,7 @@ static inline bool accel_restart_is_active(void)
 /* Creates a read lock for SHM access */
 static inline zend_result accel_activate_add(void)
 {
-#ifdef ZEND_WIN32
+#if defined(HAVE_STDATOMIC_H) || defined(ZEND_WIN32)
 	SHM_UNPROTECT();
 	INCREMENT(mem_usage);
 	SHM_PROTECT();
@@ -367,7 +371,7 @@ static inline zend_result accel_activate_add(void)
 /* Releases a lock for SHM access */
 static inline void accel_deactivate_sub(void)
 {
-#ifdef ZEND_WIN32
+#if defined(HAVE_STDATOMIC_H) || defined(ZEND_WIN32)
 	if (ZCG(counted)) {
 		SHM_UNPROTECT();
 		DECREMENT(mem_usage);
@@ -390,7 +394,7 @@ static inline void accel_deactivate_sub(void)
 
 static inline void accel_unlock_all(void)
 {
-#ifdef ZEND_WIN32
+#if defined(HAVE_STDATOMIC_H) || defined(ZEND_WIN32)
 	accel_deactivate_sub();
 #else
 	if (lock_file == -1) {
@@ -835,7 +839,7 @@ static void accel_use_shm_interned_strings(void)
 	HANDLE_UNBLOCK_INTERRUPTIONS();
 }
 
-#ifndef ZEND_WIN32
+#if !defined(HAVE_STDATOMIC_H) && !defined(ZEND_WIN32)
 static inline void kill_all_lockers(struct flock *mem_usage_check)
 {
 	int tries;
@@ -902,7 +906,7 @@ static inline void kill_all_lockers(struct flock *mem_usage_check)
 
 static inline bool accel_is_inactive(void)
 {
-#ifdef ZEND_WIN32
+#if defined(HAVE_STDATOMIC_H) || defined(ZEND_WIN32)
 	/* on Windows, we don't need kill_all_lockers() because SAPIs
 	   that work on Windows don't manage child processes (and we
 	   can't do anything about hanging threads anyway); therefore
