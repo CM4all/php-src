@@ -205,6 +205,7 @@ typedef struct _zend_accel_directives {
 #ifdef HAVE_HUGE_CODE_PAGES
 	bool      huge_code_pages;
 #endif
+	char *zip_dirs;
 	char *preload;
 #ifndef ZEND_WIN32
 	char *preload_user;

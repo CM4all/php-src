@@ -44,6 +44,7 @@
 #include "zend_accelerator_util_funcs.h"
 #include "zend_accelerator_hash.h"
 #include "zend_file_cache.h"
+#include "zend_zip_cache.h"
 #include "ext/pcre/php_pcre.h"
 #include "ext/standard/md5.h"
 #include "ext/hash/php_hash.h"
@@ -116,6 +117,8 @@ bool file_cache_only = 0;  /* process uses file cache only */
 #if ENABLE_FILE_CACHE_FALLBACK
 bool fallback_process = 0; /* process uses file cache fallback */
 #endif
+
+static struct ZendZipCache *zend_zip_cache = NULL;
 
 static zend_op_array *(*accelerator_orig_compile_file)(zend_file_handle *file_handle, int type);
 static zend_class_entry* (*accelerator_orig_inheritance_cache_get)(zend_class_entry *ce, zend_class_entry *parent, zend_class_entry **traits_and_interfaces);
@@ -2034,6 +2037,10 @@ zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int type)
 			ZCG(cache_opline) = NULL;
 			ZCG(cache_persistent_script) = NULL;
 			return accelerator_orig_compile_file(file_handle, type);
+		}
+
+		if (!persistent_script && zend_zip_cache && file_handle->filename) {
+			persistent_script = zend_zip_cache_script_load(zend_zip_cache, file_handle->filename);
 		}
 
 		if (!persistent_script) {
@@ -4615,6 +4622,25 @@ static int accel_finish_startup(void)
 {
 	if (!ZCG(enabled) || !accel_startup_ok) {
 		return SUCCESS;
+	}
+
+	if (ZCG(accel_directives).zip_dirs != NULL && *ZCG(accel_directives).zip_dirs != 0) {
+		zend_zip_cache = zend_zip_cache_new();
+
+		static const char ds[2] = {DEFAULT_DIR_SEPARATOR, '\0'};
+		char *tmp = estrdup(ZCG(accel_directives).zip_dirs);
+
+		char *lasts;
+		for (const char *path = php_strtok_r(tmp, ds, &lasts);
+		     path != NULL; path = php_strtok_r(NULL, ds, &lasts)) {
+			const char *end = strchr(path, DEFAULT_DIR_SEPARATOR);
+			const size_t length = end != NULL
+				? (size_t)(end - path)
+				: strlen(path);
+			zend_zip_cache_load(zend_zip_cache, path, length);
+		}
+
+		efree(tmp);
 	}
 
 	if (ZCG(accel_directives).preload && *ZCG(accel_directives).preload) {

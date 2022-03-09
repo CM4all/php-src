@@ -277,6 +277,7 @@ ZEND_INI_BEGIN()
 #ifdef HAVE_HUGE_CODE_PAGES
 	STD_PHP_INI_BOOLEAN("opcache.huge_code_pages"             , "0"   , PHP_INI_SYSTEM, OnUpdateBool,      accel_directives.huge_code_pages,               zend_accel_globals, accel_globals)
 #endif
+	STD_PHP_INI_ENTRY("opcache.zip_dirs", "", PHP_INI_SYSTEM, OnUpdateStringUnempty, accel_directives.zip_dirs, zend_accel_globals, accel_globals)
 	STD_PHP_INI_ENTRY("opcache.preload"                       , ""    , PHP_INI_SYSTEM, OnUpdateStringUnempty,    accel_directives.preload,                zend_accel_globals, accel_globals)
 #ifndef ZEND_WIN32
 	STD_PHP_INI_ENTRY("opcache.preload_user"                  , ""    , PHP_INI_SYSTEM, OnUpdateStringUnempty,    accel_directives.preload_user,           zend_accel_globals, accel_globals)
