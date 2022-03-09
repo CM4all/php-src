@@ -352,8 +352,21 @@ int main(void) {
       $ZEND_JIT_SRC
     ]),
     [no],,
-    [-DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 $JIT_CFLAGS],,
+    [-DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 $JIT_CFLAGS],[yes],
     [yes])
+
+  PHP_OPCACHE_CXX_SOURCES=" \
+    zend_zip_cache.cpp \
+  "
+
+  PHP_REQUIRE_CXX()
+  PHP_CXX_COMPILE_STDCXX(17, mandatory, PHP_OPCACHE_STDCXX)
+  PHP_OPCACHE_CXX_FLAGS="$OPCACHE_COMMON_FLAGS $PHP_OPCACHE_STDCXX -fno-exceptions -fno-rtti"
+  if test "$ext_shared" = "no"; then
+    PHP_ADD_SOURCES(PHP_EXT_DIR(opcache), $PHP_OPCACHE_CXX_SOURCES, $PHP_OPCACHE_CXX_FLAGS)
+  else
+    PHP_ADD_SOURCES_X(PHP_EXT_DIR(opcache), $PHP_OPCACHE_CXX_SOURCES, $PHP_OPCACHE_CXX_FLAGS, shared_objects_opcache, yes)
+  fi
 
   PHP_ADD_EXTENSION_DEP(opcache, date)
   PHP_ADD_EXTENSION_DEP(opcache, pcre)
