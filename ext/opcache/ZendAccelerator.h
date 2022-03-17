@@ -27,7 +27,11 @@
 #endif
 
 #define USE_C11_ATOMICS
+#ifdef __cplusplus
+#include <atomic>
+#else
 #include <stdatomic.h>
+#endif
 
 #define ACCELERATOR_PRODUCT_NAME	"Zend OPcache"
 /* 2 - added Profiler support, on 20010712 */
@@ -273,8 +277,12 @@ typedef struct _zend_accel_shared_globals {
 	zend_accel_restart_reason restart_reason;
 	bool       cache_status_before_restart;
 #ifdef USE_C11_ATOMICS
+#ifdef __cplusplus
+	std::atomic_llong mem_usage, restart_in;
+#else
 	atomic_llong mem_usage;
 	atomic_llong restart_in;
+#endif
 #elif defined(ZEND_WIN32)
 	LONGLONG   mem_usage;
 	LONGLONG   restart_in;
@@ -321,6 +329,8 @@ extern zend_accel_globals accel_globals;
 
 extern char *zps_api_failure_reason;
 
+BEGIN_EXTERN_C()
+
 int check_validate_timestamps_zstr(zend_string *filename);
 
 void accel_shutdown(void);
@@ -344,6 +354,8 @@ zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int type);
 zend_string* ZEND_FASTCALL accel_new_interned_string(zend_string *str);
 
 uint32_t zend_accel_get_class_name_map_ptr(zend_string *type_name);
+
+END_EXTERN_C()
 
 /* memory write protection */
 #define SHM_PROTECT() \
