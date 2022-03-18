@@ -1769,8 +1769,7 @@ ZEND_API zend_result zend_set_local_var_str(const char *name, size_t len, zval *
 
 				do {
 					if (ZSTR_H(*str) == h &&
-					    ZSTR_LEN(*str) == len &&
-					    memcmp(ZSTR_VAL(*str), name, len) == 0) {
+					    zend_string_equals_str(*str, name, len)) {
 						zval *var = EX_VAR_NUM(str - op_array->vars);
 						zval_ptr_dtor(var);
 						ZVAL_COPY_VALUE(var, value);
