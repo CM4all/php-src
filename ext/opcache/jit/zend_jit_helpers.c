@@ -1862,8 +1862,7 @@ static void ZEND_FASTCALL zend_jit_fetch_obj_r_dynamic(zend_object *zobj, intptr
 			        (EXPECTED(p->key == name) ||
 			         (EXPECTED(p->h == ZSTR_H(name)) &&
 			          EXPECTED(p->key != NULL) &&
-			          EXPECTED(ZSTR_LEN(p->key) == ZSTR_LEN(name)) &&
-			          EXPECTED(memcmp(ZSTR_VAL(p->key), ZSTR_VAL(name), ZSTR_LEN(name)) == 0)))) {
+			          EXPECTED(zend_string_equal_content(p->key, name))))) {
 					ZVAL_COPY_DEREF(result, &p->val);
 					return;
 				}
@@ -1920,8 +1919,7 @@ static void ZEND_FASTCALL zend_jit_fetch_obj_is_dynamic(zend_object *zobj, intpt
 			        (EXPECTED(p->key == name) ||
 			         (EXPECTED(p->h == ZSTR_H(name)) &&
 			          EXPECTED(p->key != NULL) &&
-			          EXPECTED(ZSTR_LEN(p->key) == ZSTR_LEN(name)) &&
-			          EXPECTED(memcmp(ZSTR_VAL(p->key), ZSTR_VAL(name), ZSTR_LEN(name)) == 0)))) {
+			          EXPECTED(zend_string_equal_content(p->key, name))))) {
 					ZVAL_COPY_DEREF(result, &p->val);
 					return;
 				}
