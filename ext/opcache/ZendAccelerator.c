@@ -1572,11 +1572,9 @@ static zend_persistent_script *cache_script_in_shared_memory(zend_persistent_scr
 	memory_used = zend_accel_script_persist_calc(new_persistent_script, 1);
 
 	/* Allocate shared memory */
+	ZCG(mem) = zend_shared_alloc_aligned(memory_used);
 #if defined(__AVX__) || defined(__SSE2__)
-	/* Align to 64-byte boundary */
-	ZCG(mem) = zend_shared_alloc(memory_used + 64);
 	if (ZCG(mem)) {
-		ZCG(mem) = (void*)(((zend_uintptr_t)ZCG(mem) + 63L) & ~63L);
 #if defined(__x86_64__)
 		memset(ZCG(mem), 0, memory_used);
 #elif defined(__AVX__)
@@ -1608,7 +1606,6 @@ static zend_persistent_script *cache_script_in_shared_memory(zend_persistent_scr
 #endif
 	}
 #else
-	ZCG(mem) = zend_shared_alloc(memory_used);
 	if (ZCG(mem)) {
 		memset(ZCG(mem), 0, memory_used);
 	}
@@ -4279,11 +4276,9 @@ static zend_persistent_script* preload_script_in_shared_memory(zend_persistent_s
 	memory_used = zend_accel_script_persist_calc(new_persistent_script, 1);
 
 	/* Allocate shared memory */
+	ZCG(mem) = zend_shared_alloc_aligned(memory_used);
 #if defined(__AVX__) || defined(__SSE2__)
-	/* Align to 64-byte boundary */
-	ZCG(mem) = zend_shared_alloc(memory_used + 64);
 	if (ZCG(mem)) {
-		ZCG(mem) = (void*)(((zend_uintptr_t)ZCG(mem) + 63L) & ~63L);
 #if defined(__x86_64__)
 		memset(ZCG(mem), 0, memory_used);
 #elif defined(__AVX__)
@@ -4315,7 +4310,6 @@ static zend_persistent_script* preload_script_in_shared_memory(zend_persistent_s
 #endif
 	}
 #else
-	ZCG(mem) = zend_shared_alloc(memory_used);
 	if (ZCG(mem)) {
 		memset(ZCG(mem), 0, memory_used);
 	}
