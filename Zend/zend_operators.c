@@ -2806,7 +2806,7 @@ ZEND_API int ZEND_FASTCALL zend_binary_strcmp(const char *s1, size_t len1, const
 	}
 	retval = memcmp(s1, s2, MIN(len1, len2));
 	if (!retval) {
-		return (int)(len1 - len2);
+		return (int)len1 - (int)len2;
 	} else {
 		return retval;
 	}
@@ -2822,7 +2822,7 @@ ZEND_API int ZEND_FASTCALL zend_binary_strncmp(const char *s1, size_t len1, cons
 	}
 	retval = memcmp(s1, s2, MIN(length, MIN(len1, len2)));
 	if (!retval) {
-		return (int)(MIN(length, len1) - MIN(length, len2));
+		return (int)MIN(length, len1) - (int)MIN(length, len2);
 	} else {
 		return retval;
 	}
@@ -2847,7 +2847,7 @@ ZEND_API int ZEND_FASTCALL zend_binary_strcasecmp(const char *s1, size_t len1, c
 		}
 	}
 
-	return (int)(len1 - len2);
+	return (int)len1 - (int)len2;
 }
 /* }}} */
 
@@ -2868,7 +2868,7 @@ ZEND_API int ZEND_FASTCALL zend_binary_strncasecmp(const char *s1, size_t len1, 
 		}
 	}
 
-	return (int)(MIN(length, len1) - MIN(length, len2));
+	return (int)MIN(length, len1) - (int)MIN(length, len2);
 }
 /* }}} */
 
@@ -2890,7 +2890,7 @@ ZEND_API int ZEND_FASTCALL zend_binary_strcasecmp_l(const char *s1, size_t len1,
 		}
 	}
 
-	return (int)(len1 - len2);
+	return (int)len1 - (int)len2;
 }
 /* }}} */
 
@@ -2911,7 +2911,7 @@ ZEND_API int ZEND_FASTCALL zend_binary_strncasecmp_l(const char *s1, size_t len1
 		}
 	}
 
-	return (int)(MIN(length, len1) - MIN(length, len2));
+	return (int)MIN(length, len1) - (int)MIN(length, len2);
 }
 /* }}} */
 
