@@ -188,16 +188,6 @@ static int zend_file_cache_flock(int fd, int type)
 static const uint32_t uninitialized_bucket[-HT_MIN_MASK] =
 	{HT_INVALID_IDX, HT_INVALID_IDX};
 
-typedef struct _zend_file_cache_metainfo {
-	char         magic[8];
-	char         system_id[32];
-	size_t       mem_size;
-	size_t       str_size;
-	size_t       script_offset;
-	accel_time_t timestamp;
-	uint32_t     checksum;
-} zend_file_cache_metainfo;
-
 static int zend_file_cache_mkdir(char *filename, size_t start)
 {
 	char *s = filename + start;
@@ -1667,8 +1657,8 @@ static void zend_file_cache_unserialize_warnings(zend_persistent_script *script,
 	}
 }
 
-static void zend_file_cache_unserialize(zend_persistent_script  *script,
-                                        void                    *buf)
+void zend_file_cache_unserialize(zend_persistent_script  *script,
+                                 void                    *buf)
 {
 	script->mem = buf;
 

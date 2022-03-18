@@ -23,4 +23,21 @@ int zend_file_cache_script_store(zend_persistent_script *script, int in_shm);
 zend_persistent_script *zend_file_cache_script_load(zend_file_handle *file_handle);
 void zend_file_cache_invalidate(zend_string *full_path);
 
+typedef struct _zend_file_cache_metainfo {
+	char         magic[8];
+	char         system_id[32];
+	size_t       mem_size;
+	size_t       str_size;
+	size_t       script_offset;
+	accel_time_t timestamp;
+	uint32_t     checksum;
+} zend_file_cache_metainfo;
+
+BEGIN_EXTERN_C()
+
+void zend_file_cache_unserialize(zend_persistent_script  *script,
+                                 void                    *buf);
+
+END_EXTERN_C()
+
 #endif /* ZEND_FILE_CACHE_H */
