@@ -186,7 +186,7 @@ void zend_shared_alloc_destroy_xlat_table(void);
 void zend_shared_alloc_clear_xlat_table(void);
 uint32_t zend_shared_alloc_checkpoint_xlat_table(void);
 void zend_shared_alloc_restore_xlat_table(uint32_t checkpoint);
-void zend_shared_alloc_register_xlat_entry(const void *old, const void *new);
+void zend_shared_alloc_register_xlat_entry(const void *old, const void *new_);
 void *zend_shared_alloc_get_xlat_entry(const void *old);
 
 size_t zend_shared_alloc_get_free_memory(void);
