@@ -379,6 +379,19 @@ static zend_always_inline bool zend_string_equals(zend_string *s1, zend_string *
 #define zend_string_equals_literal(str, literal) \
 	zend_string_equals_str(str, literal, sizeof(literal) - 1)
 
+static zend_always_inline bool zend_string_starts_with_str(const zend_string *str, const char *prefix, size_t prefix_length)
+{
+	return ZSTR_LEN(str) >= prefix_length && !memcmp(ZSTR_VAL(str), prefix, prefix_length);
+}
+
+static zend_always_inline bool zend_string_starts_with_val(const zend_string *str, const zend_string *prefix)
+{
+	return zend_string_starts_with_str(str, ZSTR_VAL(prefix), ZSTR_LEN(prefix));
+}
+
+#define zend_string_starts_with_literal(str, prefix) \
+	zend_string_starts_with_str(str, prefix, sizeof(prefix) - 1)
+
 /*
  * DJBX33A (Daniel J. Bernstein, Times 33 with Addition)
  *
