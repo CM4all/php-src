@@ -927,9 +927,11 @@ AC_DEFUN([PHP_NEW_EXTENSION],[
 dnl ---------------------------------------------- Static module
     [PHP_]translit($1,a-z_-,A-Z__)[_SHARED]=no
     PHP_ADD_SOURCES($ext_dir,$2,$ac_extra,)
+    if test "$7" != "yes"; then
     EXT_STATIC="$EXT_STATIC $1;$ext_dir"
     if test "$3" != "nocli"; then
       EXT_CLI_STATIC="$EXT_CLI_STATIC $1;$ext_dir"
+    fi
     fi
   else
     if test "$3" = "shared" || test "$3" = "yes"; then

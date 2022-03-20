@@ -309,7 +309,8 @@ if test -z "$PHP_INSTALLED_SAPIS"; then
 fi
 
 dnl Force ZTS.
-if test "$enable_zts" = "yes"; then
+# Kludge: always enable pthread support (for the static opcache extension)
+if test "$enable_zts" = "yes" || true; then
   dnl Add pthreads linker and compiler flags.
   if test -n "$ac_cv_pthreads_lib"; then
     LIBS="$LIBS -l$ac_cv_pthreads_lib"

@@ -93,6 +93,9 @@ PHPAPI int core_globals_id;
 PHPAPI size_t core_globals_offset;
 #endif
 
+// kludge: import the static opcache extension manually
+extern zend_extension opcache_zend_extension_entry;
+
 #define SAFE_FILENAME(f) ((f)?(f):"-")
 
 /* {{{ PHP_INI_MH */
@@ -2254,6 +2257,9 @@ int php_module_startup(sapi_module_struct *sf, zend_module_entry *additional_mod
 	 */
 	php_ini_register_extensions();
 	zend_startup_modules();
+
+	// kludge: load the static opcache extension manually
+	zend_register_extension(&opcache_zend_extension_entry, NULL);
 
 	/* start Zend extensions */
 	zend_startup_extensions();
