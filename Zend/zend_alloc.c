@@ -197,7 +197,8 @@ typedef struct  _zend_mm_free_slot zend_mm_free_slot;
 typedef struct  _zend_mm_chunk     zend_mm_chunk;
 typedef struct  _zend_mm_huge_list zend_mm_huge_list;
 
-static bool zend_mm_use_huge_pages = false;
+// kludge: hard-coded MADV_HUGEPAGE
+static const bool zend_mm_use_huge_pages = true;
 
 /*
  * Memory is retrieved from OS by chunks of fixed size 2MB.
@@ -511,6 +512,7 @@ static void *zend_mm_mmap(size_t size)
 #else
 	void *ptr;
 
+#if PLEASE_NO_MAP_HUGETLB
 #if defined(MAP_HUGETLB) || defined(VM_FLAGS_SUPERPAGE_SIZE_2MB)
 	if (zend_mm_use_huge_pages && size == ZEND_MM_CHUNK_SIZE) {
 		int fd = -1;
@@ -526,6 +528,7 @@ static void *zend_mm_mmap(size_t size)
 			return ptr;
 		}
 	}
+#endif
 #endif
 
 	ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, ZEND_MM_FD, 0);
@@ -2911,10 +2914,12 @@ static void alloc_globals_ctor(zend_alloc_globals *alloc_globals)
 	}
 #endif
 
+#ifdef NO_HARDCODED_HUGE_PAGES
 	tmp = getenv("USE_ZEND_ALLOC_HUGE_PAGES");
 	if (tmp && ZEND_ATOL(tmp)) {
 		zend_mm_use_huge_pages = true;
 	}
+#endif
 	alloc_globals->mm_heap = zend_mm_init();
 }
 
