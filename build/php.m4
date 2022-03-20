@@ -757,7 +757,6 @@ AC_DEFUN([PHP_REQUIRE_CXX], [
 AS_VAR_IF([php_cxx_done],, [
   AC_PROG_CXX
   AC_PROG_CXXCPP
-  PHP_ADD_LIBRARY([stdc++])
   php_cxx_done=yes
 ])
 ])
