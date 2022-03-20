@@ -26,8 +26,6 @@ PHP_ARG_WITH([capstone],
   [no])
 
 if test "$PHP_OPCACHE" != "no"; then
-  dnl Always build as shared extension.
-  ext_shared=yes
 
   AC_CHECK_HEADERS([stdatomic.h])
 
@@ -353,7 +351,7 @@ int main(void) {
       ZendAccelerator.c
       $ZEND_JIT_SRC
     ]),
-    [$ext_shared],,
+    [no],,
     [-DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 $JIT_CFLAGS],,
     [yes])
 
