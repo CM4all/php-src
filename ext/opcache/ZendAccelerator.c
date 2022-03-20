@@ -4803,7 +4803,7 @@ static zend_result accel_finish_startup(void)
 #endif /* ZEND_WIN32 */
 }
 
-ZEND_EXT_API zend_extension zend_extension_entry = {
+ZEND_EXT_API zend_extension opcache_zend_extension_entry = {
 	ACCELERATOR_PRODUCT_NAME,               /* name */
 	PHP_VERSION,							/* version */
 	"Zend Technologies",					/* author */
