@@ -48,6 +48,8 @@
 #define TRANSLATE_SLASHES_LOWER(path)
 #endif
 
+// kludge: import the static opcache extension manually
+extern zend_extension opcache_zend_extension_entry;
 
 typedef struct _php_extension_lists {
 	zend_llist engine;
@@ -324,6 +326,13 @@ static void php_load_php_extension_cb(void *arg)
 static void php_load_zend_extension_cb(void *arg)
 {
 	char *filename = *((char **) arg);
+
+	if (strcmp(filename, "opcache.so") == 0 || strcmp(filename, "opcache") == 0) {
+		// kludge: load the static opcache extension manually
+		zend_register_extension(&opcache_zend_extension_entry, NULL);
+		return;
+	}
+
 	const size_t length = strlen(filename);
 
 #ifndef PHP_WIN32
