@@ -287,7 +287,8 @@ AS_VAR_IF([PHP_INSTALLED_SAPIS],, [AC_MSG_ERROR([Nothing to build.])])
 dnl Add POSIX threads compilation and linker flags when thread safety is enabled
 dnl with either the '--enable-zts' configure option or automatically enabled by
 dnl PHP SAPIs. For example, Apache SAPI.
-AS_VAR_IF([enable_zts], [yes], [
+# Kludge: always enable pthread support (for the static opcache extension)
+if true; then
   if test -n "$ac_cv_pthreads_lib"; then
     LIBS="$LIBS -l$ac_cv_pthreads_lib"
   fi
@@ -296,7 +297,7 @@ AS_VAR_IF([enable_zts], [yes], [
   fi
 
   PTHREADS_FLAGS
-])
+fi
 
 dnl Starting system checks.
 dnl ----------------------------------------------------------------------------
