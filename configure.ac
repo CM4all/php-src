@@ -131,6 +131,7 @@ PHP_DETECT_SUNCC
 
 dnl AC_PROG_CC_C99 is obsolete with autoconf >= 2.70 yet necessary for <= 2.69.
 m4_version_prereq([2.70],,[AC_PROG_CC_C99])
+AC_PROG_CXX
 AC_PROG_CPP
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_LN_S
