@@ -56,6 +56,10 @@ static int create_segments(size_t requested_size, zend_shared_segment ***shared_
 #ifdef PROT_MAX
 	flags |= PROT_MAX(PROT_READ | PROT_WRITE | PROT_EXEC);
 #endif
+#ifdef MADV_HUGEPAGE
+	// kludge: hard-code transparent huge page support, no MAP_HUGETLB
+	thp = true;
+#else // !MADV_HUGEPAGE
 #ifdef MAP_HUGETLB
 	size_t huge_page_size = 2 * 1024 * 1024;
 
@@ -102,6 +106,7 @@ static int create_segments(size_t requested_size, zend_shared_segment ***shared_
 		goto success;
 	}
 #endif
+#endif // !MADV_HUGEPAGE
 
 	p = mmap(0, requested_size, flags, MAP_SHARED|MAP_ANONYMOUS, fd, 0);
 	if (p == MAP_FAILED) {
