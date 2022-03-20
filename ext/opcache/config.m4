@@ -20,9 +20,6 @@ PHP_ARG_ENABLE([opcache-jit],
 
 if test "$PHP_OPCACHE" != "no"; then
 
-  dnl Always build as shared extension
-  ext_shared=yes
-
   AC_CHECK_HEADERS([stdatomic.h])
 
   if test "$pthreads_working" = "yes"; then
@@ -341,7 +338,7 @@ int main() {
 	shared_alloc_mmap.c \
 	shared_alloc_posix.c \
 	$ZEND_JIT_SRC,
-	shared,,"-Wno-implicit-fallthrough -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1",,yes)
+	no,,"-Wno-implicit-fallthrough -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1",,yes)
 
   PHP_ADD_EXTENSION_DEP(opcache, pcre)
 
