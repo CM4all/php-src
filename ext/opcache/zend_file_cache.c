@@ -964,7 +964,7 @@ static char *zend_file_cache_get_bin_file_path(zend_string *script_path)
 }
 
 /**
- * Helper function for zend_file_cache_script_store().
+ * Helper function for zend_file_cache_script_store_fd().
  *
  * @return true on success, false on error
  */
@@ -986,42 +986,15 @@ static bool zend_file_cache_script_write(int fd, const zend_persistent_script *s
 #endif
 }
 
-int zend_file_cache_script_store(zend_persistent_script *script, bool in_shm)
+/**
+ * Helper function for zend_file_cache_script_store().
+ *
+ * @return true on success, false on error
+ */
+static bool zend_file_cache_script_store_fd(const int fd, zend_persistent_script *script, const bool in_shm)
 {
-	int fd;
-	char *filename;
 	zend_file_cache_metainfo info;
 	void *mem, *buf;
-
-#ifdef HAVE_JIT
-	/* FIXME: dump jited codes out to file cache? */
-	if (JIT_G(on)) {
-		return FAILURE;
-	}
-#endif
-
-	filename = zend_file_cache_get_bin_file_path(script->script.filename);
-
-	if (zend_file_cache_mkdir(filename, strlen(ZCG(accel_directives).file_cache)) != SUCCESS) {
-		zend_accel_error(ACCEL_LOG_WARNING, "opcache cannot create directory for file '%s', %s\n", filename, strerror(errno));
-		efree(filename);
-		return FAILURE;
-	}
-
-	fd = zend_file_cache_open(filename, O_CREAT | O_EXCL | O_RDWR | O_BINARY, S_IRUSR | S_IWUSR);
-	if (fd < 0) {
-		if (errno != EEXIST) {
-			zend_accel_error(ACCEL_LOG_WARNING, "opcache cannot create file '%s', %s\n", filename, strerror(errno));
-		}
-		efree(filename);
-		return FAILURE;
-	}
-
-	if (zend_file_cache_flock(fd, LOCK_EX) != 0) {
-		close(fd);
-		efree(filename);
-		return FAILURE;
-	}
 
 #if defined(__AVX__) || defined(__SSE2__)
 	/* Align to 64-byte boundary */
@@ -1056,25 +1029,62 @@ int zend_file_cache_script_store(zend_persistent_script *script, bool in_shm)
 	__msan_unpoison(buf, script->size);
 #endif
 
-	if (!zend_file_cache_script_write(fd, script, &info, buf, s)) {
-		zend_accel_error(ACCEL_LOG_WARNING, "opcache cannot write to file '%s'\n", filename);
-		zend_string_release_ex(s, 0);
-		close(fd);
-		efree(mem);
-		zend_file_cache_unlink(filename);
+	const bool success = zend_file_cache_script_write(fd, script, &info, buf, s);
+	zend_string_release_ex(s, 0);
+	efree(mem);
+	return success;
+}
+
+int zend_file_cache_script_store(zend_persistent_script *script, bool in_shm)
+{
+	int fd;
+	char *filename;
+
+#ifdef HAVE_JIT
+	/* FIXME: dump jited codes out to file cache? */
+	if (JIT_G(on)) {
+		return FAILURE;
+	}
+#endif
+
+	filename = zend_file_cache_get_bin_file_path(script->script.filename);
+
+	if (zend_file_cache_mkdir(filename, strlen(ZCG(accel_directives).file_cache)) != SUCCESS) {
+		zend_accel_error(ACCEL_LOG_WARNING, "opcache cannot create directory for file '%s', %s\n", filename, strerror(errno));
 		efree(filename);
 		return FAILURE;
 	}
 
-	zend_string_release_ex(s, 0);
-	efree(mem);
-	if (zend_file_cache_flock(fd, LOCK_UN) != 0) {
-		zend_accel_error(ACCEL_LOG_WARNING, "opcache cannot unlock file '%s'\n", filename);
+	fd = zend_file_cache_open(filename, O_CREAT | O_EXCL | O_RDWR | O_BINARY, S_IRUSR | S_IWUSR);
+	if (fd < 0) {
+		if (errno != EEXIST) {
+			zend_accel_error(ACCEL_LOG_WARNING, "opcache cannot create file '%s', %s\n", filename, strerror(errno));
+		}
+		efree(filename);
+		return FAILURE;
 	}
-	close(fd);
+
+	if (zend_file_cache_flock(fd, LOCK_EX) != 0) {
+		close(fd);
+		efree(filename);
+		return FAILURE;
+	}
+
+	const bool success = zend_file_cache_script_store_fd(fd, script, in_shm);
+	if (success) {
+		if (zend_file_cache_flock(fd, LOCK_UN) != 0) {
+			zend_accel_error(ACCEL_LOG_WARNING, "opcache cannot unlock file '%s'\n", filename);
+		}
+		close(fd);
+	} else {
+		zend_accel_error(ACCEL_LOG_WARNING, "opcache cannot write to file '%s'\n", filename);
+		close(fd);
+		zend_file_cache_unlink(filename);
+	}
+
 	efree(filename);
 
-	return SUCCESS;
+	return success ? SUCCESS : FAILURE;
 }
 
 static void zend_file_cache_unserialize_hash(HashTable               *ht,
