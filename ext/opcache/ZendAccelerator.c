@@ -297,7 +297,7 @@ static inline void accel_restart_leave(void)
 #endif
 }
 
-static inline int accel_restart_is_active(void)
+static inline bool accel_restart_is_active(void)
 {
 	if (ZCSG(restart_in_progress)) {
 #ifndef ZEND_WIN32
