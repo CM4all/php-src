@@ -1075,7 +1075,7 @@ static char *zend_file_cache_get_bin_file_path(zend_string *script_path)
 }
 
 /**
- * Helper function for zend_file_cache_script_store().
+ * Helper function for zend_file_cache_script_store_fd().
  *
  * @return true on success, false on error and errno is set to indicate the cause of the error
  */
@@ -1130,12 +1130,61 @@ static bool zend_file_cache_script_write(int fd, const zend_persistent_script *s
 #endif
 }
 
+/**
+ * Helper function for zend_file_cache_script_store().
+ *
+ * @return true on success, false on error
+ */
+static bool zend_file_cache_script_store_fd(const int fd, zend_persistent_script *script, const bool in_shm)
+{
+	zend_file_cache_metainfo info;
+	void *mem, *buf;
+
+#if defined(__AVX__) || defined(__SSE2__)
+	/* Align to 64-byte boundary */
+	mem = emalloc(script->size + 64);
+	buf = (void*)(((uintptr_t)mem + 63L) & ~63L);
+#else
+	mem = buf = emalloc(script->size);
+#endif
+
+	ZCG(mem) = zend_string_alloc(4096 - (_ZSTR_HEADER_SIZE + 1), 0);
+
+	zend_shared_alloc_init_xlat_table();
+	if (!in_shm) {
+		script->corrupted = true; /* used to check if script restored to SHM or process memory */
+	}
+	zend_file_cache_serialize(script, &info, buf);
+	if (!in_shm) {
+		script->corrupted = false;
+	}
+	zend_shared_alloc_destroy_xlat_table();
+
+	zend_string *const s = (zend_string*)ZCG(mem);
+
+#if __has_feature(memory_sanitizer)
+	/* The buffer may contain uninitialized regions. However, the uninitialized parts will not be
+	 * used when reading the cache. We should probably still try to get things fully initialized
+	 * for reproducibility, but for now ignore this issue. */
+	__msan_unpoison(&info, sizeof(info));
+	__msan_unpoison(buf, script->size);
+#endif
+
+	info.checksum = zend_adler32(ADLER32_INIT, buf, script->size);
+	info.checksum = zend_adler32(info.checksum, (unsigned char*)ZSTR_VAL(s), info.str_size);
+
+	const bool success = zend_file_cache_script_write(fd, script, &info, buf, s);
+	const int e = errno;
+	zend_string_release_ex(s, 0);
+	efree(mem);
+	errno = e;
+	return success;
+}
+
 int zend_file_cache_script_store(zend_persistent_script *script, bool in_shm)
 {
 	int fd;
 	char *filename;
-	zend_file_cache_metainfo info;
-	void *mem, *buf;
 
 #ifdef HAVE_JIT
 	/* FIXME: dump jited codes out to file cache? */
@@ -1171,58 +1220,27 @@ int zend_file_cache_script_store(zend_persistent_script *script, bool in_shm)
 		return FAILURE;
 	}
 
-#if defined(__AVX__) || defined(__SSE2__)
-	/* Align to 64-byte boundary */
-	mem = emalloc(script->size + 64);
-	buf = (void*)(((uintptr_t)mem + 63L) & ~63L);
-#else
-	mem = buf = emalloc(script->size);
-#endif
-
-	ZCG(mem) = zend_string_alloc(4096 - (_ZSTR_HEADER_SIZE + 1), 0);
-
-	zend_shared_alloc_init_xlat_table();
-	if (!in_shm) {
-		script->corrupted = true; /* used to check if script restored to SHM or process memory */
-	}
-	zend_file_cache_serialize(script, &info, buf);
-	if (!in_shm) {
-		script->corrupted = false;
-	}
-	zend_shared_alloc_destroy_xlat_table();
-
-	zend_string *const s = (zend_string*)ZCG(mem);
-
-#if __has_feature(memory_sanitizer)
-	/* The buffer may contain uninitialized regions. However, the uninitialized parts will not be
-	 * used when reading the cache. We should probably still try to get things fully initialized
-	 * for reproducibility, but for now ignore this issue. */
-	__msan_unpoison(&info, sizeof(info));
-	__msan_unpoison(buf, script->size);
-#endif
-
-	info.checksum = zend_adler32(ADLER32_INIT, buf, script->size);
-	info.checksum = zend_adler32(info.checksum, (unsigned char*)ZSTR_VAL(s), info.str_size);
-
-	if (!zend_file_cache_script_write(fd, script, &info, buf, s)) {
-		zend_accel_error(ACCEL_LOG_WARNING, "opcache cannot write to file '%s': %s\n", filename, strerror(errno));
-		zend_string_release_ex(s, 0);
+	if (zend_file_cache_flock(fd, LOCK_EX) != 0) {
 		close(fd);
-		efree(mem);
-		zend_file_cache_unlink(filename);
 		efree(filename);
 		return FAILURE;
 	}
 
-	zend_string_release_ex(s, 0);
-	efree(mem);
-	if (zend_file_cache_flock(fd, LOCK_UN) != 0) {
-		zend_accel_error(ACCEL_LOG_WARNING, "opcache cannot unlock file '%s': %s\n", filename, strerror(errno));
+	const bool success = zend_file_cache_script_store_fd(fd, script, in_shm);
+	if (success) {
+		if (zend_file_cache_flock(fd, LOCK_UN) != 0) {
+			zend_accel_error(ACCEL_LOG_WARNING, "opcache cannot unlock file '%s': %s\n", filename, strerror(errno));
+		}
+		close(fd);
+	} else {
+		zend_accel_error(ACCEL_LOG_WARNING, "opcache cannot write to file '%s': %s\n", filename, strerror(errno));
+		close(fd);
+		zend_file_cache_unlink(filename);
 	}
-	close(fd);
+
 	efree(filename);
 
-	return SUCCESS;
+	return success ? SUCCESS : FAILURE;
 }
 
 static void zend_file_cache_unserialize_hash(HashTable               *ht,
