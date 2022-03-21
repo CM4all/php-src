@@ -1012,11 +1012,11 @@ int zend_file_cache_script_store(zend_persistent_script *script, bool in_shm)
 
 	zend_shared_alloc_init_xlat_table();
 	if (!in_shm) {
-		script->corrupted = 1; /* used to check if script restored to SHM or process memory */
+		script->corrupted = true; /* used to check if script restored to SHM or process memory */
 	}
 	zend_file_cache_serialize(script, &info, buf);
 	if (!in_shm) {
-		script->corrupted = 0;
+		script->corrupted = false;
 	}
 	zend_shared_alloc_destroy_xlat_table();
 
@@ -1839,7 +1839,7 @@ use_process_mem:
 		}
 	}
 
-	script->corrupted = 0;
+	script->corrupted = false;
 
 	if (cache_it) {
 		ZCSG(map_ptr_last) = CG(map_ptr_last);
