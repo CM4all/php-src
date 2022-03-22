@@ -20,6 +20,7 @@
 #include "php_main.h"
 #include "php_variables.h"
 #include "php_getopt.h"
+#include "php_ini_builder.h"
 #include "zend.h"
 #include "ext/standard/head.h"
 
@@ -534,7 +535,7 @@ static void php_was_usage(char *argv0)
 }
 
 struct CommandLine {
-	char *ini_entries;
+	struct php_ini_builder ini_builder;
 };
 
 static int
@@ -548,9 +549,6 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 
 	int php_optind = 1;
 
-	char *ini_entries = NULL;
-	size_t ini_entries_len = 0;
-
 	while (true) {
 		char *php_optarg = NULL;
 		int c = php_getopt(argc, argv, OPTIONS,
@@ -560,37 +558,10 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 			break;
 
 		switch (c) {
-		case 'd': {
+		case 'd':
 			/* define ini entries on command line */
-			size_t len = strlen(php_optarg);
-			char *val;
-
-			if ((val = strchr(php_optarg, '='))) {
-				val++;
-				if (!isalnum(*val) && *val != '"' && *val != '\'' && *val != '\0') {
-					ini_entries = realloc(ini_entries, ini_entries_len + len + sizeof("\"\"\n\0"));
-					memcpy(ini_entries + ini_entries_len, php_optarg, (val - php_optarg));
-					ini_entries_len += (val - php_optarg);
-					memcpy(ini_entries + ini_entries_len, "\"", 1);
-					ini_entries_len++;
-					memcpy(ini_entries + ini_entries_len, val, len - (val - php_optarg));
-					ini_entries_len += len - (val - php_optarg);
-					memcpy(ini_entries + ini_entries_len, "\"\n\0", sizeof("\"\n\0"));
-					ini_entries_len += sizeof("\n\0\"") - 2;
-				} else {
-					ini_entries = realloc(ini_entries, ini_entries_len + len + sizeof("\n\0"));
-					memcpy(ini_entries + ini_entries_len, php_optarg, len);
-					memcpy(ini_entries + ini_entries_len + len, "\n\0", sizeof("\n\0"));
-					ini_entries_len += len + sizeof("\n\0") - 2;
-				}
-			} else {
-				ini_entries = realloc(ini_entries, ini_entries_len + len + sizeof("=1\n\0"));
-				memcpy(ini_entries + ini_entries_len, php_optarg, len);
-				memcpy(ini_entries + ini_entries_len + len, "=1\n\0", sizeof("=1\n\0"));
-				ini_entries_len += len + sizeof("=1\n\0") - 2;
-			}
+			php_ini_builder_define(&command_line->ini_builder, php_optarg);
 			break;
-		}
 
 		case 'h': /* help & quit */
 		case '?':
@@ -602,8 +573,6 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 			return EXIT_FAILURE;
 		}
 	}
-
-	command_line->ini_entries = ini_entries;
 
 	return -1;
 }
@@ -663,7 +632,8 @@ int main(int argc, char *argv[])
 {
 	zend_signal_startup();
 
-	struct CommandLine command_line = {NULL};
+	struct CommandLine command_line;
+	php_ini_builder_init(&command_line.ini_builder);
 
 	int ret = ParseCommandLine(argc, argv, &command_line);
 	if (ret != -1)
@@ -671,7 +641,7 @@ int main(int argc, char *argv[])
 
 	sapi_startup(&was_sapi_module);
 
-	was_sapi_module.ini_entries = command_line.ini_entries;
+	was_sapi_module.ini_entries = php_ini_builder_finish(&command_line.ini_builder);
 
 	was_sapi_module.executable_location = argv[0];
 
@@ -698,5 +668,6 @@ int main(int argc, char *argv[])
 	}
 
 	php_module_shutdown();
+	php_ini_builder_deinit(&command_line.ini_builder);
 	return ret;
 }
