@@ -535,7 +535,6 @@ static void php_was_usage(char *argv0)
 
 struct CommandLine {
 	char *ini_entries;
-	size_t ini_entries_len;
 };
 
 static int
@@ -605,7 +604,6 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 	}
 
 	command_line->ini_entries = ini_entries;
-	command_line->ini_entries_len = ini_entries_len;
 
 	return -1;
 }
