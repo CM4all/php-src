@@ -23,6 +23,7 @@
 #include "php_ini_builder.h"
 #include "zend.h"
 #include "ext/standard/head.h"
+#include "precompile.h"
 
 #include <was/simple.h>
 #include <was/multi.h>
@@ -79,6 +80,14 @@ static int sapi_was_deactivate(void)
 static size_t sapi_was_ub_write(const char *str, size_t str_length)
 {
 	struct was_simple *const w = SG(server_context);
+
+	if (w == NULL) {
+		/* special case for "--precompile" mode, for error
+		   messages written by zend_exception_error() */
+		write(STDERR_FILENO, str, str_length);
+		return str_length;
+	}
+
 	if (!was_simple_write(w, str, str_length))
 		php_handle_aborted_connection();
 	return str_length;
@@ -114,6 +123,10 @@ static bool send_was_header(struct was_simple *w,
 static int sapi_was_send_headers(sapi_headers_struct *sapi_headers)
 {
 	struct was_simple *const w = SG(server_context);
+
+	if (w == NULL)
+		/* special case for "--precompile" mode */
+		return SAPI_HEADER_SENT_SUCCESSFULLY;
 
 	if (!was_simple_status(w, SG(sapi_headers).http_response_code))
 		return SAPI_HEADER_SEND_FAILED;
@@ -257,6 +270,11 @@ static void add_header_variable(const char *name, const char *value,
 static void sapi_was_register_variables(zval *array)
 {
 	struct was_simple *const w = SG(server_context);
+
+	if (w == NULL)
+		/* special case for "--precompile" mode */
+		return;
+
 	struct was_simple_iterator *i = was_simple_get_parameter_iterator(w);
 	if (i != NULL) {
 		for (const struct was_simple_pair *p;
@@ -531,13 +549,18 @@ static void php_was_usage(char *argv0)
 	printf("Usage: %s [options]\n"
 	       "  -d foo[=bar]     Define INI entry foo with value 'bar'\n"
 	       "  -h               This help\n"
+	       "  --precompile     Precompile PHP sources for opcache\n"
 	       "\n", prog);
 }
 
 struct CommandLine {
 	struct php_ini_builder ini_builder;
 
+	int optind;
+
 	bool ini_ignore;
+
+	bool precompile;
 };
 
 static int
@@ -547,6 +570,7 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 		{'d', 1, "define"},
 		{'n', 0, "no-php-ini"},
 		{'h', 0, "help"},
+		{'p', 0, "precompile"},
 		{'?', 0, "usage"},/* help alias (both '?' and 'usage') */
 		{'-', 0, NULL} /* end of args */
 	};
@@ -576,11 +600,37 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 			php_was_usage(argv[0]);
 			return EXIT_SUCCESS;
 
+		case 'p':
+			command_line->precompile = true;
+			command_line->ini_ignore = true;
+
+			/* no HTML output, please */
+			php_ini_builder_define(&command_line->ini_builder, "html_errors=0");
+
+			/* we need the opcache extension */
+			php_ini_builder_define(&command_line->ini_builder, "zend_extension=opcache.so");
+			php_ini_builder_define(&command_line->ini_builder, "opcache.enable=1");
+
+			/* this is an arbitrary path (which must
+			   exist); with out this option, opcache
+			   refuses to enable "file_cache_only" */
+			php_ini_builder_define(&command_line->ini_builder, "opcache.file_cache=/tmp");
+
+			/* file_cache_only is necessary because for
+			   precompilation, we need to disable string
+			   interning (see accel_new_interned_string())
+			   or else zend_accel_script_persist() doesn't
+			   work properly */
+			php_ini_builder_define(&command_line->ini_builder, "opcache.file_cache_only=1");
+			break;
+
 		case PHP_GETOPT_INVALID_ARG: /* print usage on bad options, exit 1 */
 			php_was_usage(argv[0]);
 			return EXIT_FAILURE;
 		}
 	}
+
+	command_line->optind = php_optind;
 
 	return -1;
 }
@@ -661,6 +711,23 @@ int main(int argc, char *argv[])
 	}
 
 	ret = EXIT_SUCCESS;
+
+	if (command_line.precompile) {
+		if (php_request_startup() == FAILURE)
+			return -1;
+
+		if (!precompile((const char *const*)argv + command_line.optind,
+				argc - command_line.optind))
+			ret = EXIT_FAILURE;
+
+		zend_try {
+			php_request_shutdown(NULL);
+		} zend_end_try();
+
+		php_module_shutdown();
+		php_ini_builder_deinit(&command_line.ini_builder);
+		return ret;
+	}
 
 	if (IsPipe(0)) {
 		/* Single-WAS (classic) mode */
