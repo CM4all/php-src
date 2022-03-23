@@ -35,6 +35,13 @@ typedef struct _zend_file_cache_metainfo {
 
 BEGIN_EXTERN_C()
 
+/**
+ * Helper function for zend_file_cache_script_store().
+ *
+ * @return true on success, false on error
+ */
+bool zend_file_cache_script_store_fd(const int fd, zend_persistent_script *script, const bool in_shm);
+
 void zend_file_cache_unserialize(zend_persistent_script  *script,
                                  void                    *buf);
 
