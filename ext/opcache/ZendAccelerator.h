@@ -347,6 +347,7 @@ int  accelerator_shm_read_lock(void);
 void accelerator_shm_read_unlock(void);
 
 zend_string *accel_make_persistent_key(zend_string *path);
+zend_persistent_script *opcache_compile_file(zend_file_handle *file_handle, int type, zend_op_array **op_array_p);
 zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int type);
 
 #define IS_ACCEL_INTERNED(str) \

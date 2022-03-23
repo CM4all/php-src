@@ -1746,7 +1746,7 @@ static void replay_warnings(uint32_t num_warnings, zend_error_info **warnings) {
 	}
 }
 
-static zend_persistent_script *opcache_compile_file(zend_file_handle *file_handle, int type, zend_op_array **op_array_p)
+zend_persistent_script *opcache_compile_file(zend_file_handle *file_handle, int type, zend_op_array **op_array_p)
 {
 	zend_persistent_script *new_persistent_script;
 	uint32_t orig_functions_count, orig_class_count;
