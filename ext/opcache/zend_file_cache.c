@@ -986,12 +986,7 @@ static bool zend_file_cache_script_write(int fd, const zend_persistent_script *s
 #endif
 }
 
-/**
- * Helper function for zend_file_cache_script_store().
- *
- * @return true on success, false on error
- */
-static bool zend_file_cache_script_store_fd(const int fd, zend_persistent_script *script, const bool in_shm)
+bool zend_file_cache_script_store_fd(const int fd, zend_persistent_script *script, const bool in_shm)
 {
 	zend_file_cache_metainfo info;
 	void *mem, *buf;
