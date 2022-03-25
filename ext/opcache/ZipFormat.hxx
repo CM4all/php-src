@@ -27,7 +27,7 @@ struct ZipDirectoryEntry {
 	uint8_t magic[4] = {'P', 'K', 0x01, 0x02};
 	LE16 version = 0x031e, version_needed = 0x0014;
 	LE16 flags = 0;
-	LE16 compression = 8;
+	LE16 compression_method = 8;
 	LE16 time = 0, date = 0;
 	LE32 crc;
 	LE32 compressed_size, uncompressed_size;
@@ -43,6 +43,7 @@ struct ZipDirectoryEntry {
 
 	ZipDirectoryEntry(const ZipFileHeader &src)
 		:crc(src.crc),
+		 compression_method(src.compression_method),
 		 compressed_size(src.compressed_size),
 		 uncompressed_size(src.uncompressed_size),
 		 name_length(src.name_length) {}
