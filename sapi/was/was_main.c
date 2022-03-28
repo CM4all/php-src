@@ -22,6 +22,7 @@
 #include "php_getopt.h"
 #include "php_ini_builder.h"
 #include "zend.h"
+#include "zend_system_id.h"
 #include "ext/standard/head.h"
 #include "precompile.h"
 
@@ -550,6 +551,7 @@ static void php_was_usage(char *argv0)
 	       "  -d foo[=bar]     Define INI entry foo with value 'bar'\n"
 	       "  -h               This help\n"
 	       "  --precompile     Precompile PHP sources for opcache\n"
+	       "  --system-id      Print the Zend system id\n"
 	       "\n", prog);
 }
 
@@ -561,6 +563,8 @@ struct CommandLine {
 	bool ini_ignore;
 
 	bool precompile;
+
+	bool print_system_id;
 };
 
 static int
@@ -571,6 +575,7 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 		{'n', 0, "no-php-ini"},
 		{'h', 0, "help"},
 		{'p', 0, "precompile"},
+		{'y', 0, "system-id"},
 		{'?', 0, "usage"},/* help alias (both '?' and 'usage') */
 		{'-', 0, NULL} /* end of args */
 	};
@@ -622,6 +627,10 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 			   or else zend_accel_script_persist() doesn't
 			   work properly */
 			php_ini_builder_define(&command_line->ini_builder, "opcache.file_cache_only=1");
+			break;
+
+		case 'y':
+			command_line->print_system_id = true;
 			break;
 
 		case PHP_GETOPT_INVALID_ARG: /* print usage on bad options, exit 1 */
@@ -708,6 +717,13 @@ int main(int argc, char *argv[])
 
 	if (php_module_startup(&was_sapi_module, &was_module_entry, 1) == FAILURE) {
 		return FAILURE;
+	}
+
+	if (command_line.print_system_id) {
+		printf("%.32s\n", zend_system_id);
+		php_module_shutdown();
+		php_ini_builder_deinit(&command_line.ini_builder);
+		return EXIT_FAILURE;
 	}
 
 	ret = EXIT_SUCCESS;
