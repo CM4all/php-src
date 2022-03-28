@@ -545,6 +545,7 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 		{'d', 1, "define"},
 		{'h', 0, "help"},
 		{'?', 0, "usage"},/* help alias (both '?' and 'usage') */
+		{'-', 0, NULL} /* end of args */
 	};
 
 	int php_optind = 1;
