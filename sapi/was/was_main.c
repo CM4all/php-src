@@ -536,6 +536,8 @@ static void php_was_usage(char *argv0)
 
 struct CommandLine {
 	struct php_ini_builder ini_builder;
+
+	bool ini_ignore;
 };
 
 static int
@@ -543,6 +545,7 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 {
 	static const opt_struct OPTIONS[] = {
 		{'d', 1, "define"},
+		{'n', 0, "no-php-ini"},
 		{'h', 0, "help"},
 		{'?', 0, "usage"},/* help alias (both '?' and 'usage') */
 		{'-', 0, NULL} /* end of args */
@@ -562,6 +565,10 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 		case 'd':
 			/* define ini entries on command line */
 			php_ini_builder_define(&command_line->ini_builder, php_optarg);
+			break;
+
+		case 'n':
+			command_line->ini_ignore = true;
 			break;
 
 		case 'h': /* help & quit */
@@ -633,7 +640,7 @@ int main(int argc, char *argv[])
 {
 	zend_signal_startup();
 
-	struct CommandLine command_line;
+	struct CommandLine command_line = { .ini_ignore = false };
 	php_ini_builder_init(&command_line.ini_builder);
 
 	int ret = ParseCommandLine(argc, argv, &command_line);
@@ -643,6 +650,7 @@ int main(int argc, char *argv[])
 	sapi_startup(&was_sapi_module);
 
 	was_sapi_module.ini_entries = php_ini_builder_finish(&command_line.ini_builder);
+	was_sapi_module.php_ini_ignore = command_line.ini_ignore;
 
 	was_sapi_module.executable_location = argv[0];
 
