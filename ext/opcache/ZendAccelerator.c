@@ -2543,6 +2543,9 @@ static zend_string* persistent_zend_resolve_path(zend_string *filename)
 	if (!file_cache_only &&
 	    ZCG(accelerator_enabled)) {
 
+		if (filename != NULL && !check_validate_timestamps_zstr(filename))
+			return zend_string_copy(filename);
+
 		/* check if callback is called from include_once or it's a main request */
 		if ((!EG(current_execute_data)) ||
 		    (EG(current_execute_data) &&
