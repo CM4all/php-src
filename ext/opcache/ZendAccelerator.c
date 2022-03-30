@@ -233,10 +233,11 @@ int check_validate_timestamps_zstr(const zend_string *filename)
 
 static int check_validate_timestamps_fh(const zend_file_handle *file_handle)
 {
-	if (file_handle->opened_path == NULL)
-		return ZCG(accel_directives).validate_timestamps;
+	const zend_string *path = file_handle->opened_path != NULL
+		? file_handle->opened_path
+		: file_handle->filename;
 
-	return check_validate_timestamps_zstr(file_handle->opened_path);
+	return check_validate_timestamps_zstr(path);
 }
 
 /* O+ overrides PHP chdir() function and remembers the current working directory
