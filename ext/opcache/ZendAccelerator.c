@@ -226,7 +226,7 @@ static int check_validate_timestamps(const char *filename, size_t length)
 		 !string_starts_with(filename, length, ZCG(accel_directives).no_validate_timestamps_in));
 }
 
-int check_validate_timestamps_zstr(zend_string *filename)
+int check_validate_timestamps_zstr(const zend_string *filename)
 {
 	return check_validate_timestamps(ZSTR_VAL(filename), ZSTR_LEN(filename));
 }

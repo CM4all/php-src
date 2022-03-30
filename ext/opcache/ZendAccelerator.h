@@ -332,7 +332,7 @@ extern char *zps_api_failure_reason;
 
 BEGIN_EXTERN_C()
 
-int check_validate_timestamps_zstr(zend_string *filename);
+int check_validate_timestamps_zstr(const zend_string *filename);
 
 void accel_shutdown(void);
 zend_result  accel_activate(INIT_FUNC_ARGS);
