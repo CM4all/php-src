@@ -94,7 +94,7 @@ static zend_attribute *get_attribute_str(HashTable *attributes, const char *str,
 		zend_attribute *attr;
 
 		ZEND_HASH_FOREACH_PTR(attributes, attr) {
-			if (attr->offset == offset && zend_string_equals_str(attr->lcname, str, len)) {
+			if (attr->offset == offset && zend_string_equals_cstr(attr->lcname, str, len)) {
 				return attr;
 			}
 		} ZEND_HASH_FOREACH_END();

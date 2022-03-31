@@ -4738,7 +4738,8 @@ static zend_always_inline uint32_t zend_get_arg_offset_by_name(
 	} else {
 		for (uint32_t i = 0; i < num_args; i++) {
 			zend_internal_arg_info *arg_info = &fbc->internal_function.arg_info[i];
-			if (zend_string_equals_cstr(arg_name, arg_info->name)) {
+			size_t len = strlen(arg_info->name);
+			if (zend_string_equals_cstr(arg_name, arg_info->name, len)) {
 				*cache_slot = fbc;
 				*(uintptr_t *)(cache_slot + 1) = i;
 				return i;

@@ -626,7 +626,7 @@ static zend_always_inline zend_string *accel_find_interned_string_ex(zend_ulong 
 	if (EXPECTED(pos != STRTAB_INVALID_POS)) {
 		do {
 			s = STRTAB_POS_TO_STR(&ZCSG(interned_strings), pos);
-			if (EXPECTED(ZSTR_H(s) == h) && zend_string_equals_str(s, str, size)) {
+			if (EXPECTED(ZSTR_H(s) == h) && zend_string_equals_cstr(s, str, size)) {
 				return s;
 			}
 			pos = STRTAB_COLLISION(s);

@@ -266,7 +266,7 @@ static zend_always_inline bool zend_is_confusable_type(const zend_string *name, 
 	/* Intentionally using case-sensitive comparison here, because "integer" is likely intended
 	 * as a scalar type, while "Integer" is likely a class type. */
 	for (; info->name; ++info) {
-		if (zend_string_equals_str(name, info->name, info->name_len)) {
+		if (zend_string_equals_cstr(name, info->name, info->name_len)) {
 			*correct_name = info->correct_name;
 			return 1;
 		}
@@ -3439,7 +3439,8 @@ static uint32_t zend_get_arg_num(zend_function *fn, zend_string *arg_name) {
 	} else {
 		for (uint32_t i = 0; i < fn->common.num_args; i++) {
 			zend_internal_arg_info *arg_info = &fn->internal_function.arg_info[i];
-			if (zend_string_equals_cstr(arg_name, arg_info->name)) {
+			size_t len = strlen(arg_info->name);
+			if (zend_string_equals_cstr(arg_name, arg_info->name, len)) {
 				return i + 1;
 			}
 		}
