@@ -211,7 +211,7 @@ static inline bool is_cacheable_stream_path(const char *filename)
 	       memcmp(filename, "phar://", sizeof("phar://") - 1) == 0;
 }
 
-int check_validate_timestamps_zstr(const zend_string *filename)
+bool check_validate_timestamps_zstr(const zend_string *filename)
 {
 	return ZCG(accel_directives).validate_timestamps &&
 		(ZCG(accel_directives).no_validate_timestamps_in == NULL ||
@@ -219,7 +219,7 @@ int check_validate_timestamps_zstr(const zend_string *filename)
 		 !zend_string_starts_with_cstr(filename, ZCG(accel_directives).no_validate_timestamps_in, strlen(ZCG(accel_directives).no_validate_timestamps_in)));
 }
 
-static int check_validate_timestamps_fh(const zend_file_handle *file_handle)
+static bool check_validate_timestamps_fh(const zend_file_handle *file_handle)
 {
 	const zend_string *path = file_handle->opened_path != NULL
 		? file_handle->opened_path
