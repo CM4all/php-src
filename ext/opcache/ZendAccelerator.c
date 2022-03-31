@@ -211,24 +211,12 @@ static inline bool is_cacheable_stream_path(const char *filename)
 	       memcmp(filename, "phar://", sizeof("phar://") - 1) == 0;
 }
 
-static int string_starts_with(const char *s, size_t length, const char *prefix)
-{
-	size_t prefix_length = strlen(prefix);
-	return length >= prefix_length &&
-		memcmp(s, prefix, prefix_length) == 0;
-}
-
-static int check_validate_timestamps(const char *filename, size_t length)
+int check_validate_timestamps_zstr(const zend_string *filename)
 {
 	return ZCG(accel_directives).validate_timestamps &&
 		(ZCG(accel_directives).no_validate_timestamps_in == NULL ||
 		 *ZCG(accel_directives).no_validate_timestamps_in == 0 ||
-		 !string_starts_with(filename, length, ZCG(accel_directives).no_validate_timestamps_in));
-}
-
-int check_validate_timestamps_zstr(const zend_string *filename)
-{
-	return check_validate_timestamps(ZSTR_VAL(filename), ZSTR_LEN(filename));
+		 !zend_string_starts_with_cstr(filename, ZCG(accel_directives).no_validate_timestamps_in, strlen(ZCG(accel_directives).no_validate_timestamps_in)));
 }
 
 static int check_validate_timestamps_fh(const zend_file_handle *file_handle)
