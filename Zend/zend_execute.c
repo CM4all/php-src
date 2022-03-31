@@ -4547,13 +4547,13 @@ static zend_never_inline zend_execute_data *zend_init_dynamic_call_array(zend_ar
 
 static zend_never_inline zend_op_array* ZEND_FASTCALL zend_include_or_eval(zval *inc_filename_zv, int type) /* {{{ */
 {
+	zend_op_array *new_op_array = NULL;
 	zend_string *tmp_inc_filename;
 	zend_string *inc_filename = zval_try_get_tmp_string(inc_filename_zv, &tmp_inc_filename);
 	if (UNEXPECTED(!inc_filename)) {
 		return NULL;
 	}
 
-	zend_op_array *new_op_array = ZEND_FAKE_OP_ARRAY;
 	switch (type) {
 		case ZEND_INCLUDE_ONCE:
 		case ZEND_REQUIRE_ONCE: {
@@ -4563,6 +4563,7 @@ static zend_never_inline zend_op_array* ZEND_FASTCALL zend_include_or_eval(zval 
 				resolved_path = zend_resolve_path(inc_filename);
 				if (EXPECTED(resolved_path)) {
 					if (zend_hash_exists(&EG(included_files), resolved_path)) {
+						new_op_array = ZEND_FAKE_OP_ARRAY;
 						zend_string_release_ex(resolved_path, 0);
 						break;
 					}
@@ -4587,6 +4588,8 @@ static zend_never_inline zend_op_array* ZEND_FASTCALL zend_include_or_eval(zval 
 
 					if (zend_hash_add_empty_element(&EG(included_files), file_handle.opened_path)) {
 						new_op_array = zend_compile_file(&file_handle, (type==ZEND_INCLUDE_ONCE?ZEND_INCLUDE:ZEND_REQUIRE));
+					} else {
+						new_op_array = ZEND_FAKE_OP_ARRAY;
 					}
 				} else if (!EG(exception)) {
 					zend_message_dispatcher(
