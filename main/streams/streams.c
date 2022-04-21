@@ -1577,6 +1577,81 @@ PHPAPI int _php_stream_copy_to_stream_ex(php_stream *src, php_stream *dest, size
 		return SUCCESS;
 	}
 
+#ifdef __linux__
+	if (php_stream_is(src, PHP_STREAM_IS_STDIO) &&
+	    php_stream_is(dest, PHP_STREAM_IS_STDIO) &&
+	    src->writepos == src->readpos &&
+	    php_stream_can_cast(src, PHP_STREAM_AS_FD) == SUCCESS &&
+	    php_stream_can_cast(dest, PHP_STREAM_AS_FD) == SUCCESS) {
+		/* both php_stream instances are backed by a file
+		   descriptor, are not filtered and the read buffer is
+		   empty: we can use copy_file_range() */
+
+		int src_fd, dest_fd;
+
+		php_stream_cast(src, PHP_STREAM_AS_FD, (void*)&src_fd, 0);
+		php_stream_cast(dest, PHP_STREAM_AS_FD, (void*)&dest_fd, 0);
+
+		/* copy_file_range() is a Linux-specific system call
+		   which allows efficient copying between two file
+		   descriptors, eliminating the need to transfer data
+		   from the kernel to userspace and back.  For
+		   networking file systems like NFS and Ceph, it even
+		   eliminates copying data to the client, and local
+		   filesystems like Btrfs and XFS can create shared
+		   extents. */
+
+		ssize_t cfr = copy_file_range(src_fd, NULL,
+					      dest_fd, NULL,
+					      maxlen, 0);
+		if (cfr > 0) {
+			size_t nbytes = (size_t)cfr;
+			haveread += nbytes;
+
+			src->position += nbytes;
+			dest->position += nbytes;
+
+			if ((maxlen != PHP_STREAM_COPY_ALL && nbytes == maxlen) ||
+			    php_stream_eof(src)) {
+				/* the whole request was satisfied or
+				   end-of-file reached - done */
+				*len = haveread;
+				return SUCCESS;
+			}
+
+			/* there may be more data; continue copying
+			   using the fallback code below */
+		} else if (cfr == 0) {
+			/* end of file */
+			*len = haveread;
+			return SUCCESS;
+		} else if (cfr < 0) {
+			switch (errno) {
+			case EINVAL:
+				/* some formal error, e.g. overlapping
+				   file ranges */
+				break;
+
+			case EXDEV:
+				/* pre Linux 5.3 error */
+				break;
+
+			case ENOSYS:
+				/* not implemented by this Linux kernel */
+				break;
+
+			default:
+				/* unexpected I/O error - give up, no
+				   fallback */
+				*len = haveread;
+				return FAILURE;
+			}
+
+			/* fall back to classic copying */
+		}
+	}
+#endif
+
 	if (maxlen == PHP_STREAM_COPY_ALL) {
 		maxlen = 0;
 	}
