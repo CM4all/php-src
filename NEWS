@@ -1,5 +1,51 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+14 Apr 2022, PHP 8.1.5
+
+- Core:
+  . Fixed bug GH-8176 (Enum values in property initializers leak). (Bob)
+  . Fixed freeing of internal attribute arguments. (Bob)
+  . Fixed bug GH-8070 (memory leak of internal function attribute hash).
+    (Tim Düsterhus)
+  . Fixed bug GH-8160 (ZTS support on Alpine is broken). (Michael Voříšek)
+
+- Filter:
+  . Fixed signedness confusion in php_filter_validate_domain(). (cmb)
+
+- Intl:
+  . Fixed bug GH-8115 (Can't catch arg type deprecation when instantiating Intl
+    classes). (ilutov)
+  . Fixed bug GH-8142 (Compilation error on cygwin). (David Carlier)
+  . Fixed bug GH-7734 (Fix IntlPartsIterator key off-by-one error and first
+    key). (ilutov)
+
+- MBString:
+  . Fixed bug GH-8208 (mb_encode_mimeheader: $indent functionality broken).
+    (cmb)
+
+- MySQLi:
+  . Fixed bug GH-8068 (mysqli_fetch_object creates inaccessible properties).
+    (cmb)
+
+- Pcntl:
+  . Fixed bug GH-8142 (Compilation error on cygwin). (David Carlier)
+
+- PgSQL:
+  . Fixed result_type related stack corruption on LLP64 architectures. (cmb)
+  . Fixed bug GH-8253 (pg_insert() fails for references). (cmb)
+
+- Sockets:
+  . Fixed Solaris builds. (David Carlier)
+
+- SPL:
+  . Fixed bug GH-8121 (SplFileObject - seek and key with csv file inconsistent).
+    (cmb)
+  . Fixed bug GH-8192 (Cannot override DirectoryIterator::current() without
+    return typehint in 8.1). (Nikita)
+
+- Standard:
+  . Fixed bug GH-8048 (Force macOS to use statfs). (risner)
+
 17 Mar 2022, PHP 8.1.4
 
 - Core:
@@ -301,6 +347,7 @@ PHP                                                                        NEWS
 - JSON:
   . Fixed bug #81532 (Change of $depth behaviour in json_encode() on PHP 8.1).
     (Nikita)
+  . Fixed bug GH-8238 (Register JSON_ERROR_NON_BACKED_ENUM constant). (ilutov)
 
 - LDAP:
   . Convert resource<ldap link> to object \LDAP\Connection. (Máté)

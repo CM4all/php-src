@@ -2956,7 +2956,7 @@ static int zend_jit_setup(void)
 # elif defined(__GNUC__) && defined(__x86_64__)
 	tsrm_ls_cache_tcb_offset = tsrm_get_ls_cache_tcb_offset();
 	if (tsrm_ls_cache_tcb_offset == 0) {
-#if defined(__has_attribute) && __has_attribute(tls_model) && !defined(__FreeBSD__) && !defined(__OpenBSD__)
+#if defined(__has_attribute) && __has_attribute(tls_model) && !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__MUSL__)
 		size_t ret;
 
 		asm ("movq _tsrm_ls_cache@gottpoff(%%rip),%0"
@@ -2975,7 +2975,7 @@ static int zend_jit_setup(void)
 # elif defined(__GNUC__) && defined(__i386__)
 	tsrm_ls_cache_tcb_offset = tsrm_get_ls_cache_tcb_offset();
 	if (tsrm_ls_cache_tcb_offset == 0) {
-#if !defined(__FreeBSD__) && !defined(__OpenBSD__)
+#if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__MUSL__)
 		size_t ret;
 
 		asm ("leal _tsrm_ls_cache@ntpoff,%0\n"
@@ -16074,6 +16074,9 @@ static zend_regset zend_jit_get_scratch_regset(const zend_op *opline, const zend
 				if (op1_info & MAY_BE_DOUBLE) {
 					regset = ZEND_REGSET(ZREG_XMM0);
 				}
+				if (opline->result_type != IS_UNUSED && (op1_info & MAY_BE_LONG)) {
+					ZEND_REGSET_INCL(regset, ZREG_R1);
+				}
 			}
 			break;
 		case ZEND_ADD:
@@ -16179,6 +16182,7 @@ bw_op:
 			if (!(op1_info & ((MAY_BE_ANY|MAY_BE_REF|MAY_BE_UNDEF)-MAY_BE_LONG)) &&
 			    !(op2_info & ((MAY_BE_ANY|MAY_BE_REF|MAY_BE_UNDEF)-MAY_BE_LONG))) {
 				if (opline->op2_type == IS_CONST &&
+				    opline->op1_type != IS_CONST &&
 				    Z_TYPE_P(RT_CONSTANT(opline, opline->op2)) == IS_LONG &&
 				    zend_long_is_power_of_two(Z_LVAL_P(RT_CONSTANT(opline, opline->op2))) &&
 				    OP1_HAS_RANGE() &&
