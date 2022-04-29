@@ -338,6 +338,10 @@ static void sapi_was_register_variables(zval *array)
 	const char *https = was_simple_get_header(w, "x-cm4all-https");
 	if (https != NULL && strcmp(https, "on") == 0)
 		add_variable(PARSE_SERVER, "HTTPS", "on", array);
+
+	const char *remote_host = was_simple_get_remote_host(w);
+	if (remote_host != NULL)
+		add_variable(PARSE_SERVER, "REMOTE_ADDR", remote_host, array);
 }
 
 static void sapi_was_log_message(const char *message, int syslog_type_int)

@@ -6,7 +6,7 @@ PHP_ARG_ENABLE([was],,
   [no])
 
 if test "$PHP_WAS" != "no"; then
-  PKG_CHECK_MODULES([LIBWAS], [libcm4all-was-simple >= 1.23],, [AC_MSG_ERROR([libwas not found])])
+  PKG_CHECK_MODULES([LIBWAS], [libcm4all-was-simple >= 1.24],, [AC_MSG_ERROR([libwas not found])])
   PHP_EVAL_LIBLINE($LIBWAS_LIBS)
   PHP_EVAL_INCLINE($LIBWAS_CFLAGS)
 
