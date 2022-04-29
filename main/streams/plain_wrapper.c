@@ -1178,6 +1178,15 @@ PHPAPI php_stream *_php_stream_fopen(const char *filename, const char *mode, zen
 			}
 #endif
 
+			php_stdio_stream_data *self = (php_stdio_stream_data*)ret->abstract;
+			if (self->is_process_pipe || self->is_pipe ||
+			    (open_flags & (O_RDONLY|O_WRONLY|O_RDWR)) == O_RDONLY) {
+				/* pipes and read-only files never
+				   need to update "fb" (the cached
+				   fstat) */
+				self->no_forced_fstat = 1;
+			}
+
 			return ret;
 		}
 		close(fd);
