@@ -2027,7 +2027,9 @@ propagate_arg:
 					 || Z_STRVAL_P(RT_CONSTANT(opline, opline->op2))[0] == '\0') {
 						break;
 					}
-					ADD_OP1_TRACE_GUARD();
+					if (opline->op1_type != IS_UNUSED && op1_type == IS_OBJECT) {
+						ADD_OP1_TRACE_GUARD();
+					}
 					break;
 				case ZEND_INIT_METHOD_CALL:
 					if (opline->op2_type != IS_CONST
@@ -2062,7 +2064,9 @@ propagate_arg:
 				case ZEND_ROPE_INIT:
 				case ZEND_ROPE_ADD:
 				case ZEND_ROPE_END:
-					ADD_OP2_TRACE_GUARD();
+					if (op2_type == IS_STRING) {
+						ADD_OP2_TRACE_GUARD();
+					}
 					break;
 				default:
 					break;
@@ -6223,6 +6227,9 @@ done:
 					} else {
 						SET_STACK_TYPE(stack, EX_VAR_TO_NUM(opline->result.var), type,
 							(type == IS_UNKNOWN || !ra || !ra[ssa_op->result_def]));
+						if (ssa->var_info[ssa_op->result_def].type & MAY_BE_INDIRECT) {
+							RESET_STACK_MEM_TYPE(stack, EX_VAR_TO_NUM(opline->result.var));
+						}
 						if (type != IS_UNKNOWN) {
 							ssa->var_info[ssa_op->result_def].type &= ~MAY_BE_GUARD;
 							if (opline->opcode == ZEND_FETCH_THIS

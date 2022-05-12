@@ -1,5 +1,64 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+12 May 2022, PHP 8.1.6
+
+- Core:
+  . Fixed bug GH-8310 (Registry settings are no longer recognized). (cmb)
+  . Fixed potential race condition during resource ID allocation. (ryancaicse)
+  . Fixed bug GH-8133 (Preloading of constants containing arrays with enums
+    segfaults). (ilutov)
+  . Fixed Haiku ZTS builds. (David Carlier)
+
+- Date:
+  . Fixed bug GH-7752 (DateTimeZone::getTransitions() returns insufficient
+    data). (Derick)
+  . Fixed bug GH-8108 (Timezone doesn't work as intended). (Derick)
+  . Fixed bug #81660 (DateTimeZone::getTransitions() returns invalid data).
+    (Derick)
+  . Fixed bug GH-8289 (Exceptions thrown within a yielded from iterator are
+    not rethrown into the generator). (Bob)
+
+- FFI:
+  . Fixed bug GH-8433 (Assigning function pointers to structs in FFI leaks).
+    (Bob)
+
+- FPM:
+  . Fixed bug #76003 (FPM /status reports wrong number of active processe).
+    (Jakub Zelenka)
+  . Fixed bug #77023 (FPM cannot shutdown processes). (Jakub Zelenka)
+  . Fixed comment in kqueue remove callback log message. (David Carlier)
+
+- Hash:
+  . Fixed bug #81714 (segfault when serializing finalized HashContext). (cmb)
+
+- Iconv:
+  . Fixed bug GH-8218 (ob_end_clean does not reset Content-Encoding header).
+    (cmb)
+
+- Intl:
+  . Fixed bug GH-8364 (msgfmt_format $values may not support references). (cmb)
+
+- MBString:
+  . Number of error markers emitted for invalid UTF-8 text matches WHATWG specification.
+    This is a return to the behavior of PHP 8.0 and earlier. (alexdowad)
+
+- MySQLi:
+  . Fixed bug GH-8267 (MySQLi uses unsupported format specifier on Windows).
+    (cmb)
+
+- SPL:
+  . Fixed bug GH-8366 (ArrayIterator may leak when calling __construct()).
+    (cmb)
+  . Fixed bug GH-8273 (SplFileObject: key() returns wrong value). (Girgias)
+
+- Streams:
+  . Fixed php://temp does not preserve file-position when switched to temporary
+    file. (Bernd Holzmüller)
+
+- zlib:
+  . Fixed bug GH-8218 (ob_end_clean does not reset Content-Encoding header).
+    (cmb)
+
 14 Apr 2022, PHP 8.1.5
 
 - Core:
