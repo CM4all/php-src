@@ -60,7 +60,7 @@ static int php_was_startup(sapi_module_struct *sapi_module)
 	return SUCCESS;
 }
 
-static int sapi_was_activate()
+static int sapi_was_activate(void)
 {
 	return SUCCESS;
 }
@@ -406,7 +406,7 @@ static void init_request_info(struct was_simple *w, const char *request_uri)
 	SG(sapi_headers).http_response_code = 200;
 }
 
-static int was_module_main()
+static int was_module_main(void)
 {
 	if (php_request_startup() == FAILURE)
 		return -1;
