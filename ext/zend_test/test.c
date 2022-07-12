@@ -26,6 +26,7 @@
 #include "fiber.h"
 #include "zend_attributes.h"
 #include "zend_enum.h"
+#include "zend_interfaces.h"
 #include "zend_weakrefs.h"
 #include "Zend/Optimizer/zend_optimizer.h"
 #include "test_arginfo.h"
@@ -277,6 +278,25 @@ static ZEND_FUNCTION(zend_iterable)
 	ZEND_PARSE_PARAMETERS_END();
 }
 
+/* Call a method on a class or object using zend_call_method() */
+static ZEND_FUNCTION(zend_call_method)
+{
+	zend_class_entry *ce = NULL;
+	zend_string *method_name = NULL;
+	zval *arg1 = NULL, *arg2 = NULL;
+	int argc = ZEND_NUM_ARGS();
+
+	ZEND_PARSE_PARAMETERS_START(2, 4)
+		Z_PARAM_CLASS(ce)
+		Z_PARAM_STR(method_name)
+		Z_PARAM_OPTIONAL
+		Z_PARAM_ZVAL(arg1)
+		Z_PARAM_ZVAL(arg2)
+	ZEND_PARSE_PARAMETERS_END();
+
+	zend_call_method(NULL, ce, NULL, ZSTR_VAL(method_name), ZSTR_LEN(method_name), return_value, argc - 2, arg1, arg2);
+}
+
 static ZEND_FUNCTION(zend_get_unit_enum)
 {
 	ZEND_PARSE_PARAMETERS_NONE();
@@ -460,7 +480,6 @@ static ZEND_METHOD(ZendTestChildClassWithMethodWithParameterAttribute, override)
 PHP_INI_BEGIN()
 	STD_PHP_INI_BOOLEAN("zend_test.replace_zend_execute_ex", "0", PHP_INI_SYSTEM, OnUpdateBool, replace_zend_execute_ex, zend_zend_test_globals, zend_test_globals)
 	STD_PHP_INI_BOOLEAN("zend_test.register_passes", "0", PHP_INI_SYSTEM, OnUpdateBool, register_passes, zend_zend_test_globals, zend_test_globals)
-	STD_PHP_INI_BOOLEAN("zend_test.print_stderr_mshutdown", "0", PHP_INI_SYSTEM, OnUpdateBool, print_stderr_mshutdown, zend_zend_test_globals, zend_test_globals)
 PHP_INI_END()
 
 void (*old_zend_execute_ex)(zend_execute_data *execute_data);
@@ -585,10 +604,6 @@ PHP_MSHUTDOWN_FUNCTION(zend_test)
 	}
 
 	zend_test_observer_shutdown(SHUTDOWN_FUNC_ARGS_PASSTHRU);
-
-	if (ZT_G(print_stderr_mshutdown)) {
-		fprintf(stderr, "[zend-test] MSHUTDOWN\n");
-	}
 
 	return SUCCESS;
 }
