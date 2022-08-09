@@ -1,5 +1,49 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+04 Aug 2022, PHP 8.1.9
+
+- CLI:
+  . Fixed potential overflow for the builtin server via the PHP_CLI_SERVER_WORKERS
+    environment variable. (yiyuaner)
+  . Fixed GH-8952 (Intentionally closing std handles no longer possible).
+    (Arnaud, cmb)
+
+- Core:
+  . Fixed bug GH-8923 (error_log on Windows can hold the file write lock). (cmb)
+  . Fixed bug GH-8995 (WeakMap object reference offset causing TypeError).
+    (Tobias Bachert)
+
+- Date:
+  . Fixed bug #80047 (DatePeriod doesn't warn with custom DateTimeImmutable).
+    (Derick)
+
+- FPM:
+  . Fixed zlog message prepend, free on incorrect address. (Heiko Weber)
+  . Fixed possible double free on configuration loading failure. (Heiko Weber).
+
+- GD:
+  . Fixed bug GH-8848 (imagecopyresized() error refers to the wrong argument).
+    (cmb)
+
+- Intl:
+  . Fixed build for ICU 69.x and onwards. (David Carlier)
+
+- OPcache:
+  . Fixed bug GH-8847 (PHP hanging infinitly at 100% cpu when check php
+    syntaxe of a valid file). (Dmitry)
+  . Fixed bug GH-8030 (Segfault with JIT and large match/switch statements).
+    (Arnaud)
+
+- Reflection:
+  . Fixed bug GH-8943 (Fixed Reflection::getModifiersNames() with readonly
+    modifier). (Pierrick)
+
+- Standard:
+  . Fixed the crypt_sha256/512 api build with clang > 12. (David Carlier)
+  . Uses CCRandomGenerateBytes instead of arc4random_buf on macOs. (David Carlier).
+  . Fixed bug GH-9017 (php_stream_sock_open_from_socket could return NULL).
+    (Heiko Weber)
+
 07 Jul 2022, PHP 8.1.8
 
 - Core:
@@ -10,6 +54,8 @@ PHP                                                                        NEWS
   . Fixed bug GH-8655 (Casting an object to array does not unwrap refcount=1
     references). (Nicolas Grekas)
   . Fixed potential use after free in php_binary_init(). (Heiko Weber)
+  . Fixed bug GH-7942 (Indirect mutation of readonly properties through
+    references). (ilutov)
 
 - CLI:
   . Fixed GH-8827 (Intentionally closing std handles no longer possible). (cmb)
@@ -62,9 +108,6 @@ PHP                                                                        NEWS
 
 - PDO_ODBC:
   . Fixed handling of single-key connection strings. (Calvin Buckley)
-
-- SPL:
-  . Fixed bug GH-8563 (Different results for seek() on SplFileObject and SplTempFileObject). (Girgias)
 
 - Zip:
   . Fixed bug GH-8781 (ZipArchive::close deletes zip file without updating stat
