@@ -467,10 +467,6 @@ PHP_FUNCTION(was_response_headers)
 		return;
 	}
 
-	if (!&SG(sapi_headers).headers) {
-		RETURN_FALSE;
-	}
-
 	array_init(return_value);
 
 	zend_llist_position pos;
