@@ -1951,6 +1951,9 @@ static uint32_t assign_dim_array_result_type(
 				tmp |= MAY_BE_ARRAY_KEY_STRING;
 				if (dim_op_type != IS_CONST) {
 					// FIXME: numeric string
+					if (arr_type & (MAY_BE_UNDEF|MAY_BE_NULL|MAY_BE_FALSE)) {
+						tmp |= MAY_BE_ARRAY_PACKED;
+					}
 					tmp |= MAY_BE_HASH_ONLY(arr_type) ? MAY_BE_ARRAY_NUMERIC_HASH : MAY_BE_ARRAY_KEY_LONG;
 				}
 			}
@@ -3375,6 +3378,9 @@ static zend_always_inline int _zend_update_type_info(
 				opline->op1_type,
 				opline->result_type == IS_VAR,
 				opline->op2_type == IS_UNUSED);
+			if (opline->opcode == ZEND_FETCH_DIM_FUNC_ARG && (t1 & (MAY_BE_TRUE|MAY_BE_LONG|MAY_BE_DOUBLE|MAY_BE_RESOURCE))) {
+				tmp |= MAY_BE_NULL;
+			}
 			if (opline->opcode == ZEND_FETCH_DIM_IS && (t1 & MAY_BE_STRING)) {
 				tmp |= MAY_BE_NULL;
 			}
