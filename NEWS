@@ -1,5 +1,13 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+29 Sep 2022, PHP 7.4.32
+
+- Core:
+  . Fixed bug #81726: phar wrapper: DOS when using quine gzip file.
+    (CVE-2022-31628). (cmb)
+  . Fixed bug #81727: Don't mangle HTTP variable names that clash with ones
+    that have a specific semantic meaning. (CVE-2022-31629). (Derick)
+
 09 Jun 2022, PHP 7.4.30
 
 - mysqlnd:
@@ -23,7 +31,7 @@ PHP                                                                        NEWS
 
 - Filter:
   . Fix #81708: UAF due to php_filter_float() failing for ints
-
+    (CVE-2021-21708) (stas)
 
 16 Dec 2021, PHP 7.4.27
 
