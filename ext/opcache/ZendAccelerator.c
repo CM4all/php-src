@@ -729,8 +729,14 @@ static void accel_copy_permanent_strings(zend_new_interned_string_func_t new_int
 		} ZEND_HASH_FOREACH_END();
 
 		ZEND_HASH_FOREACH_BUCKET(&ce->constants_table, q) {
+			zend_class_constant* c;
+
 			if (q->key) {
 				q->key = new_interned_string(q->key);
+			}
+			c = (zend_class_constant*)Z_PTR(q->val);
+			if (Z_TYPE(c->value) == IS_STRING) {
+				ZVAL_STR(&c->value, new_interned_string(Z_STR(c->value)));
 			}
 		} ZEND_HASH_FOREACH_END();
 	} ZEND_HASH_FOREACH_END();
@@ -2229,9 +2235,10 @@ zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int type)
 
 		/* see bug #15471 (old BTS) */
 		if (persistent_script->script.filename) {
-			if (!EG(current_execute_data) || !EG(current_execute_data)->opline ||
+			if (!EG(current_execute_data) ||
 			    !EG(current_execute_data)->func ||
 			    !ZEND_USER_CODE(EG(current_execute_data)->func->common.type) ||
+			    !EG(current_execute_data)->opline ||
 			    EG(current_execute_data)->opline->opcode != ZEND_INCLUDE_OR_EVAL ||
 			    (EG(current_execute_data)->opline->extended_value != ZEND_INCLUDE_ONCE &&
 			     EG(current_execute_data)->opline->extended_value != ZEND_REQUIRE_ONCE)) {
