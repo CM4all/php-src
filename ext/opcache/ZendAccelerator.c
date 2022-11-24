@@ -2537,6 +2537,50 @@ static zend_result persistent_stream_open_function(zend_file_handle *handle)
 	return accelerator_orig_zend_stream_open_function(handle);
 }
 
+/**
+ * Normalize a path name by eliminating double slashes and replaceing
+ * "/./" with "/".
+ */
+static zend_string* normalize_path(zend_string *src)
+{
+	const size_t src_length = ZSTR_LEN(src);
+	zend_string *dest = zend_string_alloc(src_length, 0);
+
+	const char *s = ZSTR_VAL(src), *const s_end = s + src_length;
+	char *const d0 = ZSTR_VAL(dest), *d = d0;
+
+	bool was_slash = false;
+
+	while (s < s_end) {
+		const char ch = *s++;
+
+		if (IS_SLASH(ch)) {
+			if (s[0] == '.' && IS_SLASH(s[1]))
+				/* replace "/./" with just "/" */
+				s += 2;
+
+			if (was_slash)
+				/* compress multiple slashes into
+				   one */
+				continue;
+
+			was_slash = true;
+		} else {
+			was_slash = false;
+		}
+
+		*d++ = ch;
+	}
+
+	*d = 0;
+
+	size_t dest_length = d - d0;
+	if (dest_length < src_length)
+		dest = zend_string_truncate(dest, dest_length, 0);
+
+	return dest;
+}
+
 /* zend_resolve_path() replacement for PHP 5.3 and above */
 static zend_string* persistent_zend_resolve_path(zend_string *filename)
 {
@@ -2544,7 +2588,11 @@ static zend_string* persistent_zend_resolve_path(zend_string *filename)
 	    ZCG(accelerator_enabled)) {
 
 		if (filename != NULL && !check_validate_timestamps_zstr(filename))
-			return zend_string_copy(filename);
+			/* since we're not going through
+			   php_resolve_path() here to avoid system
+			   calls, we need to normalize the given path
+			   manually */
+			return normalize_path(filename);
 
 		/* check if callback is called from include_once or it's a main request */
 		if ((!EG(current_execute_data)) ||
