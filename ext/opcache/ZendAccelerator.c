@@ -2538,7 +2538,7 @@ static zend_result persistent_stream_open_function(zend_file_handle *handle)
 }
 
 /**
- * Normalize a path name by eliminating double slashes and replaceing
+ * Normalize a path name by eliminating double slashes and replacing
  * "/./" with "/".
  */
 static zend_string* normalize_path(zend_string *src)
