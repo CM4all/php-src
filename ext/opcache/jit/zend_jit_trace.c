@@ -8126,6 +8126,7 @@ int ZEND_FASTCALL zend_jit_trace_exit(uint32_t exit_num, zend_jit_registers_buf 
 			t = &zend_jit_traces[num];
 		}
 
+		zend_shared_alloc_lock();
 		SHM_UNPROTECT();
 		zend_jit_unprotect();
 
@@ -8142,6 +8143,7 @@ int ZEND_FASTCALL zend_jit_trace_exit(uint32_t exit_num, zend_jit_registers_buf 
 
 		zend_jit_protect();
 		SHM_PROTECT();
+		zend_shared_alloc_unlock();
 
 		return 0;
 	}
