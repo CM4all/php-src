@@ -468,6 +468,8 @@ void zend_shared_alloc_safe_unlock(void)
 
 void zend_shared_alloc_lock(void)
 {
+	ZEND_ASSERT(!ZCG(locked));
+
 #ifdef USE_PTHREAD_MUTEX
 
 #ifdef ZTS
@@ -512,6 +514,8 @@ void zend_shared_alloc_lock(void)
 
 void zend_shared_alloc_unlock(void)
 {
+	ZEND_ASSERT(ZCG(locked));
+
 #if !defined(ZEND_WIN32) && !defined(USE_PTHREAD_MUTEX)
 	struct flock mem_write_unlock;
 
