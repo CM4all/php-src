@@ -455,6 +455,8 @@ void zend_shared_alloc_safe_unlock(void)
 
 void zend_shared_alloc_lock(void)
 {
+	ZEND_ASSERT(!ZCG(locked));
+
 #ifndef ZEND_WIN32
 	struct flock mem_write_lock;
 
@@ -492,6 +494,8 @@ void zend_shared_alloc_lock(void)
 
 void zend_shared_alloc_unlock(void)
 {
+	ZEND_ASSERT(ZCG(locked));
+
 #ifndef ZEND_WIN32
 	struct flock mem_write_unlock;
 
