@@ -65,16 +65,16 @@ ZEND_COLD void ZEND_FASTCALL zend_param_must_be_ref(const zend_function *func, u
 ZEND_API ZEND_COLD void ZEND_FASTCALL zend_use_resource_as_offset(const zval *dim);
 
 ZEND_API bool ZEND_FASTCALL zend_verify_ref_assignable_zval(zend_reference *ref, zval *zv, bool strict);
-ZEND_API bool ZEND_FASTCALL zend_verify_prop_assignable_by_ref(zend_property_info *prop_info, zval *orig_val, bool strict);
+ZEND_API bool ZEND_FASTCALL zend_verify_prop_assignable_by_ref(const zend_property_info *prop_info, zval *orig_val, bool strict);
 
-ZEND_API ZEND_COLD void zend_throw_ref_type_error_zval(zend_property_info *prop, zval *zv);
-ZEND_API ZEND_COLD void zend_throw_ref_type_error_type(zend_property_info *prop1, zend_property_info *prop2, zval *zv);
+ZEND_API ZEND_COLD void zend_throw_ref_type_error_zval(const zend_property_info *prop, const zval *zv);
+ZEND_API ZEND_COLD void zend_throw_ref_type_error_type(const zend_property_info *prop1, const zend_property_info *prop2, const zval *zv);
 ZEND_API ZEND_COLD zval* ZEND_FASTCALL zend_undefined_offset_write(HashTable *ht, zend_long lval);
 ZEND_API ZEND_COLD zval* ZEND_FASTCALL zend_undefined_index_write(HashTable *ht, zend_string *offset);
 ZEND_API ZEND_COLD void zend_wrong_string_offset_error(void);
 
-ZEND_API ZEND_COLD void ZEND_FASTCALL zend_readonly_property_modification_error(zend_property_info *info);
-ZEND_API ZEND_COLD void ZEND_FASTCALL zend_readonly_property_indirect_modification_error(zend_property_info *info);
+ZEND_API ZEND_COLD void ZEND_FASTCALL zend_readonly_property_modification_error(const zend_property_info *info);
+ZEND_API ZEND_COLD void ZEND_FASTCALL zend_readonly_property_indirect_modification_error(const zend_property_info *info);
 
 ZEND_API ZEND_COLD void ZEND_FASTCALL zend_cannot_add_element(void);
 
@@ -108,7 +108,7 @@ ZEND_API bool zend_verify_internal_return_type(zend_function *zf, zval *ret);
 
 
 ZEND_API void ZEND_FASTCALL zend_ref_add_type_source(zend_property_info_source_list *source_list, zend_property_info *prop);
-ZEND_API void ZEND_FASTCALL zend_ref_del_type_source(zend_property_info_source_list *source_list, zend_property_info *prop);
+ZEND_API void ZEND_FASTCALL zend_ref_del_type_source(zend_property_info_source_list *source_list, const zend_property_info *prop);
 
 ZEND_API zval* zend_assign_to_typed_ref(zval *variable_ptr, zval *value, zend_uchar value_type, bool strict);
 
@@ -452,8 +452,8 @@ ZEND_API int ZEND_FASTCALL zend_handle_undef_args(zend_execute_data *call);
 
 #define ZEND_CLASS_HAS_TYPE_HINTS(ce) ((ce->ce_flags & ZEND_ACC_HAS_TYPE_HINTS) == ZEND_ACC_HAS_TYPE_HINTS)
 
-ZEND_API bool zend_verify_property_type(zend_property_info *info, zval *property, bool strict);
-ZEND_COLD void zend_verify_property_type_error(zend_property_info *info, zval *property);
+ZEND_API bool zend_verify_property_type(const zend_property_info *info, zval *property, bool strict);
+ZEND_COLD void zend_verify_property_type_error(const zend_property_info *info, const zval *property);
 
 #define ZEND_REF_ADD_TYPE_SOURCE(ref, source) \
 	zend_ref_add_type_source(&ZEND_REF_TYPE_SOURCES(ref), source)
@@ -482,7 +482,7 @@ ZEND_COLD void zend_verify_property_type_error(zend_property_info *info, zval *p
 		} \
 	} while (0)
 
-ZEND_COLD void zend_match_unhandled_error(zval *value);
+ZEND_COLD void zend_match_unhandled_error(const zval *value);
 
 END_EXTERN_C()
 
