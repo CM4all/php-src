@@ -494,7 +494,7 @@ ZEND_API bool zend_verify_property_type(const zend_property_info *info, zval *pr
 ZEND_COLD void zend_verify_property_type_error(const zend_property_info *info, const zval *property);
 ZEND_COLD void zend_magic_get_property_type_inconsistency_error(const zend_property_info *info, const zval *property);
 
-#define ZEND_REF_ADD_TYPE_SOURCE(ref, source) \
+#define ZEND_REF_ADD_TYPE_SOURCE(ref, source)				\
 	zend_ref_add_type_source(&ZEND_REF_TYPE_SOURCES(ref), source)
 
 #define ZEND_REF_DEL_TYPE_SOURCE(ref, source) \
