@@ -19,10 +19,11 @@
 */
 
 #include "zend_observer.h"
-
-#include "zend_extensions.h"
+#include "zend_fibers.h"
+#include "zend_extensions.h" // for zend_get_op_array_extension_handles()
 #include "zend_llist.h"
-#include "zend_vm.h"
+#include "zend_types.h" // for ZEND_TLS
+#include "zend_vm.h" // for ZEND_VM_SET_OPCODE_HANDLER()
 
 #define ZEND_OBSERVER_NOT_OBSERVED ((void *) 2)
 
