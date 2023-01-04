@@ -21,16 +21,18 @@
 #define ZEND_COMPILE_H
 
 #include "zend_ast.h"
-#include "zend_types.h"
 #include "zend_map_ptr.h"
 #include "zend_alloc.h"
+#include "zend_hash.h" // for HashTable
+#include "zend_portability.h" //for ZEND_FASTCALL
+#include "zend_property_hooks.h"
 
-#include <stdarg.h>
+#include <stddef.h> // for size_t
 #include <stdint.h>
 
-#include "zend_llist.h"
-#include "zend_frameless_function.h"
-#include "zend_property_hooks.h"
+typedef struct _zend_stream zend_stream;
+typedef struct _zend_file_handle zend_file_handle;
+typedef struct _zend_frameless_function_info zend_frameless_function_info;
 
 #define SET_UNUSED(op) do { \
 	op ## _type = IS_UNUSED; \
@@ -51,6 +53,7 @@
 	} \
 } while (0)
 
+typedef struct _zend_execute_data zend_execute_data;
 typedef struct _zend_op_array zend_op_array;
 typedef struct _zend_op zend_op;
 
@@ -839,8 +842,6 @@ ZEND_STATIC_ASSERT(ZEND_MM_ALIGNED_SIZE(sizeof(zval)) == sizeof(zval),
 #define IS_SMART_BRANCH_JMPNZ (1<<5)
 
 #define ZEND_EXTRA_VALUE 1
-
-#include "zend_globals.h"
 
 typedef enum _zend_compile_position {
 	ZEND_COMPILE_POSITION_AT_SHEBANG = 0,
