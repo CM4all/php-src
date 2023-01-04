@@ -34,6 +34,9 @@
 #include "spl_exceptions.h"
 #include "spl_functions.h" /* For spl_set_private_debug_info_property() */
 
+#include <errno.h>
+#include <string.h> // for strerror()
+
 #define SPL_HAS_FLAG(flags, test_flag) ((flags & test_flag) ? 1 : 0)
 
 /* declare the class handlers */
