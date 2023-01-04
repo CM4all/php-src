@@ -21,13 +21,24 @@
 #ifndef ZEND_EXECUTE_H
 #define ZEND_EXECUTE_H
 
-#include "zend_compile.h"
-#include "zend_hash.h"
-#include "zend_operators.h"
-#include "zend_type_code.h"
-#include "zend_variables.h"
+#include "zend_compile.h" // for zend_execute_data
+#include "zend_globals.h" // for struct _zend_executor_globals
+#include "zend_globals_macros.h" // for EG()
+#include "zend_list.h" // for zend_rsrc_list_get_rsrc_type()
+#include "zend_portability.h" // for BEGIN_EXTERN_C
+#include "zend_result.h"
+#include "zend_type_code.h" // for IS_*
+#include "zend_variables.h" // for rc_dtor_func()
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
+
+typedef struct _zend_array HashTable;
+typedef struct _zend_op_array zend_op_array;
+typedef struct _zend_property_info zend_property_info;
+typedef struct _zend_string zend_string;
+typedef struct _zval_struct zval;
 
 BEGIN_EXTERN_C()
 struct _zend_fcall_info;
@@ -180,6 +191,7 @@ ZEND_API zend_result ZEND_FASTCALL zval_update_constant(zval *pp);
 ZEND_API zend_result ZEND_FASTCALL zval_update_constant_ex(zval *pp, zend_class_entry *scope);
 
 /* dedicated Zend executor functions - do not use! */
+typedef struct _zend_vm_stack *zend_vm_stack;
 struct _zend_vm_stack {
 	zval *top;
 	zval *end;
