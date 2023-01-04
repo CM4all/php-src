@@ -54,6 +54,9 @@ extern void __res_ndestroy(res_state statp);
 #endif
 #endif
 
+#include <errno.h>
+#include <string.h> // for strerror()
+
 #ifndef MAXHOSTNAMELEN
 #define MAXHOSTNAMELEN 255
 #endif

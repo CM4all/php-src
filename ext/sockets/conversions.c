@@ -38,6 +38,7 @@
 # include <stdint.h>
 #endif
 
+#include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stddef.h>

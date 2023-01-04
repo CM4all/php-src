@@ -33,6 +33,9 @@
 #include <fcntl.h>
 #endif
 
+#include <errno.h>
+#include <string.h> // for strerror()
+
 #if defined(HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR_NP) || defined(HAVE_POSIX_SPAWN_FILE_ACTIONS_ADDCHDIR)
 /* Only defined on glibc >= 2.29, FreeBSD CURRENT, musl >= 1.1.24,
  * MacOS Catalina or later..

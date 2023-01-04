@@ -26,6 +26,8 @@
 #include "zend_exceptions.h"
 #include "zend_interfaces.h"
 
+#include <errno.h>
+
 static zend_class_entry *phar_ce_archive;
 static zend_class_entry *phar_ce_data;
 static zend_class_entry *phar_ce_PharException;
