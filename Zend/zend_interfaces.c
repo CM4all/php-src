@@ -16,11 +16,15 @@
    +----------------------------------------------------------------------+
 */
 
-#include "zend.h"
-#include "zend_API.h"
 #include "zend_interfaces.h"
+#include "zend.h" // for zend_throw_error()
+#include "zend_API.h"
+#include "zend_arena.h"
 #include "zend_exceptions.h"
+#include "zend_globals.h" // for struct _zend_executor_globals
+#include "zend_globals_macros.h" // for EG()
 #include "zend_interfaces_arginfo.h"
+#include "zend_objects.h" // for zend_object_std_init()
 #include "zend_property_hooks.h"
 
 ZEND_API zend_class_entry *zend_ce_traversable;
