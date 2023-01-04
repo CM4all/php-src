@@ -17,21 +17,18 @@
 #ifndef HAVE_JIT_H
 #define HAVE_JIT_H
 
+#include "ZendAccelerator.h" // for ZEND_EXT_API
+#include "zend_compile.h" // for zend_op, ...
+#include "zend_long.h"
+
+#include <stdbool.h>
+#include <stdint.h>
+
 #if defined(__APPLE__) && defined(__aarch64__) && defined(ZTS)
 # ifndef HAVE_PTHREAD_JIT_WRITE_PROTECT_NP
 #  error "Apple Silicon ZTS JIT requires pthread_jit_write_protect_np()"
 # endif
 # define ZEND_JIT_USE_APPLE_MAP_JIT 1
-#endif
-
-#if defined(__x86_64__) || defined(i386) || defined(ZEND_WIN32)
-# define ZEND_JIT_TARGET_X86   1
-# define ZEND_JIT_TARGET_ARM64 0
-#elif defined (__aarch64__)
-# define ZEND_JIT_TARGET_X86   0
-# define ZEND_JIT_TARGET_ARM64 1
-#else
-# error "JIT not supported on this platform"
 #endif
 
 #define ZEND_JIT_LEVEL_NONE        0     /* no JIT */
