@@ -20,13 +20,12 @@
 #ifndef ZEND_COMPILE_H
 #define ZEND_COMPILE_H
 
-#include "zend.h"
+#include "zend.h" // for INTERNAL_FUNCTION_PARAMETERS
 #include "zend_ast.h"
+#include "zend_portability.h" //for ZEND_FASTCALL
 
-#include <stdarg.h>
+#include <stddef.h> // for size_t
 #include <stdint.h>
-
-#include "zend_llist.h"
 
 #define SET_UNUSED(op) do { \
 	op ## _type = IS_UNUSED; \
@@ -765,8 +764,6 @@ ZEND_STATIC_ASSERT(ZEND_MM_ALIGNED_SIZE(sizeof(zval)) == sizeof(zval),
 #define IS_SMART_BRANCH_JMPNZ (1<<5)
 
 #define ZEND_EXTRA_VALUE 1
-
-#include "zend_globals.h"
 
 typedef enum _zend_compile_position {
 	ZEND_COMPILE_POSITION_AT_SHEBANG = 0,
