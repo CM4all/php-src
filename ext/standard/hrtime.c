@@ -17,6 +17,7 @@
 
 #include "php.h"
 #include "zend_hrtime.h"
+#include "zend_strtod.h"
 
 #ifdef ZEND_ENABLE_ZVAL_LONG64
 #define PHP_RETURN_HRTIME(t) RETURN_LONG((zend_long)t)

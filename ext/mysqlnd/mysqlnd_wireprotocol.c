@@ -23,6 +23,7 @@
 #include "mysqlnd_wireprotocol.h"
 #include "mysqlnd_statistics.h"
 #include "mysqlnd_debug.h"
+#include "zend_strtod.h"
 
 #define BAIL_PREMATURE_END do { \
 		php_error_docref(NULL, E_WARNING, "Premature end of data (mysqlnd_wireprotocol.c:%u)", __LINE__); \
