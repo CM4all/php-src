@@ -36,6 +36,7 @@
 #include "zend_observer.h"
 #include "zend_fibers.h"
 #include "zend_max_execution_timer.h"
+#include "zend_strtod.h"
 #include "Optimizer/zend_optimizer.h"
 
 static size_t global_map_ptr_last = 0;
