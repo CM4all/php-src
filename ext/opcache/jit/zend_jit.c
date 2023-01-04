@@ -16,11 +16,20 @@
    +----------------------------------------------------------------------+
 */
 
-#include "main/php.h"
+#ifdef PHP_WIN32
+#include "config.w32.h"
+#else
+#include "php_config.h" // for HAVE_JIT
+#endif
+
+#ifdef HAVE_JIT
+
+#include "jit/zend_jit_internal.h"
+
 #include "main/SAPI.h"
 #include "php_version.h"
-#include <ZendAccelerator.h>
 #include "zend_shared_alloc.h"
+#include "Zend/zend_arena.h"
 #include "Zend/zend_execute.h"
 #include "Zend/zend_vm.h"
 #include "Zend/zend_exceptions.h"
@@ -29,9 +38,6 @@
 #include "Zend/zend_ini.h"
 #include "Zend/zend_observer.h"
 #include "zend_smart_str.h"
-#include "jit/zend_jit.h"
-
-#ifdef HAVE_JIT
 
 #include "Optimizer/zend_func_info.h"
 #include "Optimizer/zend_ssa.h"
@@ -39,8 +45,6 @@
 #include "Optimizer/zend_call_graph.h"
 #include "Optimizer/zend_dump.h"
 #include "Optimizer/zend_worklist.h"
-
-#include "jit/zend_jit_internal.h"
 
 #ifdef HAVE_PTHREAD_JIT_WRITE_PROTECT_NP
 #include <pthread.h>
