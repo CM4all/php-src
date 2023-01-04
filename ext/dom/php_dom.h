@@ -55,6 +55,7 @@ extern zend_module_entry dom_module_entry;
 #include "ext/libxml/php_libxml.h"
 #include "xpath_callbacks.h"
 #include "zend_exceptions.h"
+#include "zend_iterators.h" // for zend_object_iterator
 #include "dom_ce.h"
 /* DOM API_VERSION, please bump it up, if you change anything in the API
     therefore it's easier for the script-programmers to check, what's working how

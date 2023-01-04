@@ -121,6 +121,10 @@ PHPAPI php_basic_globals basic_globals;
 # include <sanitizer/msan_interface.h>
 #endif
 
+#if defined(HAVE_NANOSLEEP) || !defined(PHP_WIN32)
+#include <errno.h>
+#endif
+
 typedef struct _user_tick_function_entry {
 	zend_fcall_info fci;
 	zend_fcall_info_cache fci_cache;
