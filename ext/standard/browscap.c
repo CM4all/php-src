@@ -16,6 +16,7 @@
 
 #include "php.h"
 #include "php_browscap.h"
+#include "php_globals.h" // for PG()
 #include "php_ini.h"
 
 #include "zend_ini_scanner.h"
