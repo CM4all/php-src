@@ -17,8 +17,11 @@
    +----------------------------------------------------------------------+
 */
 
-#include "zend.h"
-#include "zend_API.h"
+#include "zend_iterators.h"
+#include "zend_objects.h"
+#include "zend_object_handlers.h"
+#include "zend_objects_API.h" // for zend_objects_store_del()
+#include "zend_API.h" // for INIT_CLASS_ENTRY
 
 static zend_class_entry zend_iterator_class_entry;
 
