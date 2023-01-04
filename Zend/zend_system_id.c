@@ -13,9 +13,8 @@
    +----------------------------------------------------------------------+
  */
 
-#include "php.h"
 #include "zend_system_id.h"
-#include "zend_extensions.h"
+#include "zend_extensions.h" // for ZEND_EXTENSION_BUILD_ID
 #include "ext/standard/md5.h"
 
 ZEND_API char zend_system_id[32];
