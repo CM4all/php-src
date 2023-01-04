@@ -22,6 +22,7 @@
 #include "zend_atomic.h" // for ZEND_ATOMIC_LOAD_ACQUIRE_32()
 #include "zend_alloc.h"
 #include "zend_char.h"
+#include "zend_long.h"
 #include "zend_portability.h"
 #include "zend_refcounted.h"
 
