@@ -17,6 +17,10 @@
    +----------------------------------------------------------------------+
 */
 
+#include "zend_jit.h"
+
+#include "zend_jit_internal.h"
+
 #include "Zend/zend_execute.h"
 #include "Zend/zend_exceptions.h"
 #include "Zend/zend_vm.h"
@@ -27,9 +31,6 @@
 #include <ZendAccelerator.h>
 #include "Optimizer/zend_func_info.h"
 #include "Optimizer/zend_call_graph.h"
-#include "zend_jit.h"
-
-#include "zend_jit_internal.h"
 
 #ifdef HAVE_GCC_GLOBAL_REGS
 # pragma GCC diagnostic ignored "-Wvolatile-register-var"
