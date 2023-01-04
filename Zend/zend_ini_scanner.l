@@ -23,7 +23,9 @@
 #include <errno.h>
 #include "zend.h"
 #include "zend_API.h"
+#include "zend_error.h" // for zend_error()
 #include "zend_globals.h"
+#include "zend_stream.h" // for ZEND_MMAP_AHEAD
 #include <zend_ini_parser.h>
 #include "zend_ini_scanner.h"
 
