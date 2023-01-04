@@ -35,6 +35,7 @@
 #include "zend_smart_str.h"
 #include "zend_bitset.h"
 #include "zend_exceptions.h"
+#include "zend_strtod.h"
 #include "ext/random/php_random.h"
 #include "zend_frameless_function.h"
 
