@@ -19,6 +19,8 @@
 #endif
 
 #include "php.h"
+#include "php_globals.h" // for PG()
+#include "php_ini.h"
 #include "Zend/zend_exceptions.h"
 
 #include <stdio.h>

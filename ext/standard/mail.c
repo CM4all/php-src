@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "php.h"
+#include "php_globals.h" // for PG()
 #include "ext/standard/info.h"
 #include "ext/standard/php_string.h"
 #include "ext/standard/basic_functions.h"
@@ -45,6 +46,8 @@
 
 #ifdef PHP_WIN32
 # include "win32/sendmail.h"
+#else
+# include <errno.h>
 #endif
 
 #define SKIP_LONG_HEADER_SEP(str, pos)																	\

@@ -41,6 +41,7 @@
 # include <process.h>
 #else
 # include <sys/time.h>
+# include <errno.h>
 #endif
 
 #include "random_arginfo.h"
