@@ -20,11 +20,13 @@
 #ifndef ZEND_OPERATORS_H
 #define ZEND_OPERATORS_H
 
+#include "zend_hash.h" // for zend_hash_num_elements()
+#include "zend_portability.h" // for BEGIN_EXTERN_
 #include "zend_result.h"
+#include "zend_string.h" // for zend_string_copy()
+#include "zend_types.h" // for zval, zend_object, zend_resource
 
-#include <errno.h>
 #include <math.h>
-#include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -44,10 +46,6 @@
 #  pragma clang attribute pop
 # endif
 #endif
-
-#include "zend_portability.h"
-#include "zend_strtod.h"
-#include "zend_multiply.h"
 
 #define LONG_SIGN_MASK ZEND_LONG_MIN
 
