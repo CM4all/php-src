@@ -14,12 +14,13 @@
    +----------------------------------------------------------------------+
 */
 
-#include "zend.h"
-#include "zend_interfaces.h"
-#include "zend_objects_API.h"
-#include "zend_types.h"
 #include "zend_weakrefs.h"
+#include "zend_API.h" // for ZEND_BEGIN_ARG_INFO_EX
+#include "zend_globals.h" // for struct _zend_executor_globals
+#include "zend_globals_macros.h" // for EG()
+#include "zend_objects.h" // for zend_object_std_init()
 #include "zend_weakrefs_arginfo.h"
+#include "zend_interfaces.h" // for zend_create_internal_iterator_zval()
 
 typedef struct _zend_weakref {
 	zend_object *referent;
