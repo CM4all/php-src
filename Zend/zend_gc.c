@@ -66,11 +66,16 @@
  *
  * @see http://researcher.watson.ibm.com/researcher/files/us-bacon/Bacon01Concurrent.pdf
  */
-#include "zend.h"
-#include "zend_API.h"
-#include "zend_fibers.h"
+
+#include "zend_gc.h"
 #include "zend_hrtime.h"
-#include "zend_weakrefs.h"
+#include "zend_alloc.h" // for ZEND_MM_OVERHEAD
+#include "zend_fibers.h" // for zend_fiber_switch_block()
+#include "zend_globals.h" // for struct _zend_executor_globals
+#include "zend_globals_macros.h" // for EG()
+#include "zend_objects.h" // for zend_objects_destroy_object()
+#include "zend_weakrefs.h" // for zend_weakmap_get_object_key_entry_gc()
+#include "zend.h" // for zend_error()
 
 #ifndef GC_BENCH
 # define GC_BENCH 0
