@@ -21,13 +21,13 @@
 #ifndef ZEND_ALLOC_H
 #define ZEND_ALLOC_H
 
+#include "zend_long.h"
 #include "zend_portability.h"
 #include "zend_result.h"
 
-#include <stdio.h>
-
-#include "zend_types.h"
-#include "../TSRM/TSRM.h"
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #ifndef ZEND_MM_ALIGNMENT
 # error "ZEND_MM_ALIGNMENT was not defined during configure"
@@ -39,6 +39,8 @@
 
 #define ZEND_MM_ALIGNED_SIZE_EX(size, alignment) \
 	(((size) + ((alignment) - 1)) & ~((alignment) - 1))
+
+typedef struct _zend_string zend_string;
 
 typedef enum _zend_oom_state {
 	ZEND_OOM_STATE_NONE = 0,
