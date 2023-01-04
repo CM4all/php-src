@@ -17,6 +17,7 @@
 */
 
 #include "zend_sort.h"
+#include "zend_long.h" // for Z_L()
 
 #include <limits.h>
 
