@@ -35,6 +35,7 @@
 #include "zend_file_cache.h"
 #include "zend_shared_alloc.h"
 #include "zend_accelerator_util_funcs.h"
+#include "zend_accelerator_debug.h"
 #include "zend_accelerator_hash.h"
 
 #ifdef HAVE_JIT
@@ -43,6 +44,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>
 #include <fcntl.h>
 
 #ifdef HAVE_UNISTD_H

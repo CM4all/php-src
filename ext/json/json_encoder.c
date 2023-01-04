@@ -20,6 +20,7 @@
 #endif
 
 #include "php.h"
+#include "php_globals.h" // for PG()
 #include "ext/standard/html.h"
 #include "zend_smart_str.h"
 #include "php_json.h"
@@ -29,6 +30,7 @@
 #include "zend_enum.h"
 #include "zend_property_hooks.h"
 #include "zend_lazy_objects.h"
+#include "zend_strtod.h" // for ZEND_DOUBLE_MAX_LENGTH
 
 static const char digits[] = "0123456789abcdef";
 
