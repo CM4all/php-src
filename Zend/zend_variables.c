@@ -18,13 +18,13 @@
    +----------------------------------------------------------------------+
 */
 
-#include <stdio.h>
-#include "zend.h"
-#include "zend_API.h"
+#include "zend_variables.h"
+#include "zend_API.h" // for CHECK_ZVAL_STRING()
 #include "zend_ast.h"
-#include "zend_globals.h"
-#include "zend_constants.h"
+#include "zend_error.h" // for zend_error_noreturn()
+#include "zend_execute.h" // for ZEND_REF_HAS_TYPE_SOURCES()
 #include "zend_list.h"
+#include "zend_objects_API.h"
 
 #if ZEND_DEBUG
 static void ZEND_FASTCALL zend_string_destroy(zend_string *str);
