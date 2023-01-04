@@ -21,6 +21,19 @@
 #ifndef ZEND_JIT_INTERNAL_H
 #define ZEND_JIT_INTERNAL_H
 
+#include "zend_jit_target.h" // for ZEND_JIT_TARGET_*
+#include "zend_jit.h" // for zend_jit_trace_stack_frame
+
+#include "zend_bitset.h" // for zend_ulong_ntz()
+#include "zend_compile.h" // for zend_op, ...
+#include "zend_constants.h"
+#include "zend_long.h"
+#include "zend_portability.h" // for zend_always_inline
+#include "zend_types.h" // for zend_uchar
+
+#include "Optimizer/zend_call_graph.h" // for struct _zend_func_info
+#include "Optimizer/zend_func_info.h" // for zend_func_info
+
 /* Address Encoding */
 typedef uintptr_t zend_jit_addr;
 
