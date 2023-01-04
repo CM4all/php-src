@@ -17,7 +17,15 @@
 #ifndef ZEND_WEAKREFS_H
 #define ZEND_WEAKREFS_H
 
-#include "zend_alloc.h"
+#include "zend_long.h"
+#include "zend_portability.h" // for BEGIN_EXTERN_C
+#include "zend_result.h"
+#include "zend_types.h" // for zval
+
+#include <stdint.h>
+
+typedef struct _zend_array HashTable;
+typedef struct _zend_object zend_object;
 
 BEGIN_EXTERN_C()
 
