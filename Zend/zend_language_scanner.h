@@ -21,6 +21,12 @@
 
 /* The zend_php_scanner_event enum is declared in zend_globals and we don't want everything to include zend_language_scanner.h */
 #include "zend_globals.h"
+#include "zend_multibyte.h" // for zend_encoding_filter
+#include "zend_portability.h" // for BEGIN_EXTERN_C
+#include "zend_ptr_stack.h"
+#include "zend_stack.h"
+
+typedef struct _zend_file_handle zend_file_handle;
 
 typedef struct _zend_lex_state {
 	unsigned int yy_leng;
