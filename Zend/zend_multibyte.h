@@ -20,8 +20,12 @@
 #ifndef ZEND_MULTIBYTE_H
 #define ZEND_MULTIBYTE_H
 
+#include "zend_portability.h" // for BEGIN_EXTERN_C
 #include "zend_result.h"
 #include "zend_types.h"
+
+#include <stdbool.h>
+#include <stddef.h> // for size_t
 
 typedef struct _zend_encoding zend_encoding;
 
