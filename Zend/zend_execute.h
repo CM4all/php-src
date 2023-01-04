@@ -21,14 +21,34 @@
 #ifndef ZEND_EXECUTE_H
 #define ZEND_EXECUTE_H
 
-#include "zend_compile.h"
-#include "zend_hash.h"
-#include "zend_operators.h"
-#include "zend_type_code.h"
-#include "zend_variables.h"
-#include "zend_constants.h"
+#include "zend.h" // for zend_class_entry
+#include "zend_char.h" // for zend_uchar
+#include "zend_compile.h" // for user_opcode_handler_t, zend_execute_data
+#include "zend_globals.h" // for struct _zend_executor_globals
+#include "zend_globals_macros.h" // for EG()
+#include "zend_list.h" // for zend_rsrc_list_get_rsrc_type()
+#include "zend_objects.h" // for zend_objects_new()
+#include "zend_portability.h" // for BEGIN_EXTERN_C
+#include "zend_result.h"
+#include "zend_type_code.h" // for IS_*
+#include "zend_variables.h" // for rc_dtor_func()
 
+#include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
+
+typedef struct _zend_arg_info zend_arg_info;
+typedef struct _zend_array HashTable;
+typedef struct _zend_ast_evaluate_ctx zend_ast_evaluate_ctx;
+typedef struct _zend_class_constant zend_class_constant;
+typedef struct _zend_constant zend_constant;
+typedef struct _zend_get_gc_buffer zend_get_gc_buffer;
+typedef struct _zend_internal_function zend_internal_function;
+typedef struct _zend_op_array zend_op_array;
+typedef struct _zend_property_info zend_property_info;
+typedef struct _zend_string zend_string;
+typedef struct _zval_struct zval;
+typedef struct _zend_vm_stack *zend_vm_stack;
 
 BEGIN_EXTERN_C()
 struct _zend_fcall_info;
