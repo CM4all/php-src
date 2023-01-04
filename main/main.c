@@ -92,6 +92,8 @@
 #include "main_arginfo.h"
 /* }}} */
 
+#include <float.h>
+
 PHPAPI int (*php_register_internal_extensions_func)(void) = php_register_internal_extensions;
 
 #ifndef ZTS
