@@ -23,6 +23,7 @@
 #include "zend_exceptions.h"
 #include "zend_multiply.h"
 #include "zend_portability.h"
+#include "zend_strtod.h"
 
 #include <float.h>
 #include <math.h>

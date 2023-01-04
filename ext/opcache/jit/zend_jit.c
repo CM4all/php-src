@@ -51,6 +51,10 @@
 #include <pthread.h>
 #endif
 
+#ifdef HAVE_MPROTECT
+#include <errno.h>
+#endif
+
 #if defined(__APPLE__) && defined(__x86_64__)
 # include <mach-o/dyld.h>
 #endif
