@@ -17,39 +17,27 @@
    +----------------------------------------------------------------------+
 */
 
-#include "main/php.h"
-#include "main/php_globals.h"
-#include "zend.h"
-#include "zend_extensions.h"
-#include "zend_compile.h"
 #include "ZendAccelerator.h"
 #include "zend_modules.h"
 #include "zend_operators.h"
 #include "zend_persist.h"
 #include "zend_portability.h"
 #include "zend_shared_alloc.h"
+#include "zend_accelerator_debug.h"
 #include "zend_accelerator_module.h"
 #include "zend_accelerator_blacklist.h"
-#include "zend_list.h"
-#include "zend_execute.h"
-#include "zend_vm.h"
+#include "zend_vm.h" // for zend_vm_set_opcode_handler()
 #include "zend_inheritance.h"
 #include "zend_exceptions.h"
 #include "zend_observer.h"
-#include "main/php_main.h"
+#include "main/php_main.h" // for php_request_shutdown()
 #include "main/SAPI.h"
-#include "main/php_streams.h"
-#include "main/php_open_temporary_file.h"
-#include "zend_API.h"
-#include "zend_ini.h"
-#include "zend_virtual_cwd.h"
 #include "zend_accelerator_util_funcs.h"
-#include "zend_accelerator_hash.h"
 #include "zend_file_cache.h"
 #include "zend_system_id.h"
 #include "zend_zip_cache.h"
 #include "ext/pcre/php_pcre.h"
-#include "ext/standard/basic_functions.h"
+#include "ext/standard/basic_functions.h" // for php_call_shutdown_functions()
 #include "zend_vm_opcodes.h"
 
 #ifdef ZEND_WIN32
