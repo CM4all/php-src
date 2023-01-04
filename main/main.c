@@ -86,6 +86,8 @@
 #include "ext/standard/html_tables.h"
 /* }}} */
 
+#include <float.h>
+
 bool want_was_metrics;
 struct php_was_metrics was_metrics;
 
