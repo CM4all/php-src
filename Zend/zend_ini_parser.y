@@ -25,6 +25,9 @@
 #include "zend_API.h"
 #include "zend_ini.h"
 #include "zend_constants.h"
+#include "zend_error.h" // for zend_error()
+#include "zend_globals.h" // for struct _zend_ini_scanner_globals
+#include "zend_globals_macros.h" // for INI_SCNG
 #include "zend_ini_scanner.h"
 #include "zend_extensions.h"
 
