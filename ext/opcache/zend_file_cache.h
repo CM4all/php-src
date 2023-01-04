@@ -19,6 +19,10 @@
 #ifndef ZEND_FILE_CACHE_H
 #define ZEND_FILE_CACHE_H
 
+#include "ZendAccelerator.h" // for accel_time_t
+
+#include <stddef.h>
+
 int zend_file_cache_script_store(zend_persistent_script *script, bool in_shm);
 zend_persistent_script *zend_file_cache_script_load(zend_file_handle *file_handle);
 void zend_file_cache_invalidate(zend_string *full_path);
