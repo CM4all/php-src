@@ -40,6 +40,7 @@
 #include "zend_attributes.h"
 #include "zend_interfaces.h"
 #include "php_network.h"
+#include "zend_strtod.h"
 
 #ifdef HAVE_PGSQL
 
