@@ -17,6 +17,7 @@
 #include <math.h>				/* modf() */
 #include "php.h"
 #include "zend_execute.h"
+#include "zend_strtod.h" // for zend_gcvt()
 
 #include <locale.h>
 #ifdef ZTS

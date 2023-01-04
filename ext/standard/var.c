@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <errno.h>
 #include "php.h"
+#include "php_globals.h" // for PG()
+#include "php_ini.h"
 #include "php_string.h"
 #include "php_var.h"
 #include "zend_lazy_objects.h"
@@ -29,6 +31,7 @@
 #include "php_incomplete_class.h"
 #include "zend_enum.h"
 #include "zend_exceptions.h"
+#include "zend_strtod.h" // for zend_gcvt()
 #include "zend_types.h"
 /* }}} */
 
