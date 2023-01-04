@@ -18,14 +18,15 @@
    +----------------------------------------------------------------------+
 */
 
+#include "zend_object_handlers.h"
 #include "zend.h"
+#include "zend_error.h"
 #include "zend_globals.h"
 #include "zend_lazy_objects.h"
 #include "zend_variables.h"
 #include "zend_API.h"
 #include "zend_objects.h"
 #include "zend_objects_API.h"
-#include "zend_object_handlers.h"
 #include "zend_interfaces.h"
 #include "zend_exceptions.h"
 #include "zend_closures.h"
