@@ -27,6 +27,7 @@
 #include "php_com_dotnet.h"
 #include "php_com_dotnet_internal.h"
 #include "Zend/zend_exceptions.h"
+#include "Zend/zend_iterators.h"
 
 typedef struct {
 	zend_object std;

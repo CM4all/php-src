@@ -33,6 +33,7 @@
  */
 
 #include "php.h"
+#include "php_globals.h" // for PG()
 #ifdef PHP_WIN32
 #include "config.w32.h"
 #else

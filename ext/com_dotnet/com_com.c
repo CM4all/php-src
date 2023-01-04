@@ -17,6 +17,7 @@
 #endif
 
 #include "php.h"
+#include "php_globals.h"
 #include "php_com_dotnet.h"
 #include "php_com_dotnet_internal.h"
 #include "Zend/zend_exceptions.h"
