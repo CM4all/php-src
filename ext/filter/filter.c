@@ -24,6 +24,7 @@
 #include "php_filter.h"
 #include "main/php_variables.h"
 #include "ext/standard/info.h"
+#include "php_globals.h" // for PG()
 
 ZEND_DECLARE_MODULE_GLOBALS(filter)
 
