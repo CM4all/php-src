@@ -28,7 +28,9 @@
 #include "zend_refcounted.h"
 #include "zend_result.h"
 #include "zend_type_code.h"
+#include "zend_type_info.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #ifdef __SSE2__
