@@ -14,8 +14,9 @@
    +----------------------------------------------------------------------+
 */
 
-#include "Optimizer/zend_optimizer_internal.h"
 #include "Optimizer/scdf.h"
+#include "Optimizer/zend_optimizer_internal.h"
+#include "zend_arena.h"
 
 /* This defines a generic framework for sparse conditional dataflow propagation. The algorithm is
  * based on "Sparse conditional constant propagation" by Wegman and Zadeck. We're using a
