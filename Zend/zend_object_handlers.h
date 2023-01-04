@@ -20,7 +20,22 @@
 #ifndef ZEND_OBJECT_HANDLERS_H
 #define ZEND_OBJECT_HANDLERS_H
 
+#include "zend_long.h"
+#include "zend_portability.h" // for BEGIN_EXTERN_C
+#include "zend_result.h"
+
+#include <stdbool.h>
 #include <stdint.h>
+
+// forward declarations
+typedef struct _zend_array HashTable;
+typedef struct _zend_array zend_array;
+typedef struct _zend_class_entry zend_class_entry;
+typedef union _zend_function zend_function;
+typedef struct _zend_object zend_object;
+typedef struct _zend_object_handlers zend_object_handlers;
+typedef struct _zend_string zend_string;
+typedef struct _zval_struct zval;
 
 struct _zend_property_info;
 
