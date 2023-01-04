@@ -19,7 +19,7 @@
 #ifndef ZEND_FLOAT_H
 #define ZEND_FLOAT_H
 
-#include "zend_portability.h"
+#include "zend_portability.h" // for BEGIN_EXTERN_C
 
 BEGIN_EXTERN_C()
 
