@@ -51,16 +51,17 @@
  * with more specialized routines when the requested size is known.
  */
 
-#include "zend.h"
 #include "zend_alloc.h"
-#include "zend_globals.h"
-#include "zend_hrtime.h"
-#include "zend_operators.h"
-#include "zend_multiply.h"
+#include "zend_multiply.h" // for zend_safe_address_guarded()
+#include "zend.h" // for zend_try
 #include "zend_bitset.h"
+#include "zend_long.h"
+#include "zend_globals.h"
 #include "zend_mmap.h"
-#include "zend_portability.h"
-#include <signal.h>
+
+#if ZEND_DEBUG && defined(HAVE_KILL) && defined(HAVE_GETPID)
+# include <signal.h>
+#endif
 
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
@@ -82,10 +83,11 @@ typedef int pid_t;
 #include <sys/stat.h>
 #include <limits.h>
 #include <fcntl.h>
-#include <errno.h>
 #ifdef __SANITIZE_ADDRESS__
 # include <sanitizer/asan_interface.h>
 #endif
+
+#include <setjmp.h> // for jmp_buf (used by zend_try)
 
 #ifndef _WIN32
 # include <sys/mman.h>
@@ -164,6 +166,14 @@ static size_t _real_page_size = ZEND_MM_PAGE_SIZE;
 #else /* ZEND_MM_HEAP_PROTECTION */
 # define ZEND_MM_MIN_USEABLE_BIN_SIZE ZEND_MM_MIN_SMALL_SIZE
 #endif /* ZEND_MM_HEAP_PROTECTION */
+
+#if ZEND_MM_CUSTOM
+# include "zend_hash.h"
+#endif
+
+#if ZEND_MM_ERROR
+# include <errno.h>
+#endif
 
 #ifndef ZEND_MM_CHECK
 # define ZEND_MM_CHECK(condition, message)  do { \
