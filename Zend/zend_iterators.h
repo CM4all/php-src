@@ -20,8 +20,9 @@
 #ifndef ZEND_ITERATORS_H
 #define ZEND_ITERATORS_H
 
+#include "zend_long.h"
 #include "zend_result.h"
-#include "zend_types.h"
+#include "zend_types.h" // for zval, zend_object
 
 /* These iterators were designed to operate within the foreach()
  * structures provided by the engine, but could be extended for use
