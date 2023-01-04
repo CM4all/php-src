@@ -20,11 +20,19 @@
 #ifndef ZEND_GC_H
 #define ZEND_GC_H
 
+#include "zend_portability.h" // for BEGIN_EXTERN_C
+#include "zend_refcounted.h" // for GC_TYPE_INFO()
 #include "zend_hrtime.h"
+
+#include <stdbool.h>
+#include <stdint.h>
 
 #ifndef GC_BENCH
 # define GC_BENCH 0
 #endif
+
+typedef struct _zend_array HashTable;
+typedef struct _zend_refcounted zend_refcounted;
 
 BEGIN_EXTERN_C()
 
