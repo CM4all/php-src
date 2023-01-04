@@ -20,10 +20,20 @@
 #ifndef ZEND_OBJECTS_API_H
 #define ZEND_OBJECTS_API_H
 
-#include "zend_types.h"
-#include "zend_gc.h"
 #include "zend_alloc.h"
+#include "zend_lazy_objects.h" // for zend_object_is_lazy_proxy()
+#include "zend_object_handlers.h" // for zend_check_protected()
+#include "zend_portability.h" // for BEGIN_EXTERN_C
+#include "zend_gc.h" // for GC_MAY_LEAK
 #include "zend_compile.h" /* For zend_property_info */
+#include "zend.h" // for _zend_class_entry
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h> // for memset()
+
+typedef union  _zend_function zend_function;
+typedef struct _zend_object zend_object;
 
 #define OBJ_BUCKET_INVALID			(1<<0)
 
