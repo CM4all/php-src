@@ -19,22 +19,22 @@
    +----------------------------------------------------------------------+
 */
 
-#include "zend.h"
-#include "zend_execute.h"
 #include "zend_API.h"
 #include "zend_hash.h"
-#include "zend_modules.h"
+#include "zend_arena.h"
+#include "zend_objects.h" // for zend_objects_new()
 #include "zend_extensions.h"
 #include "zend_constants.h"
-#include "zend_interfaces.h"
+#include "zend_interfaces.h" // for zend_ce_stringable
 #include "zend_exceptions.h"
-#include "zend_closures.h"
+#include "zend_closures.h" // for zend_ce_closure
 #include "zend_inheritance.h"
 #include "zend_ini.h"
 #include "zend_enum.h"
 #include "zend_object_handlers.h"
 #include "zend_observer.h"
 #include "zend_rc_debug.h"
+#include "zend_resource.h" // for struct _zend_resource, dereferenced by Z_RES_P()
 
 #include <stdarg.h>
 
