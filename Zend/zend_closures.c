@@ -18,14 +18,14 @@
    +----------------------------------------------------------------------+
 */
 
-#include "zend.h"
-#include "zend_API.h"
 #include "zend_closures.h"
-#include "zend_exceptions.h"
-#include "zend_interfaces.h"
-#include "zend_objects.h"
-#include "zend_objects_API.h"
-#include "zend_globals.h"
+#include "zend.h" // for zend_throw_error
+#include "zend_API.h" // for ZEND_METHOD()
+#include "zend_arena.h"
+#include "zend_compile.h" // for union _zend_function
+#include "zend_globals.h" // for struct _zend_executor_globals
+#include "zend_globals_macros.h" // for EG()
+#include "zend_objects.h" // for zend_object_std_init()
 #include "zend_closures_arginfo.h"
 
 typedef struct _zend_closure {
