@@ -17,6 +17,7 @@
 */
 
 #include "zend.h"
+#include "zend_arena.h"
 #include "zend_API.h"
 #include "zend_compile.h"
 #include "zend_execute.h"
