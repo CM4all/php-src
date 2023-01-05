@@ -29,6 +29,8 @@
 #include "win32/ioutil.h"
 #endif
 
+#include <stdio.h>
+
 typedef uint32_t (*info_func_t)(const zend_call_info *call_info, const zend_ssa *ssa);
 
 typedef struct _func_info_t {
