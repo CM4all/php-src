@@ -18,6 +18,8 @@
 
 #include "Optimizer/zend_optimizer_internal.h"
 
+#include <stdio.h>
+
 /* The ssa_verify_integrity() function ensures that that certain invariants of the SSA form and
  * CFG are upheld and prints messages to stderr if this is not the case. */
 

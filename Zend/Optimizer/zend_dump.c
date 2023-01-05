@@ -17,13 +17,17 @@
 */
 
 #include "zend_compile.h"
+#include "zend.h" // for zend_class_entry
 #include "zend_cfg.h"
 #include "zend_ssa.h"
 #include "zend_inference.h"
+#include "zend_frameless_function.h"
 #include "zend_func_info.h"
 #include "zend_call_graph.h"
 #include "zend_dump.h"
 #include "zend_smart_str.h"
+
+#include <stdio.h>
 
 void zend_dump_ht(HashTable *ht)
 {

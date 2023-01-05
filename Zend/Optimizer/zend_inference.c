@@ -16,9 +16,10 @@
    +----------------------------------------------------------------------+
 */
 
+#include "zend_inference.h"
+#include "zend.h" // for struct _zend_class_entry
 #include "zend_compile.h"
 #include "zend_generators.h"
-#include "zend_inference.h"
 #include "zend_func_info.h"
 #include "zend_call_graph.h"
 #include "zend_closures.h"

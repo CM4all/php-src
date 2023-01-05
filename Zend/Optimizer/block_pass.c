@@ -22,12 +22,17 @@
 #include "Optimizer/zend_optimizer.h"
 #include "Optimizer/zend_optimizer_internal.h"
 #include "zend_API.h"
+#include "zend_arena.h"
 #include "zend_constants.h"
 #include "zend_execute.h"
+#include "zend_globals.h" // for struct _zend_executor_globals
+#include "zend_globals_macros.h" // for EG()
 #include "zend_vm.h"
 #include "zend_bitset.h"
 #include "zend_cfg.h"
 #include "zend_dump.h"
+
+#include <stdio.h>
 
 /* Checks if a constant (like "true") may be replaced by its value */
 bool zend_optimizer_get_persistent_constant(zend_string *name, zval *result, int copy)

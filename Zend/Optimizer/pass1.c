@@ -32,6 +32,8 @@
 #include "zend_API.h"
 #include "zend_constants.h"
 #include "zend_execute.h"
+#include "zend_globals.h" // for struct _zend_executor_globals
+#include "zend_globals_macros.h" // for EG()
 #include "zend_vm.h"
 
 #define TO_STRING_NOWARN(val) do { \

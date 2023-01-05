@@ -18,14 +18,21 @@
 */
 
 #include "zend_API.h"
+#include "zend_arena.h"
+#include "zend_multiply.h"
 #include "zend_exceptions.h"
+#include "zend_globals.h" // for struct _zend_executor_globals
+#include "zend_globals_macros.h" // for EG()
 #include "zend_ini.h"
+#include "zend_optimizer.h"
 #include "zend_type_info.h"
 #include "Optimizer/zend_optimizer_internal.h"
 #include "Optimizer/zend_call_graph.h"
 #include "Optimizer/zend_inference.h"
 #include "Optimizer/scdf.h"
 #include "Optimizer/zend_dump.h"
+
+#include <stdio.h>
 
 /* This implements sparse conditional constant propagation (SCCP) based on the SCDF framework. The
  * used value lattice is defined as follows:
