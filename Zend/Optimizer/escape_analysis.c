@@ -18,11 +18,14 @@
 
 #include "Optimizer/zend_optimizer.h"
 #include "Optimizer/zend_optimizer_internal.h"
+#include "zend.h" // for zend_class_entry
 #include "zend_bitset.h"
 #include "zend_cfg.h"
 #include "zend_ssa.h"
 #include "zend_inference.h"
 #include "zend_dump.h"
+#include "zend_objects.h" // for zend_objects_destroy_object()
+#include "zend_object_handlers.h" // for zend_object_handlers
 
 /*
  * T. Kotzmann and H. Mossenbock. Escape analysis  in the context of dynamic
