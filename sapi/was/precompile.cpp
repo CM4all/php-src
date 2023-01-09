@@ -23,7 +23,9 @@
 #include "../../ext/opcache/zend_file_cache.h"
 #include "../../ext/opcache/zend_shared_alloc.h"
 #include "../../ext/opcache/zend_persist.h"
+#ifdef HAVE_JIT
 #include "../../ext/opcache/jit/zend_jit.h"
+#endif
 #include "../../ext/opcache/ZipFormat.hxx"
 #include "ScopeExit.hxx"
 
@@ -172,9 +174,11 @@ precompile(const char *const*files, size_t n_files)
 {
 	CG(compiler_options) |= ZEND_COMPILE_WITHOUT_EXECUTION|ZEND_COMPILE_WITH_FILE_CACHE;
 
+#ifdef HAVE_JIT
 	/* JIT must be disabled when storing to a file because the JIT
 	   will redirect opcode handlers to itself */
 	JIT_G(on) = false;
+#endif
 
 	const int fd = open(".", O_TMPFILE|O_RDWR|O_CLOEXEC, 0644);
 	if (fd < 0) {
