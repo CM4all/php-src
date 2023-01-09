@@ -628,6 +628,13 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 			   or else zend_accel_script_persist() doesn't
 			   work properly */
 			php_ini_builder_define(&command_line->ini_builder, "opcache.file_cache_only=1");
+
+#ifdef HAVE_JIT
+			/* JIT must be disabled when storing to a file
+			   because the JIT will redirect opcode
+			   handlers to itself */
+			php_ini_builder_define(&command_line->ini_builder, "opcache.jit=disable");
+#endif
 			break;
 
 		case 'y':
