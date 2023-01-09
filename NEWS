@@ -1,5 +1,69 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+05 Jan 2023, PHP 8.1.14
+
+- Core:
+  . Fixed bug GH-9905 (constant() behaves inconsistent when class is undefined).
+    (cmb)
+  . Fixed bug GH-9918 (License information for xxHash is not included in
+    README.REDIST.BINS file). (Akama Hitoshi)
+  . Fixed bug GH-9650 (Can't initialize heap: [0x000001e7]). (Michael Voříšek)
+  . Fixed potentially undefined behavior in Windows ftok(3) emulation. (cmb)
+
+- Date:
+  . Fixed bug GH-9699 (DateTimeImmutable::diff differences in 8.1.10 onwards -
+    timezone related). (Derick)
+  . Fixed bug GH-9700 (DateTime::createFromFormat: Parsing TZID string is too
+    greedy). (Derick)
+  . Fixed bug GH-9866 (Time zone bug with \DateTimeInterface::diff()). (Derick)
+  . Fixed bug GH-9880 (DateTime diff returns wrong sign on day count when using
+    a timezone). (Derick)
+
+- FPM:
+  . Fixed bug GH-9959 (Solaris port event mechanism is still broken after bug
+    #66694). (Petr Sumbera)
+  . Fixed bug #68207 (Setting fastcgi.error_header can result in a WARNING).
+    (Jakub Zelenka)
+  . Fixed bug GH-8517 (Random crash of FPM master process in
+    fpm_stdio_child_said). (Jakub Zelenka)
+
+- MBString:
+  . Fixed bug GH-9535 (The behavior of mb_strcut in mbstring has been changed in
+    PHP8.1). (Nathan Freeman)
+
+- Opcache:
+  . Fixed bug GH-9968 (Segmentation Fault during OPCache Preload).
+    (Arnaud, michdingpayc)
+
+- OpenSSL:
+  . Fixed bug GH-9064 (PHP fails to build if openssl was built with --no-ec).
+    (Jakub Zelenka)
+  . Fixed bug GH-10000 (OpenSSL test failures when OpenSSL compiled with
+    no-dsa). (Jakub Zelenka)
+
+- Pcntl:
+  . Fixed bug GH-9298 (Signal handler called after rshutdown leads to crash).
+    (Erki Aring)
+
+- PDO_Firebird:
+  . Fixed bug GH-9971 (Incorrect NUMERIC value returned from PDO_Firebird).
+    (cmb)
+
+- PDO/SQLite:
+  . Fixed bug #81740 (PDO::quote() may return unquoted string). (CVE-2022-31631)
+    (cmb)
+
+- Session:
+  . Fixed GH-9932 (session name silently fails with . and [). (David Carlier)
+
+- SPL:
+  . Fixed GH-9883 (SplFileObject::__toString() reads next line). (Girgias)
+  . Fixed GH-10011 (Trampoline autoloader will get reregistered and cannot be
+    unregistered). (Girgias)
+
+- SQLite3:
+  . Fixed bug #81742 (open_basedir bypass in SQLite3 by using file URI). (cmb)
+
 24 Nov 2022, PHP 8.1.13
 
 - CLI:

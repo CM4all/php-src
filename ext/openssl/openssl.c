@@ -1347,7 +1347,7 @@ PHP_MINIT_FUNCTION(openssl)
 
 	/* Values for key types */
 	REGISTER_LONG_CONSTANT("OPENSSL_KEYTYPE_RSA", OPENSSL_KEYTYPE_RSA, CONST_CS|CONST_PERSISTENT);
-#ifndef NO_DSA
+#ifndef OPENSSL_NO_DSA
 	REGISTER_LONG_CONSTANT("OPENSSL_KEYTYPE_DSA", OPENSSL_KEYTYPE_DSA, CONST_CS|CONST_PERSISTENT);
 #endif
 	REGISTER_LONG_CONSTANT("OPENSSL_KEYTYPE_DH", OPENSSL_KEYTYPE_DH, CONST_CS|CONST_PERSISTENT);
@@ -3759,7 +3759,7 @@ static int php_openssl_get_evp_pkey_type(int key_type) {
 	switch (key_type) {
 	case OPENSSL_KEYTYPE_RSA:
 		return EVP_PKEY_RSA;
-#if !defined(NO_DSA)
+#if !defined(OPENSSL_NO_DSA)
 	case OPENSSL_KEYTYPE_DSA:
 		return EVP_PKEY_DSA;
 #endif
@@ -3811,7 +3811,7 @@ static EVP_PKEY * php_openssl_generate_private_key(struct php_x509_request * req
 		}
 
 		switch (type) {
-#if !defined(NO_DSA)
+#if !defined(OPENSSL_NO_DSA)
 		case EVP_PKEY_DSA:
 			if (EVP_PKEY_CTX_set_dsa_paramgen_bits(ctx, req->priv_key_bits) <= 0) {
 				php_openssl_store_errors();
@@ -4830,6 +4830,7 @@ static void php_openssl_copy_bn_param(
 	}
 }
 
+#ifdef HAVE_EVP_PKEY_EC
 static zend_string *php_openssl_get_utf8_param(
 		EVP_PKEY *pkey, const char *param, const char *name) {
 	char buf[64];
@@ -4842,6 +4843,7 @@ static zend_string *php_openssl_get_utf8_param(
 	}
 	return NULL;
 }
+#endif
 #endif
 
 /* {{{ returns an array with the key details (bits, pkey, type)*/
@@ -4907,6 +4909,7 @@ PHP_FUNCTION(openssl_pkey_get_details)
 			php_openssl_copy_bn_param(&ary, pkey, OSSL_PKEY_PARAM_PRIV_KEY, "priv_key");
 			php_openssl_copy_bn_param(&ary, pkey, OSSL_PKEY_PARAM_PUB_KEY, "pub_key");
 			break;
+#ifdef HAVE_EVP_PKEY_EC
 		case EVP_PKEY_EC: {
 			ktype = OPENSSL_KEYTYPE_EC;
 			array_init(&ary);
@@ -4935,6 +4938,7 @@ PHP_FUNCTION(openssl_pkey_get_details)
 			php_openssl_copy_bn_param(&ary, pkey, OSSL_PKEY_PARAM_PRIV_KEY, "d");
 			break;
 		}
+#endif
 		EMPTY_SWITCH_DEFAULT_CASE();
 	}
 #else
