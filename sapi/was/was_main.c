@@ -415,6 +415,7 @@ static int was_module_main(void)
 	memset(&file_handle, 0, sizeof(file_handle));
 	zend_stream_init_filename(&file_handle, SG(request_info).path_translated);
 	php_execute_script(&file_handle);
+	zend_destroy_file_handle(&file_handle);
 
 	zend_try {
 		php_request_shutdown(NULL);
