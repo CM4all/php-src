@@ -12,7 +12,7 @@ if test "$PHP_WAS" != "no"; then
 
   PHP_ADD_MAKEFILE_FRAGMENT($abs_srcdir/sapi/was/Makefile.frag,$abs_srcdir/sapi/was,sapi/was)
   SAPI_WAS_PATH=sapi/was/php
-  PHP_SELECT_SAPI(was, program, was_main.c, "", '$(SAPI_WAS_PATH)')
+  PHP_SELECT_SAPI(was, program, was_main.c precompile.cpp, "", '$(SAPI_WAS_PATH)')
   case $host_alias in
   *darwin*)
     BUILD_WAS="\$(CC) \$(CFLAGS_CLEAN) \$(EXTRA_CFLAGS) \$(EXTRA_LDFLAGS_PROGRAM) \$(LDFLAGS) \$(NATIVE_RPATHS) \$(PHP_GLOBAL_OBJS:.lo=.o) \$(PHP_BINARY_OBJS:.lo=.o) \$(PHP_WAS_OBJS:.lo=.o) \$(PHP_FRAMEWORKS) \$(EXTRA_LIBS) \$(ZEND_EXTRA_LIBS) -o \$(SAPI_WAS_PATH)"
