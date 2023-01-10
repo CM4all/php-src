@@ -15,6 +15,7 @@
 #ifndef PHP_GLOBALS_H
 #define PHP_GLOBALS_H
 
+#include "php.h"
 #include "zend_globals.h"
 
 #include <stdint.h>
