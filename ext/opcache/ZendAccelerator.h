@@ -198,9 +198,6 @@ typedef struct _zend_accel_directives {
 #if ENABLE_FILE_CACHE_FALLBACK
 	bool      file_cache_fallback;
 #endif
-#ifdef HAVE_HUGE_CODE_PAGES
-	bool      huge_code_pages;
-#endif
 	char *zip_dirs;
 	char *preload;
 #ifndef ZEND_WIN32
