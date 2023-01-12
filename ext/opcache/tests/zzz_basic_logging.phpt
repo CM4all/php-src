@@ -10,7 +10,6 @@ opcache.file_cache=
 opcache.file_cache_only=0
 opcache.error_log=
 opcache.log_verbosity_level=4
-opcache.huge_code_pages=0
 opcache.preload=
 opcache.interned_strings_buffer=8
 opcache.blacklist_filename=
