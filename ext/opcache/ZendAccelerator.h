@@ -51,6 +51,7 @@
 #include "zend_extensions.h"
 #include "zend_compile.h"
 #include "zend_API.h"
+#include "zend_modules.h"
 
 #include "Optimizer/zend_optimizer.h"
 #include "zend_accelerator_hash.h"
