@@ -1,10 +1,3 @@
-PHP_ARG_ENABLE([huge-code-pages],
-  [whether to enable copying PHP CODE pages into HUGE PAGES],
-  [AS_HELP_STRING([--disable-huge-code-pages],
-    [Disable copying PHP CODE pages into HUGE PAGES])],
-  [yes],
-  [no])
-
 PHP_ARG_ENABLE([opcache-jit],
   [whether to enable JIT],
   [AS_HELP_STRING([--disable-opcache-jit],
@@ -18,10 +11,6 @@ PHP_ARG_WITH([capstone],
     [Support opcache JIT disassembly through Capstone])],
   [no],
   [no])
-
-AS_VAR_IF([PHP_HUGE_CODE_PAGES], [yes],
-  [AC_DEFINE([HAVE_HUGE_CODE_PAGES], [1],
-    [Define to 1 to enable copying PHP CODE pages into HUGE PAGES.])])
 
 AS_VAR_IF([PHP_OPCACHE_JIT], [yes], [
   AS_CASE([$host_cpu],
