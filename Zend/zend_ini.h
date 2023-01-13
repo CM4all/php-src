@@ -19,6 +19,7 @@
 #define ZEND_INI_H
 
 #include "zend_modules.h"
+#include "zend_result.h"
 
 #define ZEND_INI_USER	(1<<0)
 #define ZEND_INI_PERDIR	(1<<1)
