@@ -20,7 +20,6 @@
 #define ZEND_STRING_H
 
 #include "zend_types.h"
-#include "zend_gc.h"
 #include "zend_alloc.h"
 #include "zend_char.h"
 #include "zend_portability.h"
