@@ -77,6 +77,7 @@
 #include "zend_ini.h"
 #include "zend_dtrace.h"
 #include "zend_observer.h"
+#include "zend_rc_debug.h"
 #include "zend_system_id.h"
 #include "zend_smart_string.h"
 
