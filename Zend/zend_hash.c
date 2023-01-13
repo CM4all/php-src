@@ -17,6 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
+#include "zend_hash.h"
 #include "zend.h"
 #include "zend_globals.h"
 #include "zend_variables.h"
