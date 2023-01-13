@@ -20,6 +20,7 @@
 #ifndef ZEND_BUILTIN_FUNCTIONS_H
 #define ZEND_BUILTIN_FUNCTIONS_H
 
+#include "zend_result.h"
 #include "zend_types.h"
 
 typedef struct _zval_struct zval;
