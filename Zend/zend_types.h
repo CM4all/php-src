@@ -56,8 +56,6 @@
 # define ZEND_ENDIAN_LOHI_C_4(a, b, c, d)  a, b, c, d
 #endif
 
-typedef unsigned char zend_uchar;
-
 /* This constant is deprecated, use SIZE_MAX instead */
 #define ZEND_SIZE_MAX SIZE_MAX
 
