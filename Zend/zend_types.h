@@ -362,13 +362,6 @@ struct _zval_struct {
 	} u2;
 };
 
-struct _zend_string {
-	zend_refcounted_h gc;
-	zend_ulong        h;                /* hash value */
-	size_t            len;
-	char              val[1];
-};
-
 typedef struct _Bucket {
 	zval              val;
 	zend_ulong        h;                /* hash value (or numeric index)   */
@@ -711,13 +704,6 @@ static zend_always_inline uint8_t zval_get_type(const zval* pz) {
 
 #define IS_CONSTANT_AST_EX			(IS_CONSTANT_AST   | (IS_TYPE_REFCOUNTED << Z_TYPE_FLAGS_SHIFT))
 
-/* string flags (zval.value->gc.u.flags) */
-#define IS_STR_CLASS_NAME_MAP_PTR   GC_PROTECTED  /* refcount is a map_ptr offset of class_entry */
-#define IS_STR_INTERNED				GC_IMMUTABLE  /* interned string */
-#define IS_STR_PERSISTENT			GC_PERSISTENT /* allocated using malloc */
-#define IS_STR_PERMANENT        	(1<<8)        /* relives request boundary */
-#define IS_STR_VALID_UTF8           (1<<9)        /* valid UTF-8 according to PCRE */
-
 /* array flags */
 #define IS_ARRAY_IMMUTABLE			GC_IMMUTABLE
 #define IS_ARRAY_PERSISTENT			GC_PERSISTENT
@@ -739,12 +725,6 @@ static zend_always_inline uint8_t zval_get_type(const zval* pz) {
 #define OBJ_EXTRA_FLAGS(obj)		((obj)->extra_flags)
 
 /* Fast class cache */
-static zend_always_inline bool zstr_has_ce_cache(const zend_string *s)
-{
-	uint32_t type_info = ZEND_ATOMIC_LOAD_ACQUIRE_32(&GC_TYPE_INFO(s));
-	return (type_info & (IS_STR_CLASS_NAME_MAP_PTR << GC_FLAGS_SHIFT)) != 0;
-}
-
 #define ZSTR_HAS_CE_CACHE(s)		zstr_has_ce_cache(s)
 #define ZSTR_GET_CE_CACHE(s)		ZSTR_GET_CE_CACHE_EX(s, 1)
 #define ZSTR_SET_CE_CACHE(s, ce)	ZSTR_SET_CE_CACHE_EX(s, ce, 1)
