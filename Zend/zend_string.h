@@ -20,7 +20,6 @@
 
 #include "zend_types.h"
 #include "zend_atomic.h" // for ZEND_ATOMIC_LOAD_ACQUIRE_32()
-#include "zend_gc.h"
 #include "zend_alloc.h"
 #include "zend_char.h"
 #include "zend_portability.h"
