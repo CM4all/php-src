@@ -18,6 +18,7 @@
 #define ZEND_SYSTEM_ID_H
 
 #include "zend_types.h"
+#include "zend_result.h"
 
 BEGIN_EXTERN_C()
 /* True global; Write-only during MINIT/startup */

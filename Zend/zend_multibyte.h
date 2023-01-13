@@ -20,6 +20,7 @@
 #ifndef ZEND_MULTIBYTE_H
 #define ZEND_MULTIBYTE_H
 
+#include "zend_result.h"
 #include "zend_types.h"
 
 typedef struct _zend_encoding zend_encoding;

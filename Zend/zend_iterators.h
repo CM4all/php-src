@@ -20,6 +20,7 @@
 #ifndef ZEND_ITERATORS_H
 #define ZEND_ITERATORS_H
 
+#include "zend_result.h"
 #include "zend_types.h"
 
 /* These iterators were designed to operate within the foreach()
