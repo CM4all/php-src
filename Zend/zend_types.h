@@ -23,9 +23,9 @@
 
 #include "zend_portability.h"
 #include "zend_long.h"
+#include "zend_rc_debug.h"
 #include "zend_result.h"
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #ifdef __SSE2__
@@ -773,29 +773,11 @@ static zend_always_inline uint32_t zval_gc_info(uint32_t gc_type_info) {
 		GC_TYPE_INFO(p) &= ~((flags) << GC_FLAGS_SHIFT); \
 	} while (0)
 
-#ifndef ZEND_RC_DEBUG
-# define ZEND_RC_DEBUG 0
-#endif
-
 #if ZEND_RC_DEBUG
-extern ZEND_API bool zend_rc_debug;
-/* The GC_PERSISTENT flag is reused for IS_OBJ_WEAKLY_REFERENCED on objects.
- * Skip checks for OBJECT/NULL type to avoid interpreting the flag incorrectly. */
-# define ZEND_RC_MOD_CHECK(p) do { \
-		if (zend_rc_debug) { \
-			uint8_t type = zval_gc_type((p)->u.type_info); \
-			if (type != IS_OBJECT && type != IS_NULL) { \
-				ZEND_ASSERT(!(zval_gc_flags((p)->u.type_info) & GC_IMMUTABLE)); \
-				ZEND_ASSERT((zval_gc_flags((p)->u.type_info) & (GC_PERSISTENT|GC_PERSISTENT_LOCAL)) != GC_PERSISTENT); \
-			} \
-		} \
-	} while (0)
 # define GC_MAKE_PERSISTENT_LOCAL(p) do { \
 		GC_ADD_FLAGS(p, GC_PERSISTENT_LOCAL); \
 	} while (0)
 #else
-# define ZEND_RC_MOD_CHECK(p) \
-	do { } while (0)
 # define GC_MAKE_PERSISTENT_LOCAL(p) \
 	do { } while (0)
 #endif
