@@ -20,6 +20,7 @@
 #ifndef ZEND_GC_H
 #define ZEND_GC_H
 
+#include "zend_hash.h" // for HashTable
 #include "zend_portability.h" // for BEGIN_EXTERN_C
 #include "zend_refcounted.h" // for GC_TYPE_INFO()
 #include "zend_hrtime.h"
