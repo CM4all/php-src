@@ -20,6 +20,7 @@
 #ifndef ZEND_HIGHLIGHT_H
 #define ZEND_HIGHLIGHT_H
 
+#include "zend_result.h"
 #include "zend_types.h"
 
 #define HL_COMMENT_COLOR     "#FF8000"    /* orange */
