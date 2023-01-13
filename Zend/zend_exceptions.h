@@ -21,6 +21,7 @@
 #ifndef ZEND_EXCEPTIONS_H
 #define ZEND_EXCEPTIONS_H
 
+#include "zend_result.h"
 #include "zend_types.h"
 
 BEGIN_EXTERN_C()

@@ -24,6 +24,8 @@
 #include "zend_portability.h"
 #include "zend_long.h"
 #include "zend_atomic.h"
+#include "zend_result.h"
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -54,11 +56,6 @@
 #endif
 
 typedef unsigned char zend_uchar;
-
-typedef enum zend_result {
-  SUCCESS =  0,
-  FAILURE = -1,		/* this MUST stay a negative number, or it may affect functions! */
-} zend_result;
 
 /* This constant is deprecated, use SIZE_MAX instead */
 #define ZEND_SIZE_MAX SIZE_MAX
