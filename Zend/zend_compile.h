@@ -21,6 +21,7 @@
 #define ZEND_COMPILE_H
 
 #include "zend_ast.h"
+#include "zend_hash.h"
 #include "zend_types.h"
 #include "zend_map_ptr.h"
 #include "zend_alloc.h"
