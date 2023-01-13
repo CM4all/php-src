@@ -35,6 +35,7 @@
 #include "zend_object_handlers.h"
 #include "zend_observer.h"
 #include "zend_system_id.h"
+#include "zend_rc_debug.h"
 
 #include <stdarg.h>
 
