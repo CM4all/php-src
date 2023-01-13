@@ -20,6 +20,7 @@
 #ifndef ZEND_ALLOC_H
 #define ZEND_ALLOC_H
 
+#include "zend_portability.h"
 #include "zend_result.h"
 
 #include <stdio.h>
