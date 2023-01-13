@@ -19,6 +19,7 @@
 #ifndef ZEND_SORT_H
 #define ZEND_SORT_H
 
+#include "zend_func_types.h"
 #include "zend_types.h"
 
 BEGIN_EXTERN_C()
