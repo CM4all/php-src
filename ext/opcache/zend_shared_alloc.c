@@ -19,9 +19,15 @@
    +----------------------------------------------------------------------+
 */
 
-#include <errno.h>
-#include "ZendAccelerator.h"
 #include "zend_shared_alloc.h"
+#include "zend_accelerator_debug.h" // for zend_accel_error()
+#include "ZendAccelerator.h" // for ZCG()
+
+#ifndef ZEND_WIN32
+# include "ZendAccelerator.h" // for MAXPATHLEN
+#endif
+
+#include <errno.h>
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
