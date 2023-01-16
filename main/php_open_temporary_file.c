@@ -14,11 +14,9 @@
    +----------------------------------------------------------------------+
  */
 
-#include "php.h"
-#include "zend_long.h"
 #include "php_open_temporary_file.h"
+#include "php_globals.h" // for PG()
 #include "ext/random/php_random.h"
-#include "zend_operators.h"
 
 #include <errno.h>
 #include <sys/types.h>
