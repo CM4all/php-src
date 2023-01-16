@@ -23,6 +23,10 @@
 
 #ifdef USE_MMAP
 
+#if defined(__linux__)
+# include "ZendAccelerator.h"
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -34,6 +38,10 @@
 #endif
 
 #include "zend_execute.h"
+
+#if defined(__FreeBSD__) || (defined(HAVE_PROCCTL) && defined(PROC_WXMAP_CTL))
+# include <unistd.h>
+#endif
 
 #if defined(MAP_ANON) && !defined(MAP_ANONYMOUS)
 # define MAP_ANONYMOUS MAP_ANON
