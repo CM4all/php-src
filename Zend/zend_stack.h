@@ -20,7 +20,9 @@
 #ifndef ZEND_STACK_H
 #define ZEND_STACK_H
 
-#include "zend_portability.h"
+#include "zend_portability.h" // for BEGIN_EXTERN_C
+
+#include <stdbool.h>
 
 typedef struct _zend_stack {
 	int size, top, max;
