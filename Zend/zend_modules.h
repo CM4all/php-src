@@ -20,10 +20,11 @@
 #ifndef MODULES_H
 #define MODULES_H
 
-#include "zend.h"
-#include "zend_compile.h"
-#include "zend_build.h"
+#include "zend_build.h" // for ZEND_TOSTR()
+#include "zend_portability.h" // for BEGIN_EXTERN_C
 #include "zend_result.h"
+
+typedef struct _zend_array HashTable;
 
 #define INIT_FUNC_ARGS		int type, int module_number
 #define INIT_FUNC_ARGS_PASSTHRU	type, module_number
