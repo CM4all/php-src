@@ -16,18 +16,16 @@
    +----------------------------------------------------------------------+
 */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <string.h>
-#include <stdio.h>
-#include <limits.h>
+#include "zend_virtual_cwd.h"
+#include "zend_alloc.h" // for emalloc()
+#include "zend_operators.h" // for zend_mempcpy()
+
+#include <stdarg.h> // for va_list
+#include <string.h> // for memcpy()
 #include <errno.h>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <time.h>
-
-#include "zend.h"
-#include "zend_virtual_cwd.h"
 
 #ifdef ZEND_WIN32
 #include <io.h>
@@ -74,8 +72,6 @@
 #endif
 
 #define VIRTUAL_CWD_DEBUG 0
-
-#include "TSRM.h"
 
 /* Only need mutex for popen() in Windows because it doesn't chdir() on UNIX */
 #if defined(ZEND_WIN32) && defined(ZTS)
