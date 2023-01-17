@@ -24,23 +24,18 @@
 
 #define ZEND_ENGINE_3
 
-#include "zend_types.h"
-#include "zend_map_ptr.h"
-#include "zend_errors.h"
-#include "zend_alloc.h"
-#include "zend_llist.h"
-#include "zend_string.h"
+#include "zend_map_ptr.h" // for ZEND_MAP_PTR_DEF()
+#include "zend_errors.h" // for E_* (as zend_error_noreturn() parameter)
 #include "zend_hash.h"
-#include "zend_ast.h"
-#include "zend_gc.h"
-#include "zend_variables.h"
-#include "zend_iterators.h"
-#include "zend_stream.h"
-#include "zend_smart_str_public.h"
-#include "zend_smart_string_public.h"
-#include "zend_signal.h"
-#include "zend_max_execution_timer.h"
-#include "zend_type_code.h"
+#include "zend_portability.h" // for BEGIN_EXTERN_C
+#include "zend_result.h"
+#include "zend_signal.h" // for ZEND_SIGNAL_[UN]BLOCK_INTERRUPTIONS()
+#include "zend_smart_str_public.h" // for smart_str
+#include "zend_smart_string_public.h" // for smart_string
+#include "TSRM/TSRM.h" // for TSRMLS_MAIN_CACHE_EXTERN
+
+#include <stdarg.h>
+#include <stdio.h>
 
 #define zend_sprintf sprintf
 
@@ -80,8 +75,14 @@ ZEND_TSRMLS_CACHE_EXTERN()
 struct _zend_serialize_data;
 struct _zend_unserialize_data;
 
+typedef struct _zend_class_iterator_funcs zend_class_iterator_funcs;
+typedef struct _zend_class_arrayaccess_funcs zend_class_arrayaccess_funcs;
+typedef struct _zend_execute_data zend_execute_data;
+typedef struct _zend_file_handle zend_file_handle;
+typedef struct _zend_object_iterator zend_object_iterator;
 typedef struct _zend_serialize_data zend_serialize_data;
 typedef struct _zend_unserialize_data zend_unserialize_data;
+typedef struct _zval_struct zval;
 
 typedef struct _zend_class_name {
 	zend_string *name;
