@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "zend.h"
+#include "zend_llist.h"
 #include "zend_stream.h"
 
 BEGIN_EXTERN_C()
