@@ -17,11 +17,13 @@
    +----------------------------------------------------------------------+
 */
 
-#include "zend.h"
-#include "zend_API.h"
 #include "zend_attributes.h"
+#include "zend_API.h" // needed by zend_attributes_arginfo.h
 #include "zend_attributes_arginfo.h"
-#include "zend_exceptions.h"
+#include "zend_error.h" // for zend_error_noreturn()
+#include "zend_globals.h" // for struct _zend_executor_globals
+#include "zend_globals_macros.h" // for EG()
+#include "zend_objects.h" // for zend_objects_new()
 #include "zend_smart_str.h"
 
 ZEND_API zend_class_entry *zend_ce_attribute;
