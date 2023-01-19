@@ -27,6 +27,7 @@
 #include "zend_API.h"
 #include "zend_sort.h"
 #include "zend_constants.h"
+#include "zend_error.h"
 #include "zend_observer.h"
 
 #include "zend_vm.h"

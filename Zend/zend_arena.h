@@ -19,8 +19,8 @@
 #ifndef _ZEND_ARENA_H_
 #define _ZEND_ARENA_H_
 
-#include "zend.h" // for zend_error()
 #include "zend_alloc.h"
+#include "zend_error.h"
 #include "zend_multiply.h" // for zend_safe_address()
 
 #include <stddef.h> // for size_t

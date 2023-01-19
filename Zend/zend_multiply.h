@@ -17,6 +17,7 @@
    +----------------------------------------------------------------------+
 */
 
+#include "zend_error.h"
 #include "zend_portability.h"
 
 #ifndef ZEND_MULTIPLY_H
