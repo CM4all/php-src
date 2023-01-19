@@ -21,6 +21,7 @@
 #define ZEND_ATTRIBUTES_H
 
 #include "zend_compile.h"
+#include "zend_error.h" // required by zend_constants.h
 #include "zend_constants.h"
 
 #define ZEND_ATTRIBUTE_TARGET_CLASS			(1<<0)
