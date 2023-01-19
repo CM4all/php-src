@@ -50,20 +50,15 @@
 # define ZEND_PATHS_SEPARATOR		':'
 #endif
 
-#include "../TSRM/TSRM.h"
-
-#include <stdio.h>
 #if ZEND_DEBUG && defined(NDEBUG)
 # error "NDEBUG must not be defined when ZEND_DEBUG is enabled"
 #endif
 #include <assert.h>
-#include <math.h>
 
 #ifdef HAVE_UNIX_H
 # include <unix.h>
 #endif
 
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -76,8 +71,6 @@
 #if defined(ZEND_WIN32) && !defined(__clang__)
 #include <intrin.h>
 #endif
-
-#include "zend_range_check.h"
 
 /* GCC x.y.z supplies __GNUC__ = x and __GNUC_MINOR__ = y */
 #ifdef __GNUC__
