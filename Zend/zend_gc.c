@@ -70,13 +70,13 @@
 #include "zend_gc.h"
 #include "zend_hrtime.h"
 #include "zend_alloc.h" // for ZEND_MM_OVERHEAD
+#include "zend_error.h"
 #include "zend_exceptions.h" // for zend_exception_set_previous()
 #include "zend_fibers.h" // for zend_fiber_switch_block()
 #include "zend_globals.h" // for struct _zend_executor_globals
 #include "zend_globals_macros.h" // for EG()
 #include "zend_objects.h" // for zend_objects_destroy_object()
 #include "zend_weakrefs.h" // for zend_weakmap_get_object_key_entry_gc()
-#include "zend.h" // for zend_error()
 
 #ifndef GC_BENCH
 # define GC_BENCH 0
