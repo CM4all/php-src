@@ -18,6 +18,8 @@
 #include "zend_enum.h"
 #include "zend_arena.h" // ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX2
 #include "zend_API.h" // for INIT_CLASS_ENTRY_EX()
+#include "zend_class.h" // for zend_class_entry
+#include "zend_compile.h" // for OBJ_PROP_NUM
 #include "zend_enum_arginfo.h"
 #include "zend_interfaces.h"
 #include "zend_extensions.h" // for zend_internal_run_time_cache_reserved_size()
@@ -676,6 +678,34 @@ ZEND_API zend_object *zend_enum_get_case_cstr(zend_class_entry *ce, const char *
 ZEND_API zend_object *zend_enum_get_case_by_id(zend_class_entry *ce, int id) {
 	zend_class_constant *c = Z_PTR(CE_CONSTANTS_TABLE(ce)->arData[id - 1].val);
 	return zend_enum_case_from_class_constant(c);
+}
+
+ZEND_API zend_enum_obj *zend_enum_obj_from_obj(zend_object *zobj)
+{
+	ZEND_ASSERT(zobj->ce->ce_flags & ZEND_ACC_ENUM);
+	return ZEND_CONTAINER_OF(zobj, zend_enum_obj, std);
+}
+
+ZEND_API int zend_enum_fetch_case_id(zend_object *zobj)
+{
+	ZEND_ASSERT(zobj->ce->ce_flags & ZEND_ACC_ENUM);
+	return zend_enum_obj_from_obj(zobj)->case_id;
+}
+
+ZEND_API zval *zend_enum_fetch_case_name(zend_object *zobj)
+{
+	ZEND_ASSERT(zobj->ce->ce_flags & ZEND_ACC_ENUM);
+
+	zval *name = OBJ_PROP_NUM(zobj, 0);
+	ZEND_ASSERT(Z_TYPE_P(name) == IS_STRING);
+	return name;
+}
+
+ZEND_API zval *zend_enum_fetch_case_value(zend_object *zobj)
+{
+	ZEND_ASSERT(zobj->ce->ce_flags & ZEND_ACC_ENUM);
+	ZEND_ASSERT(zobj->ce->enum_backing_type != IS_UNDEF);
+	return OBJ_PROP_NUM(zobj, 1);
 }
 
 void zend_enum_startup(void)
