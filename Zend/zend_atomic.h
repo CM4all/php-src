@@ -18,6 +18,7 @@
 #include "zend_portability.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #define ZEND_GCC_PREREQ(x, y) \
 	((__GNUC__ == (x) && __GNUC_MINOR__ >= (y)) || (__GNUC__ > (x)))
