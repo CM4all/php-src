@@ -31,6 +31,10 @@
 # define GC_BENCH 0
 #endif
 
+typedef struct _zend_object zend_object;
+typedef struct _zend_refcounted zend_refcounted;
+typedef struct _zval_struct zval;
+
 BEGIN_EXTERN_C()
 
 typedef struct _zend_gc_status {
@@ -89,20 +93,7 @@ size_t zend_gc_globals_size(void);
 	((GC_TYPE_INFO(ref) & \
 		(GC_INFO_MASK | (GC_NOT_COLLECTABLE << GC_FLAGS_SHIFT))) == 0)
 
-static zend_always_inline void gc_check_possible_root(zend_refcounted *ref)
-{
-	if (EXPECTED(GC_TYPE_INFO(ref) == GC_REFERENCE)) {
-		zval *zv = &((zend_reference*)ref)->val;
-
-		if (!Z_COLLECTABLE_P(zv)) {
-			return;
-		}
-		ref = Z_COUNTED_P(zv);
-	}
-	if (UNEXPECTED(GC_MAY_LEAK(ref))) {
-		gc_possible_root(ref);
-	}
-}
+ZEND_API void gc_check_possible_root(zend_refcounted *ref);
 
 static zend_always_inline void gc_check_possible_root_no_ref(zend_refcounted *ref)
 {
@@ -125,40 +116,14 @@ typedef struct _zend_get_gc_buffer {
 ZEND_API zend_get_gc_buffer *zend_get_gc_buffer_create(void);
 ZEND_API void zend_get_gc_buffer_grow(zend_get_gc_buffer *gc_buffer);
 
-static zend_always_inline void zend_get_gc_buffer_add_zval(
-		zend_get_gc_buffer *gc_buffer, zval *zv) {
-	if (Z_REFCOUNTED_P(zv)) {
-		if (UNEXPECTED(gc_buffer->cur == gc_buffer->end)) {
-			zend_get_gc_buffer_grow(gc_buffer);
-		}
-		ZVAL_COPY_VALUE(gc_buffer->cur, zv);
-		gc_buffer->cur++;
-	}
-}
+ZEND_API void zend_get_gc_buffer_add_zval(zend_get_gc_buffer *gc_buffer, zval *zv);
 
-static zend_always_inline void zend_get_gc_buffer_add_obj(
-		zend_get_gc_buffer *gc_buffer, zend_object *obj) {
-	if (UNEXPECTED(gc_buffer->cur == gc_buffer->end)) {
-		zend_get_gc_buffer_grow(gc_buffer);
-	}
-	ZVAL_OBJ(gc_buffer->cur, obj);
-	gc_buffer->cur++;
-}
+ZEND_API void zend_get_gc_buffer_add_obj(zend_get_gc_buffer *gc_buffer, zend_object *obj);
 
-static zend_always_inline void zend_get_gc_buffer_add_ptr(
-		zend_get_gc_buffer *gc_buffer, void *ptr) {
-	if (UNEXPECTED(gc_buffer->cur == gc_buffer->end)) {
-		zend_get_gc_buffer_grow(gc_buffer);
-	}
-	ZVAL_PTR(gc_buffer->cur, ptr);
-	gc_buffer->cur++;
-}
+ZEND_API void zend_get_gc_buffer_add_ptr(
+		zend_get_gc_buffer *gc_buffer, void *ptr);
 
-static zend_always_inline void zend_get_gc_buffer_use(
-		zend_get_gc_buffer *gc_buffer, zval **table, int *n) {
-	*table = gc_buffer->start;
-	*n = gc_buffer->cur - gc_buffer->start;
-}
+ZEND_API void zend_get_gc_buffer_use(zend_get_gc_buffer *gc_buffer, zval **table, int *n);
 
 END_EXTERN_C()
 
