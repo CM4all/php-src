@@ -20,8 +20,10 @@
 #include "zend_attributes.h"
 #include "zend_API.h" // needed by zend_attributes_arginfo.h
 #include "zend_attributes_arginfo.h"
+#include "zend_compile.h" // for ZEND_USER_CLASS
 #include "zend_objects.h" // for zend_objects_new()
 #include "zend_smart_str.h"
+#include "zend.h" // for struct _zend_class_entry
 
 ZEND_API zend_class_entry *zend_ce_attribute;
 ZEND_API zend_class_entry *zend_ce_return_type_will_change_attribute;
@@ -362,6 +364,36 @@ ZEND_API zend_internal_attribute *zend_internal_attribute_register(zend_class_en
 ZEND_API zend_internal_attribute *zend_internal_attribute_get(zend_string *lcname)
 {
 	return zend_hash_find_ptr(&internal_attributes, lcname);
+}
+
+ZEND_API zend_attribute *zend_add_class_attribute(zend_class_entry *ce, zend_string *name, uint32_t argc)
+{
+	uint32_t flags = ce->type != ZEND_USER_CLASS ? ZEND_ATTRIBUTE_PERSISTENT : 0;
+	return zend_add_attribute(&ce->attributes, name, argc, flags, 0, 0);
+}
+
+ZEND_API zend_attribute *zend_add_function_attribute(zend_function *func, zend_string *name, uint32_t argc)
+{
+	uint32_t flags = func->common.type != ZEND_USER_FUNCTION ? ZEND_ATTRIBUTE_PERSISTENT : 0;
+	return zend_add_attribute(&func->common.attributes, name, argc, flags, 0, 0);
+}
+
+ZEND_API zend_attribute *zend_add_parameter_attribute(zend_function *func, uint32_t offset, zend_string *name, uint32_t argc)
+{
+	uint32_t flags = func->common.type != ZEND_USER_FUNCTION ? ZEND_ATTRIBUTE_PERSISTENT : 0;
+	return zend_add_attribute(&func->common.attributes, name, argc, flags, offset + 1, 0);
+}
+
+ZEND_API zend_attribute *zend_add_property_attribute(zend_class_entry *ce, zend_property_info *info, zend_string *name, uint32_t argc)
+{
+	uint32_t flags = ce->type != ZEND_USER_CLASS ? ZEND_ATTRIBUTE_PERSISTENT : 0;
+	return zend_add_attribute(&info->attributes, name, argc, flags, 0, 0);
+}
+
+ZEND_API zend_attribute *zend_add_class_constant_attribute(zend_class_entry *ce, zend_class_constant *c, zend_string *name, uint32_t argc)
+{
+	uint32_t flags = ce->type != ZEND_USER_CLASS ? ZEND_ATTRIBUTE_PERSISTENT : 0;
+	return zend_add_attribute(&c->attributes, name, argc, flags, 0, 0);
 }
 
 void zend_register_attribute_ce(void)
