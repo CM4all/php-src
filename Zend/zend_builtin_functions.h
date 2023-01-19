@@ -20,8 +20,11 @@
 #ifndef ZEND_BUILTIN_FUNCTIONS_H
 #define ZEND_BUILTIN_FUNCTIONS_H
 
+#include "zend_portability.h" // for BEGIN_EXTERN_C
 #include "zend_result.h"
 #include "zend_types.h"
+
+typedef struct _zval_struct zval;
 
 typedef struct _zval_struct zval;
 
