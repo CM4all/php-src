@@ -19,6 +19,7 @@
 #include "zend_enum.h"
 #include "zend_arena.h" // ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX2
 #include "zend_API.h" // for INIT_CLASS_ENTRY_EX()
+#include "zend_compile.h" // for OBJ_PROP_NUM
 #include "zend_enum_arginfo.h"
 #include "zend_interfaces.h"
 #include "zend_extensions.h" // for zend_internal_run_time_cache_reserved_size()
@@ -619,4 +620,17 @@ ZEND_API zend_object *zend_enum_get_case_cstr(zend_class_entry *ce, const char *
 	zend_object *result = zend_enum_get_case(ce, name_str);
 	zend_string_release(name_str);
 	return result;
+}
+
+ZEND_API zval *zend_enum_fetch_case_name(zend_object *zobj)
+{
+	ZEND_ASSERT(zobj->ce->ce_flags & ZEND_ACC_ENUM);
+	return OBJ_PROP_NUM(zobj, 0);
+}
+
+ZEND_API zval *zend_enum_fetch_case_value(zend_object *zobj)
+{
+	ZEND_ASSERT(zobj->ce->ce_flags & ZEND_ACC_ENUM);
+	ZEND_ASSERT(zobj->ce->enum_backing_type != IS_UNDEF);
+	return OBJ_PROP_NUM(zobj, 1);
 }
