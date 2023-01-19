@@ -75,6 +75,8 @@
 #include "zend_objects.h" // for zend_objects_destroy_object()
 #include "zend_error.h"
 
+#include "zend_types.h" // for GC_TYPE_INFO()
+
 #ifndef GC_BENCH
 # define GC_BENCH 0
 #endif
@@ -1697,6 +1699,21 @@ ZEND_API void zend_gc_get_status(zend_gc_status *status)
 	status->num_roots = GC_G(num_roots);
 }
 
+ZEND_API void gc_check_possible_root(zend_refcounted *ref)
+{
+	if (EXPECTED(GC_TYPE_INFO(ref) == GC_REFERENCE)) {
+		zval *zv = &((zend_reference*)ref)->val;
+
+		if (!Z_COLLECTABLE_P(zv)) {
+			return;
+		}
+		ref = Z_COUNTED_P(zv);
+	}
+	if (UNEXPECTED(GC_MAY_LEAK(ref))) {
+		gc_possible_root(ref);
+	}
+}
+
 ZEND_API zend_get_gc_buffer *zend_get_gc_buffer_create(void) {
 	/* There can only be one get_gc() call active at a time,
 	 * so there only needs to be one buffer. */
@@ -1789,3 +1806,29 @@ size_t zend_gc_globals_size(void)
 	return sizeof(zend_gc_globals);
 }
 #endif
+
+ZEND_API void zend_get_gc_buffer_add_zval(
+		zend_get_gc_buffer *gc_buffer, zval *zv) {
+	if (Z_REFCOUNTED_P(zv)) {
+		if (UNEXPECTED(gc_buffer->cur == gc_buffer->end)) {
+			zend_get_gc_buffer_grow(gc_buffer);
+		}
+		ZVAL_COPY_VALUE(gc_buffer->cur, zv);
+		gc_buffer->cur++;
+	}
+}
+
+ZEND_API void zend_get_gc_buffer_add_obj(
+		zend_get_gc_buffer *gc_buffer, zend_object *obj) {
+	if (UNEXPECTED(gc_buffer->cur == gc_buffer->end)) {
+		zend_get_gc_buffer_grow(gc_buffer);
+	}
+	ZVAL_OBJ(gc_buffer->cur, obj);
+	gc_buffer->cur++;
+}
+
+ZEND_API void zend_get_gc_buffer_use(
+		zend_get_gc_buffer *gc_buffer, zval **table, int *n) {
+	*table = gc_buffer->start;
+	*n = gc_buffer->cur - gc_buffer->start;
+}
