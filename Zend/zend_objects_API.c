@@ -20,11 +20,15 @@
 
 #include "zend_objects_API.h"
 #include "zend_objects.h" // for zend_objects_destroy_object()
-#include "zend.h"
 #include "zend_globals.h"
 #include "zend_variables.h"
 #include "zend_API.h"
 #include "zend_fibers.h"
+
+#include "zend_compile.h" // for ZEND_ACC_USE_GUARDS
+#include "zend_class.h" // for _zend_class_entry
+
+#include <string.h> // for memset()
 
 ZEND_API void ZEND_FASTCALL zend_objects_store_init(zend_objects_store *objects, uint32_t init_size)
 {
@@ -207,3 +211,47 @@ ZEND_API void ZEND_FASTCALL zend_objects_store_del(zend_object *object) /* {{{ *
 	}
 }
 /* }}} */
+
+ZEND_API void zend_object_store_ctor_failed(zend_object *obj)
+{
+	GC_ADD_FLAGS(obj, IS_OBJ_DESTRUCTOR_CALLED);
+}
+
+ZEND_API void zend_object_release(zend_object *obj)
+{
+	if (GC_DELREF(obj) == 0) {
+		zend_objects_store_del(obj);
+	} else if (UNEXPECTED(GC_MAY_LEAK((zend_refcounted*)obj))) {
+		gc_possible_root((zend_refcounted*)obj);
+	}
+}
+
+ZEND_API size_t zend_object_properties_size(zend_class_entry *ce)
+{
+	return sizeof(zval) *
+		(ce->default_properties_count -
+			((ce->ce_flags & ZEND_ACC_USE_GUARDS) ? 0 : 1));
+}
+
+ZEND_API void *zend_object_alloc(size_t obj_size, zend_class_entry *ce) {
+	void *obj = emalloc(obj_size + zend_object_properties_size(ce));
+	memset(obj, 0, obj_size - sizeof(zend_object));
+	return obj;
+}
+
+ZEND_API zend_property_info *zend_get_property_info_for_slot(zend_object *obj, zval *slot)
+{
+	zend_property_info **table = obj->ce->properties_info_table;
+	intptr_t prop_num = slot - obj->properties_table;
+	ZEND_ASSERT(prop_num >= 0 && prop_num < obj->ce->default_properties_count);
+	return table[prop_num];
+}
+
+ZEND_API zend_property_info *zend_get_typed_property_info_for_slot(zend_object *obj, zval *slot)
+{
+	zend_property_info *prop_info = zend_get_property_info_for_slot(obj, slot);
+	if (prop_info && ZEND_TYPE_IS_SET(prop_info->type)) {
+		return prop_info;
+	}
+	return NULL;
+}
