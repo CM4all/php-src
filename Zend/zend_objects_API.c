@@ -20,11 +20,15 @@
 
 #include "zend_objects_API.h"
 #include "zend_objects.h" // for zend_objects_destroy_object()
-#include "zend.h"
 #include "zend_globals.h"
 #include "zend_variables.h"
 #include "zend_API.h"
 #include "zend_fibers.h"
+
+#include "zend_compile.h" // for ZEND_ACC_USE_GUARDS
+#include "zend_class.h" // for _zend_class_entry
+
+#include <string.h> // for memset()
 
 ZEND_API void ZEND_FASTCALL zend_objects_store_init(zend_objects_store *objects, uint32_t init_size)
 {
@@ -214,4 +218,80 @@ ZEND_API ZEND_COLD zend_property_info *zend_get_property_info_for_slot_slow(zend
 		}
 	} ZEND_HASH_FOREACH_END();
 	return NULL;
+}
+
+ZEND_API void zend_object_store_ctor_failed(zend_object *obj)
+{
+	GC_ADD_FLAGS(obj, IS_OBJ_DESTRUCTOR_CALLED);
+}
+
+ZEND_API void zend_object_release(zend_object *obj)
+{
+	if (GC_DELREF(obj) == 0) {
+		zend_objects_store_del(obj);
+	} else if (UNEXPECTED(GC_MAY_LEAK((zend_refcounted*)obj))) {
+		gc_possible_root((zend_refcounted*)obj);
+	}
+}
+
+ZEND_API size_t zend_object_properties_size(zend_class_entry *ce)
+{
+	return sizeof(zval) *
+		(ce->default_properties_count -
+			((ce->ce_flags & ZEND_ACC_USE_GUARDS) ? 0 : 1));
+}
+
+ZEND_API void *zend_object_alloc(size_t obj_size, zend_class_entry *ce) {
+	void *obj = emalloc(obj_size + zend_object_properties_size(ce));
+	memset(obj, 0, obj_size - sizeof(zend_object));
+	return obj;
+}
+
+ZEND_API ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_property_info_for_slot_self(zend_object *obj, zval *slot)
+{
+	zend_property_info **table = obj->ce->properties_info_table;
+	intptr_t prop_num = slot - obj->properties_table;
+	ZEND_ASSERT(prop_num >= 0 && prop_num < obj->ce->default_properties_count);
+	if (table[prop_num]) {
+		return table[prop_num];
+	} else {
+		return zend_get_property_info_for_slot_slow(obj, slot);
+	}
+}
+
+ZEND_API ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_property_info_for_slot(zend_object *obj, zval *slot)
+{
+	if (UNEXPECTED(zend_object_is_lazy_proxy(obj))) {
+		return zend_lazy_object_get_property_info_for_slot(obj, slot);
+	}
+	zend_property_info **table = obj->ce->properties_info_table;
+	intptr_t prop_num = slot - obj->properties_table;
+	ZEND_ASSERT(prop_num >= 0 && prop_num < obj->ce->default_properties_count);
+	if (table[prop_num]) {
+		return table[prop_num];
+	} else {
+		return zend_get_property_info_for_slot_slow(obj, slot);
+	}
+}
+
+/* Helper for cases where we're only interested in property info of typed properties. */
+ZEND_API ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_typed_property_info_for_slot(zend_object *obj, zval *slot)
+{
+	zend_property_info *prop_info = zend_get_property_info_for_slot(obj, slot);
+	if (prop_info && ZEND_TYPE_IS_SET(prop_info->type)) {
+		return prop_info;
+	}
+	return NULL;
+}
+
+ZEND_API ZEND_ATTRIBUTE_PURE bool zend_check_method_accessible(const zend_function *fn, const zend_class_entry *scope)
+{
+	if (!(fn->common.fn_flags & ZEND_ACC_PUBLIC)
+		&& fn->common.scope != scope
+		&& (UNEXPECTED(fn->common.fn_flags & ZEND_ACC_PRIVATE)
+			|| UNEXPECTED(!zend_check_protected(zend_get_function_root_class(fn), scope)))) {
+		return false;
+	}
+
+	return true;
 }
