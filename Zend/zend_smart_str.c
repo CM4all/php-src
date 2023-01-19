@@ -18,6 +18,7 @@
 #include "zend_smart_str.h"
 #include "zend_smart_string.h"
 #include "zend_enum.h"
+#include "zend_error.h"
 
 #define SMART_STR_OVERHEAD   (ZEND_MM_OVERHEAD + _ZSTR_HEADER_SIZE + 1)
 #define SMART_STR_START_SIZE 256
