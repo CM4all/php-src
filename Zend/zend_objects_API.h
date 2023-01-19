@@ -21,15 +21,14 @@
 #define ZEND_OBJECTS_API_H
 
 #include "zend_portability.h" // for BEGIN_EXTERN_C
-#include "zend_gc.h" // for GC_MAY_LEAK
-#include "zend_compile.h" // for ZEND_ACC_USE_GUARDS
-#include "zend_class.h" // for _zend_class_entry
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <string.h> // for memset()
 
+typedef struct _zend_class_entry zend_class_entry;
 typedef struct _zend_object zend_object;
+typedef struct _zend_property_info zend_property_info;
+typedef struct _zval_struct zval;
 
 #define OBJ_BUCKET_INVALID			(1<<0)
 
@@ -70,55 +69,22 @@ ZEND_API void ZEND_FASTCALL zend_objects_store_put(zend_object *object);
 ZEND_API void ZEND_FASTCALL zend_objects_store_del(zend_object *object);
 
 /* Called when the ctor was terminated by an exception */
-static zend_always_inline void zend_object_store_ctor_failed(zend_object *obj)
-{
-	GC_ADD_FLAGS(obj, IS_OBJ_DESTRUCTOR_CALLED);
-}
+ZEND_API void zend_object_store_ctor_failed(zend_object *obj);
 
-END_EXTERN_C()
+ZEND_API void zend_object_release(zend_object *obj);
 
-static zend_always_inline void zend_object_release(zend_object *obj)
-{
-	if (GC_DELREF(obj) == 0) {
-		zend_objects_store_del(obj);
-	} else if (UNEXPECTED(GC_MAY_LEAK((zend_refcounted*)obj))) {
-		gc_possible_root((zend_refcounted*)obj);
-	}
-}
-
-static zend_always_inline size_t zend_object_properties_size(zend_class_entry *ce)
-{
-	return sizeof(zval) *
-		(ce->default_properties_count -
-			((ce->ce_flags & ZEND_ACC_USE_GUARDS) ? 0 : 1));
-}
+ZEND_API size_t zend_object_properties_size(zend_class_entry *ce);
 
 /* Allocates object type and zeros it, but not the standard zend_object and properties.
  * Standard object MUST be initialized using zend_object_std_init().
  * Properties MUST be initialized using object_properties_init(). */
-static zend_always_inline void *zend_object_alloc(size_t obj_size, zend_class_entry *ce) {
-	void *obj = emalloc(obj_size + zend_object_properties_size(ce));
-	memset(obj, 0, obj_size - sizeof(zend_object));
-	return obj;
-}
+ZEND_API void *zend_object_alloc(size_t obj_size, zend_class_entry *ce);
 
-static inline ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_property_info_for_slot(zend_object *obj, zval *slot)
-{
-	zend_property_info **table = obj->ce->properties_info_table;
-	intptr_t prop_num = slot - obj->properties_table;
-	ZEND_ASSERT(prop_num >= 0 && prop_num < obj->ce->default_properties_count);
-	return table[prop_num];
-}
+ZEND_API ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_property_info_for_slot(zend_object *obj, zval *slot);
 
 /* Helper for cases where we're only interested in property info of typed properties. */
-static inline ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_typed_property_info_for_slot(zend_object *obj, zval *slot)
-{
-	zend_property_info *prop_info = zend_get_property_info_for_slot(obj, slot);
-	if (prop_info && ZEND_TYPE_IS_SET(prop_info->type)) {
-		return prop_info;
-	}
-	return NULL;
-}
+ZEND_API ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_typed_property_info_for_slot(zend_object *obj, zval *slot);
 
+END_EXTERN_C()
 
 #endif /* ZEND_OBJECTS_H */
