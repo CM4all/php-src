@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "zend.h"
+#include "zend_error.h"
 #include "zend_globals.h"
 #include <signal.h>
 
