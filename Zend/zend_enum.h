@@ -19,11 +19,19 @@
 #ifndef ZEND_ENUM_H
 #define ZEND_ENUM_H
 
-#include "zend_compile.h" // for OBJ_PROP_NUM
+#include "zend_char.h"
+#include "zend_long.h"
 #include "zend_portability.h" // for BEGIN_EXTERN_C
+#include "zend_result.h"
+
+#include <stdbool.h>
 
 typedef struct _zend_class_entry zend_class_entry;
 typedef struct _zend_function_entry zend_function_entry;
+typedef struct _zend_object zend_object;
+typedef struct _zend_object_handlers zend_object_handlers;
+typedef struct _zend_string zend_string;
+typedef struct _zval_struct zval;
 
 #include <stdint.h>
 
@@ -48,18 +56,8 @@ ZEND_API zend_object *zend_enum_get_case(zend_class_entry *ce, zend_string *name
 ZEND_API zend_object *zend_enum_get_case_cstr(zend_class_entry *ce, const char *name);
 ZEND_API zend_result zend_enum_get_case_by_value(zend_object **result, zend_class_entry *ce, zend_long long_key, zend_string *string_key, bool try_from);
 
-static zend_always_inline zval *zend_enum_fetch_case_name(zend_object *zobj)
-{
-	ZEND_ASSERT(zobj->ce->ce_flags & ZEND_ACC_ENUM);
-	return OBJ_PROP_NUM(zobj, 0);
-}
-
-static zend_always_inline zval *zend_enum_fetch_case_value(zend_object *zobj)
-{
-	ZEND_ASSERT(zobj->ce->ce_flags & ZEND_ACC_ENUM);
-	ZEND_ASSERT(zobj->ce->enum_backing_type != IS_UNDEF);
-	return OBJ_PROP_NUM(zobj, 1);
-}
+ZEND_API zval *zend_enum_fetch_case_name(zend_object *zobj);
+ZEND_API zval *zend_enum_fetch_case_value(zend_object *zobj);
 
 END_EXTERN_C()
 
