@@ -189,6 +189,7 @@
 #include <zend_operators.h>
 #include <zend_strtod.h>
 #include "zend_strtod_int.h"
+#include "zend_error.h"
 #include "zend_globals.h"
 
 #ifndef Long

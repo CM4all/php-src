@@ -69,6 +69,7 @@
 #include "zend.h"
 #include "zend_API.h"
 #include "zend_compile.h"
+#include "zend_error.h"
 #include "zend_errors.h"
 #include "zend_fibers.h"
 #include "zend_hrtime.h"
