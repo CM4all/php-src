@@ -15,13 +15,9 @@
    +----------------------------------------------------------------------+
 */
 
-#include "zend_compile.h"
-#include "zend_extensions.h"
-#include "zend_ssa.h"
-#include "zend_optimizer_internal.h"
-#include "zend_inference.h"
-#include "zend_call_graph.h"
 #include "zend_func_info.h"
+#include "zend_extensions.h" // for zend_get_resource_handle()
+#include "zend_inference.h" // for zend_get_return_info_from_signature_only(), _ssa_op1_info()
 #ifdef _WIN32
 #include "win32/ioutil.h"
 #endif
