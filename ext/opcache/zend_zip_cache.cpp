@@ -55,11 +55,11 @@ public:
 	 * Unserialize the bytecode into a #zend_persistent_script in
 	 * shared memory and add it to ZCSG(hash).
 	 */
-	zend_persistent_script *LoadScript(zend_string *script_path) const noexcept;
+	zend_persistent_script *LoadScript() const noexcept;
 };
 
 inline zend_persistent_script *
-ZendArchiveFile::LoadScript(zend_string *script_path) const noexcept
+ZendArchiveFile::LoadScript() const noexcept
 {
 	if (ZCSG(restart_in_progress) ||
 	    ZSMMG(memory_exhausted) ||
@@ -124,9 +124,9 @@ class ZendArchive {
 public:
 	ZendArchive(void *_data, std::size_t _size) noexcept;
 
-	zend_persistent_script *LoadScript(zend_string *script_path, std::string_view filename) const noexcept {
+	zend_persistent_script *LoadScript(std::string_view filename) const noexcept {
 		if (auto i = files.find(filename); i != files.end())
-			return i->second.LoadScript(script_path);
+			return i->second.LoadScript();
 
 		return nullptr;
 	}
@@ -181,7 +181,7 @@ private:
 public:
 	void LoadArchive(std::string_view path) noexcept;
 
-	zend_persistent_script *LoadScript(zend_string *script_path, std::string_view path) const noexcept;
+	zend_persistent_script *LoadScript(std::string_view path) const noexcept;
 };
 
 /**
@@ -252,7 +252,7 @@ void zend_zip_cache_load(struct ZendZipCache *cache, const char *path, size_t pa
 	cache->LoadArchive({path, path_length});
 }
 
-inline zend_persistent_script *ZendZipCache::LoadScript(zend_string *script_path, std::string_view path) const noexcept
+inline zend_persistent_script *ZendZipCache::LoadScript(std::string_view path) const noexcept
 {
 	for (auto i = archives.lower_bound(path); i != archives.begin();) {
 		--i;
@@ -265,7 +265,7 @@ inline zend_persistent_script *ZendZipCache::LoadScript(zend_string *script_path
 		if (path[i_path.size()] == '/') {
 			std::string_view filename{path};
 			filename.remove_prefix(i_path.size() + 1);
-			return i->second.LoadScript(script_path, filename);
+			return i->second.LoadScript(filename);
 		}
 	}
 
@@ -278,5 +278,5 @@ zend_persistent_script *zend_zip_cache_script_load(struct ZendZipCache *cache, z
 	assert(script_path != nullptr);
 
 	const std::string_view path{ZSTR_VAL(script_path), ZSTR_LEN(script_path)};
-	return cache->LoadScript(script_path, path);
+	return cache->LoadScript(path);
 }
