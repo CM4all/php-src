@@ -2561,6 +2561,19 @@ static zend_string* normalize_path(zend_string *src)
 	while (s < s_end) {
 		const char ch = *s++;
 
+		if (was_slash && ch == '.' && s[0] == '.' && IS_SLASH(s[1])) {
+			/* "/../": backtrack to last slash */
+
+			size_t d_length = d - d0 - 1;
+
+			char *d_slash = memrchr(d0, '/', d_length);
+			if (d_slash != NULL) {
+				d = d_slash + 1;
+				s += 2;
+				continue;
+			}
+		}
+
 		if (IS_SLASH(ch)) {
 			if (s[0] == '.' && IS_SLASH(s[1]))
 				/* replace "/./" with just "/" */
