@@ -2007,11 +2007,13 @@ zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int type)
 	zend_string *key = NULL;
 	bool from_shared_memory; /* if the script we've got is stored in SHM */
 
-	if (!file_handle->filename || !ZCG(accelerator_enabled)) {
+	zend_string *filename = file_handle->filename;
+
+	if (!filename || !ZCG(accelerator_enabled)) {
 		/* The Accelerator is disabled, act as if without the Accelerator */
 		ZCG(cache_opline) = NULL;
 		ZCG(cache_persistent_script) = NULL;
-		if (file_handle->filename
+		if (filename
 		 && ZCG(accel_directives).file_cache
 		 && ZCG(enabled) && accel_startup_ok) {
 			return file_cache_compile_file(file_handle, type);
@@ -2050,21 +2052,21 @@ zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int type)
 	} else {
 		if (!ZCG(accel_directives).revalidate_path) {
 			/* try to find cached script by key */
-			key = accel_make_persistent_key(file_handle->filename);
+			key = accel_make_persistent_key(filename);
 			if (!key) {
 				ZCG(cache_opline) = NULL;
 				ZCG(cache_persistent_script) = NULL;
 				return accelerator_orig_compile_file(file_handle, type);
 			}
 			persistent_script = zend_accel_hash_find(&ZCSG(hash), key);
-		} else if (UNEXPECTED(php_is_stream_path(ZSTR_VAL(file_handle->filename)) && !is_cacheable_stream_path(ZSTR_VAL(file_handle->filename)))) {
+		} else if (UNEXPECTED(php_is_stream_path(ZSTR_VAL(filename)) && !is_cacheable_stream_path(ZSTR_VAL(filename)))) {
 			ZCG(cache_opline) = NULL;
 			ZCG(cache_persistent_script) = NULL;
 			return accelerator_orig_compile_file(file_handle, type);
 		}
 
-		if (!persistent_script && zend_zip_cache && file_handle->filename) {
-			persistent_script = zend_zip_cache_script_load(zend_zip_cache, file_handle->filename);
+		if (!persistent_script && zend_zip_cache && filename) {
+			persistent_script = zend_zip_cache_script_load(zend_zip_cache, filename);
 		}
 
 		if (!persistent_script) {
@@ -2076,9 +2078,9 @@ zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int type)
 		     && accelerator_orig_zend_stream_open_function(file_handle) == FAILURE) {
 				if (!EG(exception)) {
 					if (type == ZEND_REQUIRE) {
-						zend_message_dispatcher(ZMSG_FAILED_REQUIRE_FOPEN, ZSTR_VAL(file_handle->filename));
+						zend_message_dispatcher(ZMSG_FAILED_REQUIRE_FOPEN, ZSTR_VAL(filename));
 					} else {
-						zend_message_dispatcher(ZMSG_FAILED_INCLUDE_FOPEN, ZSTR_VAL(file_handle->filename));
+						zend_message_dispatcher(ZMSG_FAILED_INCLUDE_FOPEN, ZSTR_VAL(filename));
 					}
 				}
 				return NULL;
@@ -2133,9 +2135,9 @@ zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int type)
 	    UNEXPECTED(check_persistent_script_access(persistent_script))) {
 		if (!EG(exception)) {
 			if (type == ZEND_REQUIRE) {
-				zend_message_dispatcher(ZMSG_FAILED_REQUIRE_FOPEN, ZSTR_VAL(file_handle->filename));
+				zend_message_dispatcher(ZMSG_FAILED_REQUIRE_FOPEN, ZSTR_VAL(filename));
 			} else {
-				zend_message_dispatcher(ZMSG_FAILED_INCLUDE_FOPEN, ZSTR_VAL(file_handle->filename));
+				zend_message_dispatcher(ZMSG_FAILED_INCLUDE_FOPEN, ZSTR_VAL(filename));
 			}
 		}
 		return NULL;
