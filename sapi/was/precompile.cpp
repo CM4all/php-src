@@ -166,7 +166,7 @@ CrcFromFile(int fd, off_t offset, size_t size) noexcept
 bool
 precompile(const char *const*files, size_t n_files)
 {
-	CG(compiler_options) |= ZEND_COMPILE_WITHOUT_EXECUTION|ZEND_COMPILE_WITH_FILE_CACHE|ZEND_COMPILE_PRELOAD;
+	CG(compiler_options) |= ZEND_COMPILE_WITHOUT_EXECUTION|ZEND_COMPILE_WITH_FILE_CACHE;
 
 	const int fd = open(".", O_TMPFILE|O_RDWR|O_CLOEXEC, 0644);
 	if (fd < 0) {
