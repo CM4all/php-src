@@ -100,7 +100,7 @@ ZEND_API ZEND_COLD zend_property_info *zend_get_property_info_for_slot_slow(zend
 
 /* Use when 'slot' was obtained directly from obj->properties_table, or when
  * 'obj' can not be lazy. Otherwise, use zend_get_property_info_for_slot(). */
-static inline zend_property_info *zend_get_property_info_for_slot_self(zend_object *obj, zval *slot)
+static inline ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_property_info_for_slot_self(zend_object *obj, zval *slot)
 {
 	zend_property_info **table = obj->ce->properties_info_table;
 	intptr_t prop_num = slot - obj->properties_table;
@@ -112,7 +112,7 @@ static inline zend_property_info *zend_get_property_info_for_slot_self(zend_obje
 	}
 }
 
-static inline zend_property_info *zend_get_property_info_for_slot(zend_object *obj, zval *slot)
+static inline ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_property_info_for_slot(zend_object *obj, zval *slot)
 {
 	if (UNEXPECTED(zend_object_is_lazy_proxy(obj))) {
 		return zend_lazy_object_get_property_info_for_slot(obj, slot);
@@ -128,7 +128,7 @@ static inline zend_property_info *zend_get_property_info_for_slot(zend_object *o
 }
 
 /* Helper for cases where we're only interested in property info of typed properties. */
-static inline zend_property_info *zend_get_typed_property_info_for_slot(zend_object *obj, zval *slot)
+static inline ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_typed_property_info_for_slot(zend_object *obj, zval *slot)
 {
 	zend_property_info *prop_info = zend_get_property_info_for_slot(obj, slot);
 	if (prop_info && ZEND_TYPE_IS_SET(prop_info->type)) {
