@@ -138,6 +138,8 @@ static void preload_shutdown(void);
 static void preload_activate(void);
 static void preload_restart(void);
 
+static zend_string* normalize_path(const zend_string *src);
+
 #ifdef HAVE_STDATOMIC_H
 # define INCREMENT(v) (++ZCSG(v))
 # define DECREMENT(v) (--ZCSG(v))
@@ -2001,13 +2003,11 @@ static int check_persistent_script_access(zend_persistent_script *persistent_scr
 }
 
 /* zend_compile() replacement */
-zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int type)
+static zend_op_array *persistent_compile_file_inner(zend_file_handle *file_handle, zend_string *const filename, int type)
 {
 	zend_persistent_script *persistent_script = NULL;
 	zend_string *key = NULL;
 	bool from_shared_memory; /* if the script we've got is stored in SHM */
-
-	zend_string *filename = file_handle->filename;
 
 	if (!filename || !ZCG(accelerator_enabled)) {
 		/* The Accelerator is disabled, act as if without the Accelerator */
@@ -2262,6 +2262,31 @@ zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int type)
 	}
 
 	return zend_accel_load_script(persistent_script, from_shared_memory);
+}
+
+/* zend_compile() replacement */
+zend_op_array *persistent_compile_file(zend_file_handle *file_handle, int type)
+{
+	zend_string *filename = file_handle->filename;
+
+	zend_string *allocated_filename = NULL;
+	if (filename && ZCG(accelerator_enabled) && !file_cache_only &&
+	    !php_is_stream_path(ZSTR_VAL(filename)) && (type == ZEND_INCLUDE || type == ZEND_REQUIRE)) {
+		/* zend_include_or_eval() calls zend_resolve_path()
+		   only for ZEND_INCLUDE_ONCE and ZEND_REQUIRE_ONCE;
+		   for ZEND_INCLUDE/ZEND_REQUIRE, we need to do that
+		   here so lookups in the ZIP file work */
+		filename = allocated_filename = normalize_path(filename);
+	}
+
+	zend_op_array *op_array = persistent_compile_file_inner(file_handle, filename, type);
+
+	if (allocated_filename) {
+		/* free the normalized filename */
+		zend_string_efree(allocated_filename);
+	}
+
+	return op_array;
 }
 
 static zend_always_inline zend_inheritance_cache_entry* zend_accel_inheritance_cache_find(zend_inheritance_cache_entry *entry, zend_class_entry *ce, zend_class_entry *parent, zend_class_entry **traits_and_interfaces, bool *needs_autoload_ptr)
