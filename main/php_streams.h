@@ -362,7 +362,7 @@ PHPAPI int php_stream_free(php_stream *stream, int close_options);
 PHPAPI int php_stream_seek(php_stream *stream, zend_off_t offset, int whence);
 #define php_stream_rewind(stream)	php_stream_seek((stream), 0L, SEEK_SET)
 
-PHPAPI zend_off_t php_stream_tell(const php_stream *stream);
+PHPAPI ZEND_ATTRIBUTE_PURE zend_off_t php_stream_tell(const php_stream *stream);
 
 PHPAPI ssize_t php_stream_read(php_stream *stream, char *buf, size_t count);
 
@@ -375,7 +375,7 @@ PHPAPI zend_result php_stream_fill_read_buffer(php_stream *stream, size_t size);
 
 PHPAPI ssize_t php_stream_printf(php_stream *stream, const char *fmt, ...) PHP_ATTRIBUTE_FORMAT(printf, 2, 3);
 
-PHPAPI bool php_stream_eof(php_stream *stream);
+PHPAPI ZEND_ATTRIBUTE_PURE bool php_stream_eof(php_stream *stream);
 
 PHPAPI int php_stream_getc(php_stream *stream);
 
@@ -640,10 +640,10 @@ PHPAPI php_stream_make_seekable_status _php_stream_make_seekable(php_stream *ori
 #define php_stream_make_seekable(origstream, newstream, flags)	_php_stream_make_seekable((origstream), (newstream), (flags) STREAMS_CC)
 
 /* Give other modules access to the url_stream_wrappers_hash and stream_filters_hash */
-PHPAPI HashTable *php_stream_get_url_stream_wrappers_hash(void);
-PHPAPI HashTable *php_stream_get_url_stream_wrappers_hash_global(void);
-PHPAPI HashTable *php_get_stream_filters_hash(void);
-PHPAPI HashTable *php_get_stream_filters_hash_global(void);
+PHPAPI ZEND_ATTRIBUTE_PURE HashTable *php_stream_get_url_stream_wrappers_hash(void);
+PHPAPI ZEND_ATTRIBUTE_CONST HashTable *php_stream_get_url_stream_wrappers_hash_global(void);
+PHPAPI ZEND_ATTRIBUTE_PURE HashTable *php_get_stream_filters_hash(void);
+PHPAPI ZEND_ATTRIBUTE_CONST HashTable *php_get_stream_filters_hash_global(void);
 extern const php_stream_wrapper_ops *php_stream_user_wrapper_ops;
 
 static inline bool php_is_stream_path(const char *filename)
