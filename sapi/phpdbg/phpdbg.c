@@ -1374,6 +1374,8 @@ phpdbg_main:
 					get_zend_version()
 				);
 			}
+			PHPDBG_G(flags) |= PHPDBG_IS_QUITTING;
+			php_module_shutdown();
 			sapi_deactivate();
 			sapi_shutdown();
 			php_ini_builder_deinit(&ini_builder);

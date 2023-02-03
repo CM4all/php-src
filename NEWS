@@ -1,5 +1,69 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+02 Feb 2023, PHP 8.1.15
+
+- Apache:
+  . Fixed bug GH-9949 (Partial content on incomplete POST request). (cmb)
+
+- Core:
+  . Fixed bug GH-10072 (PHP crashes when execute_ex is overridden and a __call
+    trampoline is used from internal code). (Derick)
+  . Fix GH-10251 (Assertion `(flag & (1<<3)) == 0' failed). (nielsdos)
+  . Fix wrong comparison in block optimisation pass after opcode update. (nieldsdos)
+
+- Date:
+  . Fixed bug GH-9891 (DateTime modify with unixtimestamp (@) must work like
+    setTimestamp). (Derick)
+  . Fixed bug GH-10218 (DateTimeZone fails to parse time zones that contain the
+    "+" character). (Derick)
+
+- Fiber:
+  . Fix assertion on stack allocation size. (nielsdos)
+
+- FPM:
+  . Fixed bug GH-9981 (FPM does not reset fastcgi.error_header).
+    (Jakub Zelenka)
+  . Fixed bug #67244 (Wrong owner:group for listening unix socket).
+    (Jakub Zelenka)
+
+- Hash:
+  . Handle exceptions from __toString in XXH3's initialization (nielsdos)
+
+- LDAP:
+  . Fixed bug GH-10112 (LDAP\Connection::__construct() refers to ldap_create()).
+    (cmb)
+
+- MBString:
+  . Fixed: mb_strlen (and a couple of other mbstring functions) would wrongly treat 0x80, 0xFD, 0xFE, 0xFF, and certain other byte values as the first byte of a 2-byte SJIS character. (Alex Dowad)
+
+- Opcache:
+  . Fix inverted bailout value in zend_runtime_jit() (Max Kellermann).
+  . Fix access to uninitialized variable in accel_preload(). (nielsdos)
+  . Fix zend_jit_find_trace() crashes. (Max Kellermann)
+  . Added missing lock for EXIT_INVALIDATE in zend_jit_trace_exit. (Max Kellermann)
+
+- Phar:
+  . Fix wrong flags check for compression method in phar_object.c (nielsdos)
+
+- PHPDBG:
+  . Fix undefined behaviour in phpdbg_load_module_or_extension(). (nielsdos)
+  . Fix NULL pointer dereference in phpdbg_create_conditional_breal(). (nielsdos)
+  . Fix GH-9710: phpdbg memory leaks by option "-h" (nielsdos)
+  . Fix phpdbg segmentation fault in case of malformed input (nielsdos)
+
+- Posix:
+  . Fix memory leak in posix_ttyname() (girgias)
+
+- Standard:
+  . Fix GH-10187 (Segfault in stripslashes() with arm64). (nielsdos)
+  . Fix substr_replace with slots in repl_ht being UNDEF. (nielsdos)
+
+- TSRM:
+  . Fixed Windows shmget() wrt. IPC_PRIVATE. (Tyson Andre)
+
+- XMLWriter
+  . Fix missing check for xmlTextWriterEndElement (nielsdos)
+
 05 Jan 2023, PHP 8.1.14
 
 - Core:
