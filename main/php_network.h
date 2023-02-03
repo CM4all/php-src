@@ -306,7 +306,7 @@ PHPAPI int php_network_get_peer_name(php_socket_t sock,
 		);
 
 PHPAPI void php_any_addr(int family, php_sockaddr_storage *addr, unsigned short port);
-PHPAPI socklen_t php_sockaddr_size(php_sockaddr_storage *addr);
+PHPAPI ZEND_ATTRIBUTE_PURE socklen_t php_sockaddr_size(php_sockaddr_storage *addr);
 END_EXTERN_C()
 
 struct _php_netstream_data_t	{
@@ -339,7 +339,7 @@ PHPAPI void php_network_populate_name_from_sockaddr(
 PHPAPI zend_result php_network_parse_network_address_with_port(const char *addr,
 		size_t addrlen, struct sockaddr *sa, socklen_t *sl);
 
-PHPAPI struct hostent*	php_network_gethostbyname(const char *name);
+PHPAPI ZEND_ATTRIBUTE_PURE struct hostent*	php_network_gethostbyname(const char *name);
 
 PHPAPI zend_result php_set_sock_blocking(php_socket_t socketd, bool block);
 END_EXTERN_C()
