@@ -77,9 +77,9 @@
 
 BEGIN_EXTERN_C()
 
-ZEND_API const char* ZEND_FASTCALL zend_get_opcode_name(zend_uchar opcode);
-ZEND_API uint32_t ZEND_FASTCALL zend_get_opcode_flags(zend_uchar opcode);
-ZEND_API zend_uchar zend_get_opcode_id(const char *name, size_t length);
+ZEND_API ZEND_ATTRIBUTE_CONST const char* ZEND_FASTCALL zend_get_opcode_name(zend_uchar opcode);
+ZEND_API ZEND_ATTRIBUTE_CONST uint32_t ZEND_FASTCALL zend_get_opcode_flags(zend_uchar opcode);
+ZEND_API ZEND_ATTRIBUTE_PURE zend_uchar zend_get_opcode_id(const char *name, size_t length);
 
 END_EXTERN_C()
 
