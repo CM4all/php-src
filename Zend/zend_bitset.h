@@ -165,7 +165,7 @@ static inline void zend_bitset_fill(zend_bitset set, uint32_t len)
 	memset(set, 0xff, len * ZEND_BITSET_ELM_SIZE);
 }
 
-static inline bool zend_bitset_equal(zend_bitset set1, zend_bitset set2, uint32_t len)
+static inline ZEND_ATTRIBUTE_PURE bool zend_bitset_equal(zend_bitset set1, zend_bitset set2, uint32_t len)
 {
     return memcmp(set1, set2, len * ZEND_BITSET_ELM_SIZE) == 0;
 }
@@ -232,7 +232,7 @@ static inline bool zend_bitset_subset(zend_bitset set1, zend_bitset set2, uint32
 	return 1;
 }
 
-static inline int zend_bitset_first(zend_bitset set, uint32_t len)
+static inline ZEND_ATTRIBUTE_PURE int zend_bitset_first(zend_bitset set, uint32_t len)
 {
 	uint32_t i;
 
@@ -244,7 +244,7 @@ static inline int zend_bitset_first(zend_bitset set, uint32_t len)
 	return -1; /* empty set */
 }
 
-static inline int zend_bitset_last(zend_bitset set, uint32_t len)
+static inline ZEND_ATTRIBUTE_PURE int zend_bitset_last(zend_bitset set, uint32_t len)
 {
 	uint32_t i = len;
 
