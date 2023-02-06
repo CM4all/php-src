@@ -726,7 +726,7 @@ int main(int argc, char *argv[])
 		printf("%.32s\n", zend_system_id);
 		php_module_shutdown();
 		php_ini_builder_deinit(&command_line.ini_builder);
-		return EXIT_FAILURE;
+		return EXIT_SUCCESS;
 	}
 
 	if (was_sapi_module.startup(&was_sapi_module) == FAILURE) {
