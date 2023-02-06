@@ -726,7 +726,7 @@ int main(int argc, char *argv[])
 	if (was_sapi_module.startup(&was_sapi_module) == FAILURE) {
 		php_module_shutdown();
 		php_ini_builder_deinit(&command_line.ini_builder);
-		return EXIT_SUCCESS;
+		return EXIT_FAILURE;
 	}
 
 	if (command_line.print_system_id) {
