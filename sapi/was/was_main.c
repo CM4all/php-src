@@ -722,17 +722,17 @@ int main(int argc, char *argv[])
 
 	init_sapi_from_env(&was_sapi_module);
 
+	if (was_sapi_module.startup(&was_sapi_module) == FAILURE) {
+		php_module_shutdown();
+		php_ini_builder_deinit(&command_line.ini_builder);
+		return EXIT_FAILURE;
+	}
+
 	if (command_line.print_system_id) {
 		printf("%.32s\n", zend_system_id);
 		php_module_shutdown();
 		php_ini_builder_deinit(&command_line.ini_builder);
 		return EXIT_SUCCESS;
-	}
-
-	if (was_sapi_module.startup(&was_sapi_module) == FAILURE) {
-		php_module_shutdown();
-		php_ini_builder_deinit(&command_line.ini_builder);
-		return EXIT_FAILURE;
 	}
 
 	ret = EXIT_SUCCESS;
