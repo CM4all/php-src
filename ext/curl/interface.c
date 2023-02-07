@@ -60,6 +60,13 @@
 #include "ext/standard/file.h"
 #include "ext/standard/url.h"
 #include "curl_private.h"
+
+#ifdef __GNUC__
+/* don't complain about deprecated CURLOPT_* we're exposing to PHP; we
+   need to keep using those to avoid breaking PHP API compatibiltiy */
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 #include "curl_arginfo.h"
 
 #ifdef PHP_CURL_NEED_OPENSSL_TSL /* {{{ */
