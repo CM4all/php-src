@@ -299,7 +299,7 @@ ZEND_API void  ZEND_FASTCALL zend_hash_sort_ex(HashTable *ht, sort_func_t sort_f
 void  ZEND_FASTCALL zend_array_sort_ex(HashTable *ht, sort_func_t sort_func, bucket_compare_func_t compare_func, bool renumber);
 ZEND_API zval* ZEND_FASTCALL zend_hash_minmax(const HashTable *ht, compare_func_t compar, uint32_t flag);
 
-static zend_always_inline void ZEND_FASTCALL zend_hash_sort(HashTable *ht, bucket_compare_func_t compare_func, zend_bool renumber) {
+static zend_always_inline void ZEND_FASTCALL zend_hash_sort(HashTable *ht, bucket_compare_func_t compare_func, bool renumber) {
 	zend_hash_sort_ex(ht, zend_sort, compare_func, renumber);
 }
 
