@@ -17,8 +17,8 @@
 */
 
 #include "zend_compile.h"
-#include "zend.h" // for zend_class_entry
 #include "zend_cfg.h"
+#include "zend_class.h"
 #include "zend_ssa.h"
 #include "zend_inference.h"
 #include "zend_frameless_function.h"

@@ -17,7 +17,7 @@
 */
 
 #include "zend_inference.h"
-#include "zend.h" // for struct _zend_class_entry
+#include "zend_class.h"
 #include "zend_closures.h" // for zend_ce_closure
 #include "zend_generators.h" // for zend_ce_generator
 #include "zend_func_info.h"

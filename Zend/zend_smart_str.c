@@ -16,6 +16,7 @@
 
 #include "zend_smart_str.h"
 #include "zend_smart_string.h"
+#include "zend_class.h"
 #include "zend_enum.h"
 #include "zend_error.h"
 #include "zend_globals_macros.h" // for EG()

@@ -19,7 +19,7 @@
 #ifndef ZEND_ENUM_H
 #define ZEND_ENUM_H
 
-#include "zend.h" // for zend_class_entry
+#include "zend_class.h" // for zend_class_entry
 #include "zend_compile.h" // for OBJ_PROP_NUM
 #include "zend_portability.h" // for BEGIN_EXTERN_C
 
