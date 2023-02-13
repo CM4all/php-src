@@ -22,7 +22,7 @@
 #ifndef ZEND_API_H
 #define ZEND_API_H
 
-#include "zend.h" // for zend_class_entry
+#include "zend_class.h" // for zend_class_entry
 #include "zend_compile.h" // for zif_handler
 #include "zend_execute.h" // for get_active_function_or_method_name()
 #include "zend_gc.h" // for zend_get_gc_buffer_add_obj()
