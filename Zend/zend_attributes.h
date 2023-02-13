@@ -20,7 +20,7 @@
 #ifndef ZEND_ATTRIBUTES_H
 #define ZEND_ATTRIBUTES_H
 
-#include "zend.h" // for struct _zend_class_entry
+#include "zend_class.h"
 #include "zend_compile.h" // for ZEND_USER_CLASS
 #include "zend_portability.h" // for BEGIN_EXTERN_C
 #include "zend_types.h" // for zval
