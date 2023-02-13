@@ -18,8 +18,8 @@
 
 #include "Optimizer/zend_optimizer.h"
 #include "Optimizer/zend_optimizer_internal.h"
-#include "zend.h" // for zend_class_entry
 #include "zend_bitset.h"
+#include "zend_class.h" // for zend_class_entry
 #include "zend_cfg.h"
 #include "zend_ssa.h"
 #include "zend_inference.h"
