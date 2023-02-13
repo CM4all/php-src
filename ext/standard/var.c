@@ -685,7 +685,7 @@ static inline zend_long php_add_var_hash(php_serialize_data_t data, zval *var, b
 
 	/* Index for the variable is stored using the numeric value of the pointer to
 	 * the zend_refcounted struct */
-	key = (zend_ulong) (zend_uintptr_t) Z_COUNTED_P(var);
+	key = (zend_ulong) (uintptr_t) Z_COUNTED_P(var);
 	zv = zend_hash_index_find(&data->ht, key);
 
 	if (zv) {
@@ -1153,7 +1153,7 @@ again:
 					} else {
 						/* Mark this value in the var_hash, to avoid creating references to it. */
 						zval *var_idx = zend_hash_index_find(&var_hash->ht,
-							(zend_ulong) (zend_uintptr_t) Z_COUNTED_P(struc));
+							(zend_ulong) (uintptr_t) Z_COUNTED_P(struc));
 						if (var_idx) {
 							ZVAL_LONG(var_idx, -1);
 						}
