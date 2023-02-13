@@ -21,8 +21,8 @@
 #ifndef ZEND_EXECUTE_H
 #define ZEND_EXECUTE_H
 
-#include "zend.h" // for zend_class_entry
 #include "zend_char.h" // for zend_uchar
+#include "zend_class.h" // for zend_class_entry
 #include "zend_compile.h" // for user_opcode_handler_t, zend_execute_data
 #include "zend_globals.h" // for struct _zend_executor_globals
 #include "zend_globals_macros.h" // for EG()

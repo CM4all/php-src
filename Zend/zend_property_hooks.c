@@ -19,6 +19,7 @@
 #include "zend_property_hooks.h"
 #include "zend.h" // for zend_throw_error()
 #include "zend_API.h" // for zend_read_property_ex()
+#include "zend_class.h"
 #include "zend_compile.h" // for ZEND_ACC_*
 #include "zend_exceptions.h" // for zend_throw_error()
 #include "zend_globals.h" // for struct _zend_executor_globals
