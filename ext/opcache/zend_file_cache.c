@@ -1057,7 +1057,7 @@ bool zend_file_cache_script_store_fd(const int fd, zend_persistent_script *scrip
 #if defined(__AVX__) || defined(__SSE2__)
 	/* Align to 64-byte boundary */
 	mem = emalloc(script->size + 64);
-	buf = (void*)(((zend_uintptr_t)mem + 63L) & ~63L);
+	buf = (void*)(((uintptr_t)mem + 63L) & ~63L);
 #else
 	mem = buf = emalloc(script->size);
 #endif
@@ -1828,7 +1828,7 @@ zend_persistent_script *zend_file_cache_script_load(zend_file_handle *file_handl
 #if defined(__AVX__) || defined(__SSE2__)
 	/* Align to 64-byte boundary */
 	mem = zend_arena_alloc(&CG(arena), info.mem_size + info.str_size + 64);
-	mem = (void*)(((zend_uintptr_t)mem + 63L) & ~63L);
+	mem = (void*)(((uintptr_t)mem + 63L) & ~63L);
 #else
 	mem = zend_arena_alloc(&CG(arena), info.mem_size + info.str_size);
 #endif

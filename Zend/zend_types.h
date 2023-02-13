@@ -49,7 +49,6 @@
 # define ZEND_ENDIAN_LOHI_C_4(a, b, c, d)  a, b, c, d
 #endif
 
-typedef bool zend_bool;
 typedef unsigned char zend_uchar;
 
 #ifdef ZEND_ENABLE_ZVAL_LONG64
@@ -65,9 +64,6 @@ typedef unsigned char zend_uchar;
 #  define ZEND_SIZE_MAX SIZE_MAX
 # endif
 #endif
-
-typedef intptr_t zend_intptr_t;
-typedef uintptr_t zend_uintptr_t;
 
 #ifdef ZTS
 #define ZEND_TLS static TSRM_TLS
