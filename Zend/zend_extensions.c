@@ -19,6 +19,7 @@
 
 #include "zend_extensions.h"
 #include "zend_arena.h"
+#include "zend_class.h"
 #include "zend_globals.h" // for struct _zend_compiler_globals
 #include "zend_globals_macros.h" // for CG()
 #include "zend_system_id.h" // for zend_add_system_entropy()
