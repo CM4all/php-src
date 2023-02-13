@@ -18,6 +18,7 @@
 */
 
 #include "zend_observer.h"
+#include "zend_class.h"
 #include "zend_fibers.h"
 #include "zend_extensions.h" // for zend_get_op_array_extension_handles()
 #include "zend_llist.h"
