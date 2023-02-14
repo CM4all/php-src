@@ -2890,10 +2890,8 @@ static void tracked_free_all(void) {
 
 static void alloc_globals_ctor(zend_alloc_globals *alloc_globals)
 {
-	char *tmp;
-
 #if ZEND_MM_CUSTOM
-	tmp = getenv("USE_ZEND_ALLOC");
+	char *tmp = getenv("USE_ZEND_ALLOC");
 	if (tmp && !ZEND_ATOL(tmp)) {
 		bool tracked = (tmp = getenv("USE_TRACKED_ALLOC")) && ZEND_ATOL(tmp);
 		zend_mm_heap *mm_heap = alloc_globals->mm_heap = malloc(sizeof(zend_mm_heap));
