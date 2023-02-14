@@ -2914,12 +2914,6 @@ static void alloc_globals_ctor(zend_alloc_globals *alloc_globals)
 	}
 #endif
 
-#ifdef NO_HARDCODED_HUGE_PAGES
-	tmp = getenv("USE_ZEND_ALLOC_HUGE_PAGES");
-	if (tmp && ZEND_ATOL(tmp)) {
-		zend_mm_use_huge_pages = true;
-	}
-#endif
 	alloc_globals->mm_heap = zend_mm_init();
 }
 
