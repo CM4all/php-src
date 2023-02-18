@@ -177,12 +177,7 @@ static ZEND_INI_MH(OnSetExceptionStringParamMaxLen) /* {{{ */
 static ZEND_INI_MH(OnUpdateFiberStackSize) /* {{{ */
 {
 	if (new_value) {
-		zend_long tmp = zend_ini_parse_quantity_warn(new_value, entry->name);
-		if (tmp < 0) {
-			zend_error(E_WARNING, "fiber.stack_size must be a positive number");
-			return FAILURE;
-		}
-		EG(fiber_stack_size) = tmp;
+		EG(fiber_stack_size) = zend_ini_parse_uquantity_warn(new_value, entry->name);
 	} else {
 		EG(fiber_stack_size) = ZEND_FIBER_DEFAULT_C_STACK_SIZE;
 	}
