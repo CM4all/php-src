@@ -732,9 +732,9 @@ PHP_LIBXML_API void php_libxml_ctx_warning(void *ctx, const char *msg, ...)
 }
 
 #if LIBXML_VERSION >= 21200
-PHP_LIBXML_API void php_libxml_structured_error_handler(void *userData, const xmlError *error)
+static void php_libxml_structured_error_handler(void *userData, const xmlErrorPtr error)
 #else
-PHP_LIBXML_API void php_libxml_structured_error_handler(void *userData, xmlErrorPtr error)
+static void php_libxml_structured_error_handler(void *userData, xmlErrorPtr error)
 #endif
 {
 	_php_list_set_error_structure(error, NULL);
