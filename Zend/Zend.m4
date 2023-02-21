@@ -193,22 +193,12 @@ AS_VAR_IF([GCC], [yes],
   [CFLAGS="-Wall -Wextra -Wno-unused-parameter -Wno-sign-compare $CFLAGS"])
 
 dnl Check if compiler supports -Wno-clobbered (only GCC).
-AX_CHECK_COMPILE_FLAG([-Wno-clobbered],
-  [CFLAGS="-Wno-clobbered $CFLAGS"])
+AX_APPEND_COMPILE_FLAGS([-Wno-clobbered])
 dnl Check for support for implicit fallthrough level 1, also add after previous
 dnl CFLAGS as level 3 is enabled in -Wextra.
-AX_CHECK_COMPILE_FLAG([-Wimplicit-fallthrough=1],
-  [CFLAGS="$CFLAGS -Wimplicit-fallthrough=1"])
-AX_CHECK_COMPILE_FLAG([-Wduplicated-cond],
-  [CFLAGS="-Wduplicated-cond $CFLAGS"])
-AX_CHECK_COMPILE_FLAG([-Wlogical-op],
-  [CFLAGS="-Wlogical-op $CFLAGS"])
-AX_CHECK_COMPILE_FLAG([-Wformat-truncation],
-  [CFLAGS="-Wformat-truncation $CFLAGS"])
-AX_CHECK_COMPILE_FLAG([-Wstrict-prototypes],
-  [CFLAGS="-Wstrict-prototypes $CFLAGS"])
-AX_CHECK_COMPILE_FLAG([-fno-common],
-  [CFLAGS="-fno-common $CFLAGS"])
+AX_APPEND_COMPILE_FLAGS([-Wimplicit-fallthrough=1])
+AX_APPEND_COMPILE_FLAGS([-Wduplicated-cond -Wlogical-op -Wformat-truncation -Wstrict-prototypes])
+AX_APPEND_COMPILE_FLAGS([-fno-common])
 
 ZEND_CHECK_ALIGNMENT
 ZEND_CHECK_SIGNALS
