@@ -25,6 +25,7 @@
 #include "zend_gc.h"
 #include "zend_string.h"
 #include "zend_sort.h"
+#include "zend_type_code.h"
 
 typedef enum {
 	HASH_KEY_IS_STRING = 1,

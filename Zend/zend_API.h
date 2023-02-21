@@ -27,6 +27,7 @@
 #include "zend_operators.h"
 #include "zend_variables.h"
 #include "zend_execute.h"
+#include "zend_type_code.h"
 #include "zend_type_info.h"
 #include "zend_frameless_function.h"
 
