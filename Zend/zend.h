@@ -40,6 +40,7 @@
 #include "zend_smart_string_public.h"
 #include "zend_signal.h"
 #include "zend_max_execution_timer.h"
+#include "zend_type_code.h"
 
 #define zend_sprintf sprintf
 
