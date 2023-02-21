@@ -19,7 +19,7 @@
 #ifndef ZEND_TYPE_INFO_H
 #define ZEND_TYPE_INFO_H
 
-#include "zend_types.h"
+#include "zend_type_code.h"
 
 #define MAY_BE_UNDEF                (1 << IS_UNDEF)
 #define MAY_BE_NULL		            (1 << IS_NULL)
