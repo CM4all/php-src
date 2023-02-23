@@ -26,6 +26,8 @@
 #include "zend_operators.h"
 #include "zend_variables.h"
 
+#include <stdint.h>
+
 BEGIN_EXTERN_C()
 struct _zend_fcall_info;
 ZEND_API extern void (*zend_execute_ex)(zend_execute_data *execute_data);
@@ -110,9 +112,9 @@ ZEND_API bool zend_verify_internal_return_type(zend_function *zf, zval *ret);
 ZEND_API void ZEND_FASTCALL zend_ref_add_type_source(zend_property_info_source_list *source_list, zend_property_info *prop);
 ZEND_API void ZEND_FASTCALL zend_ref_del_type_source(zend_property_info_source_list *source_list, const zend_property_info *prop);
 
-ZEND_API zval* zend_assign_to_typed_ref(zval *variable_ptr, zval *value, zend_uchar value_type, bool strict);
+ZEND_API zval* zend_assign_to_typed_ref(zval *variable_ptr, zval *value, uint8_t value_type, bool strict);
 
-static zend_always_inline void zend_copy_to_variable(zval *variable_ptr, zval *value, zend_uchar value_type)
+static zend_always_inline void zend_copy_to_variable(zval *variable_ptr, zval *value, uint8_t value_type)
 {
 	zend_refcounted *ref = NULL;
 
@@ -139,7 +141,7 @@ static zend_always_inline void zend_copy_to_variable(zval *variable_ptr, zval *v
 	}
 }
 
-static zend_always_inline zval* zend_assign_to_variable(zval *variable_ptr, zval *value, zend_uchar value_type, bool strict)
+static zend_always_inline zval* zend_assign_to_variable(zval *variable_ptr, zval *value, uint8_t value_type, bool strict)
 {
 	do {
 		if (UNEXPECTED(Z_REFCOUNTED_P(variable_ptr))) {
@@ -373,8 +375,8 @@ ZEND_API bool zend_gcc_global_regs(void);
 
 #define ZEND_USER_OPCODE_DISPATCH_TO 0x100 /* call original handler of returned opcode */
 
-ZEND_API int zend_set_user_opcode_handler(zend_uchar opcode, user_opcode_handler_t handler);
-ZEND_API user_opcode_handler_t zend_get_user_opcode_handler(zend_uchar opcode);
+ZEND_API int zend_set_user_opcode_handler(uint8_t opcode, user_opcode_handler_t handler);
+ZEND_API user_opcode_handler_t zend_get_user_opcode_handler(uint8_t opcode);
 
 ZEND_API zval *zend_get_zval_ptr(const zend_op *opline, int op_type, const znode_op *node, const zend_execute_data *execute_data);
 
