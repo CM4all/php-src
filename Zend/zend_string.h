@@ -139,13 +139,12 @@ static zend_always_inline zend_string *ZSTR_CHAR(unsigned char c) {
 	return zend_one_char_string[c];
 }
 
-static zend_always_inline zend_string *ZSTR_KNOWN(size_t idx) {
-	return zend_known_strings[idx];
-}
-
 #define _ZSTR_HEADER_SIZE offsetof(zend_string, val)
 
-#define _ZSTR_STRUCT_SIZE(len) (_ZSTR_HEADER_SIZE + len + 1)
+static zend_always_inline size_t _ZSTR_STRUCT_SIZE(size_t len)
+{
+	return _ZSTR_HEADER_SIZE + len + 1;
+}
 
 #define ZSTR_MAX_OVERHEAD (ZEND_MM_ALIGNED_SIZE(_ZSTR_HEADER_SIZE + 1))
 #define ZSTR_MAX_LEN (SIZE_MAX - ZSTR_MAX_OVERHEAD)
@@ -859,5 +858,13 @@ ZEND_KNOWN_STRINGS(_ZEND_STR_ID)
 #undef _ZEND_STR_ID
 	ZEND_STR_LAST_KNOWN
 } zend_known_string_id;
+
+static zend_always_inline zend_string *ZSTR_KNOWN(zend_known_string_id id)
+{
+	ZEND_ASSERT(id >= 0);
+	ZEND_ASSERT(id < ZEND_STR_LAST_KNOWN);
+
+	return zend_known_strings[id];
+}
 
 #endif /* ZEND_STRING_H */
