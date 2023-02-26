@@ -98,15 +98,24 @@ END_EXTERN_C()
 
 /*---*/
 
-#define ZSTR_IS_INTERNED(s)					(GC_FLAGS(s) & IS_STR_INTERNED)
+static zend_always_inline bool ZSTR_IS_INTERNED(const zend_string *s)
+{
+	return GC_FLAGS(s) & IS_STR_INTERNED;
+}
 
 #define ZSTR_EMPTY_ALLOC() zend_empty_string
-#define ZSTR_CHAR(c) zend_one_char_string[c]
-#define ZSTR_KNOWN(idx) zend_known_strings[idx]
+
+static zend_always_inline zend_string *ZSTR_CHAR(zend_uchar c)
+{
+	return zend_one_char_string[c];
+}
 
 #define _ZSTR_HEADER_SIZE XtOffsetOf(zend_string, val)
 
-#define _ZSTR_STRUCT_SIZE(len) (_ZSTR_HEADER_SIZE + len + 1)
+static zend_always_inline size_t _ZSTR_STRUCT_SIZE(size_t len)
+{
+	return _ZSTR_HEADER_SIZE + len + 1;
+}
 
 #define ZSTR_MAX_OVERHEAD (ZEND_MM_ALIGNED_SIZE(_ZSTR_HEADER_SIZE + 1))
 #define ZSTR_MAX_LEN (SIZE_MAX - ZSTR_MAX_OVERHEAD)
@@ -622,5 +631,13 @@ ZEND_KNOWN_STRINGS(_ZEND_STR_ID)
 #undef _ZEND_STR_ID
 	ZEND_STR_LAST_KNOWN
 } zend_known_string_id;
+
+static zend_always_inline zend_string *ZSTR_KNOWN(zend_known_string_id id)
+{
+	ZEND_ASSERT(id >= 0);
+	ZEND_ASSERT(id < ZEND_STR_LAST_KNOWN);
+
+	return zend_known_strings[id];
+}
 
 #endif /* ZEND_STRING_H */
