@@ -19,6 +19,7 @@
 #include "zend_enum.h"
 #include "zend_arena.h" // ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX2
 #include "zend_API.h" // for INIT_CLASS_ENTRY_EX()
+#include "zend_ast_ref.h"
 #include "zend_compile.h" // for OBJ_PROP_NUM
 #include "zend_enum_arginfo.h"
 #include "zend_interfaces.h"
