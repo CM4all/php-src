@@ -23,6 +23,7 @@
 #include "zend.h" // for INTERNAL_FUNCTION_PARAMETERS
 #include "zend_ast.h"
 #include "zend_portability.h" //for ZEND_FASTCALL
+#include "zend_type.h"
 
 #include <stddef.h> // for size_t
 #include <stdint.h>
