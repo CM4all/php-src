@@ -28,6 +28,7 @@
 #include "zend_iterators.h"
 #include "zend_lazy_objects.h"
 #include "zend_object_handlers.h" // for zend_check_property_access()
+#include "zend_property_info.h"
 #include "zend_variables.h" // for zval_ptr_dtor()
 
 typedef struct {
