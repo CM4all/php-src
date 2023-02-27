@@ -31,6 +31,7 @@
 #include "zend_portability.h" // for BEGIN_EXTERN_C
 #include "zend_operators.h"
 #include "zend_frameless_function.h"
+#include "zend_type.h"
 
 typedef struct _zend_module_entry zend_module_entry;
 

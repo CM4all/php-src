@@ -26,6 +26,7 @@
 #include "zend_hash.h" // for HashTable
 #include "zend_portability.h" //for ZEND_FASTCALL
 #include "zend_property_hooks.h"
+#include "zend_type.h"
 
 #include <stddef.h> // for size_t
 #include <stdint.h>
