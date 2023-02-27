@@ -348,13 +348,6 @@ struct _zval_struct {
 	} u2;
 };
 
-struct _zend_resource {
-	zend_refcounted_h gc;
-	zend_long         handle; // TODO: may be removed ???
-	int               type;
-	void             *ptr;
-};
-
 typedef struct {
 	size_t num;
 	size_t num_allocated;
