@@ -25,6 +25,7 @@
 #include "zend_func_types.h"
 #include "zend_long.h"
 #include "zend_portability.h" // for BEGIN_EXTERN_C
+#include "zend_reference.h"
 #include "zend_sort.h"
 #include "zend_string.h" // for ZSTR_VAL()
 #include "zend_type_code.h"
