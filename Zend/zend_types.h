@@ -23,7 +23,6 @@
 
 #include "zend_portability.h"
 #include "zend_long.h"
-#include "zend_property_info.h"
 #include "zend_rc_debug.h"
 #include "zend_refcounted.h"
 #include "zend_result.h"
@@ -129,12 +128,6 @@ struct _zval_struct {
 		uint32_t     constant_flags;       /* constant flags */
 		uint32_t     extra;                /* not further specified */
 	} u2;
-};
-
-struct _zend_reference {
-	zend_refcounted_h              gc;
-	zval                           val;
-	zend_property_info_source_list sources;
 };
 
 struct _zend_ast_ref {
