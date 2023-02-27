@@ -95,6 +95,7 @@ typedef struct _zend_resource   zend_resource;
 typedef struct _zend_reference  zend_reference;
 typedef struct _zend_ast_ref    zend_ast_ref;
 typedef struct _zend_ast        zend_ast;
+typedef struct _zend_refcounted zend_refcounted;
 
 typedef union _zend_value {
 	zend_long         lval;				/* long value */
@@ -141,11 +142,6 @@ struct _zval_struct {
 		uint32_t     constant_flags;       /* constant flags */
 		uint32_t     extra;                /* not further specified */
 	} u2;
-};
-
-struct _zend_ast_ref {
-	zend_refcounted_h gc;
-	/*zend_ast        ast; zend_ast follows the zend_ast_ref structure */
 };
 
 static zend_always_inline uint8_t zval_get_type(const zval* pz) {
