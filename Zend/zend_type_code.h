@@ -52,9 +52,4 @@ enum {
 	_IS_NUMBER = 19,
 };
 
-#define ZEND_SAME_FAKE_TYPE(faketype, realtype) ( \
-	(faketype) == (realtype) \
-	|| ((faketype) == _IS_BOOL && ((realtype) == IS_TRUE || (realtype) == IS_FALSE)) \
-)
-
 #endif /* ZEND_TYPE_CODE_H */
