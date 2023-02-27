@@ -20,6 +20,7 @@
 #include "zend_inheritance.h"
 #include "zend_API.h" // for zend_get_object_type_uc()
 #include "zend_arena.h"
+#include "zend_ast_ref.h"
 #include "zend_attributes.h"
 #include "zend_compile.h"
 #include "zend_constants.h"
