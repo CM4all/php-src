@@ -26,6 +26,7 @@
 
 #include "php_version.h"
 #include "zend.h"
+#include "zend_ast_ref.h"
 #include "zend_rc_debug.h"
 #include "zend_reference.h"
 #include "zend_resource.h"
