@@ -256,11 +256,15 @@ static zend_always_inline Bucket *HT_HASH_TO_BUCKET(HashTable *ht, uint32_t idx)
 	return HT_HASH_TO_BUCKET_EX(ht->arData, idx);
 }
 
-#define HT_SET_DATA_ADDR(ht, ptr) do { \
-		(ht)->arData = (Bucket*)(((char*)(ptr)) + HT_HASH_SIZE((ht)->nTableMask)); \
-	} while (0)
-#define HT_GET_DATA_ADDR(ht) \
-	((char*)((ht)->arData) - HT_HASH_SIZE((ht)->nTableMask))
+static zend_always_inline void HT_SET_DATA_ADDR(HashTable *ht, const void *ptr)
+{
+	ht->arData = (Bucket*)(((char*)ptr) + HT_HASH_SIZE(ht->nTableMask));
+}
+
+static zend_always_inline void *HT_GET_DATA_ADDR(const HashTable *ht)
+{
+	return (char*)(ht->arData) - HT_HASH_SIZE(ht->nTableMask);
+}
 
 typedef uint32_t HashPosition;
 
@@ -272,46 +276,72 @@ typedef struct _HashTableIterator {
 
 #define HT_FLAGS(ht) (ht)->u.flags
 
-#define HT_INVALIDATE(ht) do { \
-		HT_FLAGS(ht) = HASH_FLAG_UNINITIALIZED; \
-	} while (0)
+static zend_always_inline void HT_INVALIDATE(HashTable *ht)
+{
+	HT_FLAGS(ht) = HASH_FLAG_UNINITIALIZED;;
+}
 
-#define HT_IS_INITIALIZED(ht) \
-	((HT_FLAGS(ht) & HASH_FLAG_UNINITIALIZED) == 0)
+static zend_always_inline bool HT_IS_INITIALIZED(const HashTable *ht)
+{
+	return (HT_FLAGS(ht) & HASH_FLAG_UNINITIALIZED) == 0;
+}
 
-#define HT_IS_PACKED(ht) \
-	((HT_FLAGS(ht) & HASH_FLAG_PACKED) != 0)
+static zend_always_inline bool HT_IS_PACKED(const HashTable *ht)
+{
+	return (HT_FLAGS(ht) & HASH_FLAG_PACKED) != 0;
+}
 
-#define HT_IS_WITHOUT_HOLES(ht) \
-	((ht)->nNumUsed == (ht)->nNumOfElements)
+static zend_always_inline bool  HT_IS_WITHOUT_HOLES(const HashTable *ht)
+{
+	return ht->nNumUsed == ht->nNumOfElements;
+}
 
-#define HT_HAS_STATIC_KEYS_ONLY(ht) \
-	((HT_FLAGS(ht) & (HASH_FLAG_PACKED|HASH_FLAG_STATIC_KEYS)) != 0)
+static zend_always_inline bool HT_HAS_STATIC_KEYS_ONLY(const HashTable *ht)
+{
+	return (HT_FLAGS(ht) & (HASH_FLAG_PACKED|HASH_FLAG_STATIC_KEYS)) != 0;
+}
 
+static zend_always_inline void HT_ALLOW_COW_VIOLATION(HashTable *ht)
+{
 #if ZEND_DEBUG
-# define HT_ALLOW_COW_VIOLATION(ht) HT_FLAGS(ht) |= HASH_FLAG_ALLOW_COW_VIOLATION
-#else
-# define HT_ALLOW_COW_VIOLATION(ht)
+	HT_FLAGS(ht) |= HASH_FLAG_ALLOW_COW_VIOLATION;
 #endif
+}
 
 #define HT_ITERATORS_COUNT(ht) (ht)->u.v.nIteratorsCount
-#define HT_ITERATORS_OVERFLOW(ht) (HT_ITERATORS_COUNT(ht) == 0xff)
-#define HT_HAS_ITERATORS(ht) (HT_ITERATORS_COUNT(ht) != 0)
 
-#define HT_SET_ITERATORS_COUNT(ht, iters) \
-	do { HT_ITERATORS_COUNT(ht) = (iters); } while (0)
-#define HT_INC_ITERATORS_COUNT(ht) \
-	HT_SET_ITERATORS_COUNT(ht, HT_ITERATORS_COUNT(ht) + 1)
-#define HT_DEC_ITERATORS_COUNT(ht) \
-	HT_SET_ITERATORS_COUNT(ht, HT_ITERATORS_COUNT(ht) - 1)
+static zend_always_inline bool HT_ITERATORS_OVERFLOW(const HashTable *ht)
+{
+	return HT_ITERATORS_COUNT(ht) == 0xff;
+}
+
+static zend_always_inline bool HT_HAS_ITERATORS(const HashTable *ht)
+{
+	return HT_ITERATORS_COUNT(ht) != 0;
+}
+
+static zend_always_inline void HT_SET_ITERATORS_COUNT(HashTable *ht, uint8_t iters)
+{
+	HT_ITERATORS_COUNT(ht) = iters;
+}
+
+static zend_always_inline void HT_INC_ITERATORS_COUNT(HashTable *ht)
+{
+	HT_SET_ITERATORS_COUNT(ht, HT_ITERATORS_COUNT(ht) + 1);
+}
+
+static zend_always_inline void HT_DEC_ITERATORS_COUNT(HashTable *ht)
+{
+	HT_SET_ITERATORS_COUNT(ht, HT_ITERATORS_COUNT(ht) - 1);
+}
 
 extern ZEND_API const HashTable zend_empty_array;
 
-#define ZVAL_EMPTY_ARRAY(z) do {						\
-		zval *__z = (z);								\
-		Z_ARR_P(__z) = (zend_array*)&zend_empty_array;	\
-		Z_TYPE_INFO_P(__z) = IS_ARRAY; \
-	} while (0)
+static zend_always_inline void ZVAL_EMPTY_ARRAY(zval *z)
+{
+	Z_ARR_P(z) = (zend_array*)&zend_empty_array;
+	Z_TYPE_INFO_P(z) = IS_ARRAY;
+}
 
 #define HASH_NOMEM ((zval*)-1)
 
