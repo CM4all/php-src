@@ -21,6 +21,7 @@
 #define ZEND_GENERATORS_H
 
 #include "zend_compile.h" // for struct _zend_execute_data
+#include "zend_object.h"
 #include "zend_portability.h" // for BEGIN_EXTERN_C
 
 #include <stdint.h>

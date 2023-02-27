@@ -22,11 +22,12 @@
 #define ZEND_OPERATORS_H
 
 #include "zend_hash.h" // for zend_hash_num_elements()
+#include "zend_object.h"
 #include "zend_object_handlers.h" // for struct _zend_object_handlers
 #include "zend_portability.h" // for BEGIN_EXTERN_
 #include "zend_result.h"
 #include "zend_string.h" // for zend_string_copy()
-#include "zend_types.h" // for zval, zend_object, zend_resource
+#include "zend_types.h" // for zval, zend_resource
 
 #include <math.h>
 #include <stddef.h>
