@@ -22,6 +22,7 @@
 
 #include "zend_lazy_objects.h"
 #include "zend_long.h"
+#include "zend_object.h"
 #include "zend_portability.h" // for BEGIN_EXTERN_C
 #include "zend_property_hooks.h"
 #include "zend_result.h"

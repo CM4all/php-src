@@ -22,6 +22,7 @@
 
 #include "zend_API.h" // for struct zend_fcall_info
 #include "zend_execute.h" // for zend_vm_stack
+#include "zend_object.h"
 #include "zend_portability.h" // for BEGIN_EXTERN_C
 
 #include <stddef.h>

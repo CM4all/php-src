@@ -20,6 +20,7 @@
 #define ZEND_LAZY_OBJECT_H
 
 #include "Zend/zend_hash.h"
+#include "Zend/zend_object.h"
 #include "Zend/zend_types.h"
 
 /* Lazy object is a lazy proxy object */
