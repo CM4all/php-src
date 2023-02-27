@@ -385,17 +385,6 @@ typedef struct _zend_oparray_context {
 
 char *zend_visibility_string(uint32_t fn_flags);
 
-typedef struct _zend_property_info {
-	uint32_t offset; /* property offset for object properties or
-	                      property index for static properties */
-	uint32_t flags;
-	zend_string *name;
-	zend_string *doc_comment;
-	HashTable *attributes;
-	zend_class_entry *ce;
-	zend_type type;
-} zend_property_info;
-
 #define OBJ_PROP(obj, offset) \
 	((zval*)((char*)(obj) + offset))
 #define OBJ_PROP_NUM(obj, num) \
