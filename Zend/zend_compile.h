@@ -26,6 +26,7 @@
 #include "zend_alloc.h"
 #include "zend_portability.h" //for ZEND_FASTCALL
 #include "zend_property_hooks.h"
+#include "zend_type.h"
 #include "zend_vm_opcodes.h"
 
 #include <stddef.h> // for size_t
