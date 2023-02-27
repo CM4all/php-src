@@ -23,9 +23,10 @@
 #include "zend_hash.h" // for zend_hash_num_elements()
 #include "zend_object.h"
 #include "zend_portability.h" // for BEGIN_EXTERN_
+#include "zend_resource.h"
 #include "zend_result.h"
 #include "zend_string.h" // for zend_string_copy()
-#include "zend_types.h" // for zval, zend_resource
+#include "zend_types.h" // for zval
 
 #include <math.h>
 #include <stddef.h>
