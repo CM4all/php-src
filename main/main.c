@@ -58,6 +58,7 @@
 #endif
 #include "php_syslog.h"
 #include "Zend/zend_exceptions.h"
+#include "metrics.h"
 
 #if PHP_SIGCHILD
 #include <sys/types.h>
@@ -83,6 +84,9 @@
 
 #include "ext/standard/html_tables.h"
 /* }}} */
+
+bool want_was_metrics;
+struct php_was_metrics was_metrics;
 
 PHPAPI int (*php_register_internal_extensions_func)(void) = php_register_internal_extensions;
 
