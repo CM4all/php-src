@@ -20,6 +20,7 @@
 
 #include "zend_execute.h"
 #include "zend_API.h" // for zend_fcall_info
+#include "zend_ast_ref.h"
 #include "zend_constants.h"
 #include "zend_closures.h" // for ZEND_CLOSURE_OBJECT()
 #include "zend_exceptions.h" // for zend_rethrow_exception()
