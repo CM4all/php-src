@@ -20,6 +20,7 @@
 #include "zend_ast.h"
 #include "zend_API.h" // for array_set_zval_key
 #include "zend_arena.h"
+#include "zend_ast_ref.h"
 #include "zend_closures.h"
 #include "zend_constants.h"
 #include "zend_enum.h"
