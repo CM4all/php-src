@@ -75,7 +75,6 @@
 #define ZEND_EXT_TLS
 #endif
 
-typedef struct _zend_object_handlers zend_object_handlers;
 typedef struct _zend_class_entry     zend_class_entry;
 typedef union  _zend_function        zend_function;
 typedef struct _zend_execute_data    zend_execute_data;
@@ -89,7 +88,6 @@ typedef struct _zend_resource   zend_resource;
 typedef struct _zend_reference  zend_reference;
 typedef struct _zend_ast_ref    zend_ast_ref;
 typedef struct _zend_ast        zend_ast;
-typedef struct _zend_array HashTable;
 
 /*
  * zend_type - is an abstraction layer to represent information about type hint.
@@ -324,15 +322,6 @@ struct _zval_struct {
 		uint32_t     constant_flags;       /* constant flags */
 		uint32_t     extra;                /* not further specified */
 	} u2;
-};
-
-struct _zend_object {
-	zend_refcounted_h gc;
-	uint32_t          handle; // TODO: may be removed ???
-	zend_class_entry *ce;
-	const zend_object_handlers *handlers;
-	HashTable        *properties;
-	zval              properties_table[1];
 };
 
 struct _zend_resource {
