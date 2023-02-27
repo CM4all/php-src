@@ -18,6 +18,7 @@
 */
 
 #include "zend_persist.h"
+#include "zend_ast_ref.h"
 #include "zend_shared_alloc.h"
 #include "ZendAccelerator.h"
 #include "zend_attributes.h"
