@@ -27,6 +27,7 @@
 #include "zend_types.h"
 #include "zend_func_types.h"
 #include "zend_gc.h"
+#include "zend_reference.h"
 #include "zend_sort.h"
 #include "zend_string.h" // for ZSTR_VAL()
 #include "zend_type_code.h"
