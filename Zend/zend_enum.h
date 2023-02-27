@@ -22,7 +22,7 @@
 #include "zend_long.h"
 #include "zend_portability.h" // for BEGIN_EXTERN_C
 #include "zend_result.h"
-#include "zend_types.h" // for struct _zend_object
+#include "zend_object.h" // for struct _zend_object
 
 #include <stdbool.h>
 
