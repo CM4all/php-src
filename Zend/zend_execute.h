@@ -29,6 +29,7 @@
 #include "zend_list.h" // for zend_rsrc_list_get_rsrc_type()
 #include "zend_objects.h" // for zend_objects_new()
 #include "zend_portability.h" // for BEGIN_EXTERN_C
+#include "zend_property_info.h"
 #include "zend_result.h"
 #include "zend_type_code.h" // for IS_*
 #include "zend_variables.h" // for rc_dtor_func()
