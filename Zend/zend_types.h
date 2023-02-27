@@ -24,6 +24,7 @@
 
 #include "zend_portability.h"
 #include "zend_long.h"
+#include "zend_property_info.h"
 #include "zend_rc_debug.h"
 #include "zend_refcounted.h"
 #include "zend_result.h"
@@ -142,21 +143,6 @@ struct _zval_struct {
 		uint32_t     extra;                /* not further specified */
 	} u2;
 };
-
-typedef struct {
-	size_t num;
-	size_t num_allocated;
-	struct _zend_property_info *ptr[1];
-} zend_property_info_list;
-
-typedef union {
-	struct _zend_property_info *ptr;
-	uintptr_t list;
-} zend_property_info_source_list;
-
-#define ZEND_PROPERTY_INFO_SOURCE_FROM_LIST(list) (0x1 | (uintptr_t) (list))
-#define ZEND_PROPERTY_INFO_SOURCE_TO_LIST(list) ((zend_property_info_list *) ((list) & ~0x1))
-#define ZEND_PROPERTY_INFO_SOURCE_IS_LIST(list) ((list) & 0x1)
 
 struct _zend_reference {
 	zend_refcounted_h              gc;
