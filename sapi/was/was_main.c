@@ -16,6 +16,7 @@
    +----------------------------------------------------------------------+
 */
 
+#include "metrics.h"
 #include "SAPI.h"
 #include "php_main.h"
 #include "php_variables.h"
@@ -39,6 +40,27 @@
 static zend_module_entry was_module_entry;
 
 static char *was_cookies = NULL;
+
+static void
+reset_was_metrics(struct php_was_metrics *m)
+{
+	memset(m, 0, sizeof(*m));
+}
+
+static void
+submit_was_metrics(struct was_simple *w, const struct php_was_metrics *m)
+{
+}
+
+static void
+finish_was_metrics(struct was_simple *w)
+{
+	if (!want_was_metrics)
+		return;
+
+	want_was_metrics = false;
+	submit_was_metrics(w, &was_metrics);
+}
 
 static bool
 IsPipe(int fd)
@@ -405,7 +427,8 @@ static void init_request_info(struct was_simple *w, const char *request_uri)
 	SG(sapi_headers).http_response_code = 200;
 }
 
-static zend_result was_module_main(void)
+static zend_result was_module_main(struct was_simple *w)
+{
 	if (php_request_startup() == FAILURE)
 		return FAILURE;
 
@@ -414,6 +437,8 @@ static zend_result was_module_main(void)
 	zend_stream_init_filename(&file_handle, SG(request_info).path_translated);
 	php_execute_script(&file_handle);
 	zend_destroy_file_handle(&file_handle);
+
+	finish_was_metrics(w);
 
 	zend_try {
 		php_request_shutdown(NULL);
@@ -424,12 +449,16 @@ static zend_result was_module_main(void)
 
 static bool was_process_request(struct was_simple *w, const char *request_uri)
 {
+	want_was_metrics = was_simple_want_metrics(w);
+	if (want_was_metrics)
+		reset_was_metrics(&was_metrics);
+
 	bool success = true;
 
 	zend_first_try {
 		init_request_info(w, request_uri);
 
-		if (was_module_main() != SUCCESS)
+		if (was_module_main(w) != SUCCESS)
 			success = false;
 	} zend_end_try();
 
@@ -505,6 +534,8 @@ PHP_FUNCTION(was_finish_request)
 	php_header();
 
 	struct was_simple *const w = SG(server_context);
+	finish_was_metrics(w);
+
 	if (!was_simple_end(w)) {
 		RETURN_FALSE;
 	}
