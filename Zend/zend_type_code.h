@@ -68,9 +68,4 @@ enum {
 #define ZEND_GUARD_PROTECT_RECURSION(pg, t)		*pg |= ZEND_GUARD_RECURSION_TYPE(t)
 #define ZEND_GUARD_UNPROTECT_RECURSION(pg, t)	*pg &= ~ZEND_GUARD_RECURSION_TYPE(t)
 
-#define ZEND_SAME_FAKE_TYPE(faketype, realtype) ( \
-	(faketype) == (realtype) \
-	|| ((faketype) == _IS_BOOL && ((realtype) == IS_TRUE || (realtype) == IS_FALSE)) \
-)
-
 #endif /* ZEND_TYPE_CODE_H */
