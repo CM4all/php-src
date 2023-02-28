@@ -50,6 +50,23 @@ reset_was_metrics(struct php_was_metrics *m)
 static void
 submit_was_metrics(struct was_simple *w, const struct php_was_metrics *m)
 {
+	if (m->mysql_connect_count > 0)
+		was_simple_metric(w, "mysql_connect_count", m->mysql_connect_count);
+
+	if (m->mysql_connect_errors > 0)
+		was_simple_metric(w, "mysql_connect_errors", m->mysql_connect_errors);
+
+	if (m->mysql_connect_wait > 0)
+		was_simple_metric(w, "mysql_connect_wait", m->mysql_connect_wait);
+
+	if (m->mysql_query_count > 0)
+		was_simple_metric(w, "mysql_query_count", m->mysql_query_count);
+
+	if (m->mysql_query_errors > 0)
+		was_simple_metric(w, "mysql_query_errors", m->mysql_query_errors);
+
+	if (m->mysql_query_wait > 0)
+		was_simple_metric(w, "mysql_query_wait", m->mysql_query_wait);
 }
 
 static void

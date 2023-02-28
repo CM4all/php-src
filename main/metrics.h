@@ -23,6 +23,11 @@
  * Metrics to be submitted to the WAS client at the end of a request.
  */
 struct php_was_metrics {
+	unsigned mysql_connect_count, mysql_connect_errors;
+	float mysql_connect_wait;
+
+	unsigned mysql_query_count, mysql_query_errors;
+	float mysql_query_wait;
 };
 
 extern bool want_was_metrics;
