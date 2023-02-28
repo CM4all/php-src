@@ -28,6 +28,9 @@
 #include "zend_smart_str.h"
 #include "php_mysqli_structs.h"
 #include "mysqli_priv.h"
+#include "metrics.h"
+#include "wallclock.h"
+
 #define ERROR_ARG_POS(arg_num) (getThis() ? (arg_num-1) : (arg_num))
 
 #define SAFE_STR(a) ((a)?a:"")
@@ -64,7 +67,6 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, bool is_real_connect, b
 	zend_resource		*le;
 	mysqli_plist_entry *plist = NULL;
 	bool			self_alloced = 0;
-
 
 #if !defined(MYSQL_USE_MYSQLND)
 	if ((MYSQL_VERSION_ID / 100) != (mysql_get_client_version() / 100)) {
@@ -226,6 +228,11 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, bool is_real_connect, b
 		new_connection = true;
 	}
 
+	struct wallclock wc;
+	if (want_was_metrics) {
+		wallclock_start(&wc);
+	}
+
 	if (ssl) {
 		/* if we're here, this means previous conn was ssl, repopulate settings */
 		mysql_ssl_set(mysql->mysql, ssl_key, ssl_cert, ssl_ca, ssl_capath, ssl_cipher);
@@ -253,6 +260,8 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, bool is_real_connect, b
 	if (mysqlnd_connect(mysql->mysql, hostname, username, passwd, passwd_len, dbname, dbname_len,
 						port, socket, flags, MYSQLND_CLIENT_NO_FLAG) == NULL)
 	{
+		++was_metrics.mysql_connect_errors;
+
 		/* Save error messages - for mysqli_connect_error() & mysqli_connect_errno() */
 		php_mysqli_set_error(mysql_errno(mysql->mysql), (char *) mysql_error(mysql->mysql));
 		php_mysqli_throw_sql_exception((char *)mysql_sqlstate(mysql->mysql), mysql_errno(mysql->mysql),
@@ -263,6 +272,11 @@ void mysqli_common_connect(INTERNAL_FUNCTION_PARAMETERS, bool is_real_connect, b
 			mysql->mysql = NULL;
 		}
 		goto err;
+	}
+
+	if (want_was_metrics) {
+		++was_metrics.mysql_connect_count;
+		was_metrics.mysql_connect_wait += wallclock_end(&wc);
 	}
 
 	/* clear error */
@@ -598,9 +612,20 @@ PHP_FUNCTION(mysqli_query)
 		RETURN_TRUE;
 	}
 
+	struct wallclock wc;
+	if (want_was_metrics) {
+		wallclock_start(&wc);
+	}
+
 	if (mysql_real_query(mysql->mysql, query, query_len)) {
+		++was_metrics.mysql_query_errors;
 		MYSQLI_REPORT_MYSQL_ERROR(mysql->mysql);
 		RETURN_FALSE;
+	}
+
+	if (want_was_metrics) {
+		++was_metrics.mysql_query_count;
+		was_metrics.mysql_query_wait += wallclock_end(&wc);
 	}
 
 	if (!mysql_field_count(mysql->mysql)) {
