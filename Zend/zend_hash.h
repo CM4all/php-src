@@ -30,7 +30,18 @@
 #include "zend_sort.h"
 #include "zend_string.h" // for ZSTR_VAL()
 #include "zend_type_code.h"
-#include "zend_types.h" // for zval
+#include "zend_value.h" // for zval
+
+#ifdef __SSE2__
+# include <mmintrin.h>
+# include <emmintrin.h>
+#endif
+#if defined(__AVX2__)
+# include <immintrin.h>
+#endif
+#if defined(__aarch64__) || defined(_M_ARM64)
+# include <arm_neon.h>
+#endif
 
 #include <stdarg.h>
 
