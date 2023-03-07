@@ -43,7 +43,7 @@ if test "$PHP_FILEINFO" != "no"; then
   PHP_ADD_BUILD_DIR([$ext_builddir/libmagic])
   PHP_ADD_EXTENSION_DEP(fileinfo, pcre)
 
-  AC_CHECK_FUNCS([utimes strndup])
+  AC_CHECK_FUNCS([strndup])
 
   PHP_ADD_MAKEFILE_FRAGMENT
 fi
