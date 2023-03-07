@@ -30,7 +30,11 @@
 #include "zend_sort.h"
 #include "zend_string.h" // for ZSTR_VAL()
 #include "zend_type_code.h"
-#include "zend_types.h" // for zval
+#include "zend_value.h" // for zval
+
+#ifdef __SSE2__
+# include <emmintrin.h>
+#endif
 
 #include <stdarg.h>
 
