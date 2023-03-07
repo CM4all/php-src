@@ -22,6 +22,7 @@
 #ifndef ZEND_TYPES_H
 #define ZEND_TYPES_H
 
+#include "zend_endian.h"
 #include "zend_portability.h"
 #include "zend_long.h"
 #include "zend_rc_debug.h"
@@ -42,22 +43,6 @@
 #endif
 #if defined(__aarch64__) || defined(_M_ARM64)
 # include <arm_neon.h>
-#endif
-
-#ifdef WORDS_BIGENDIAN
-# define ZEND_ENDIAN_LOHI(lo, hi)          hi; lo;
-# define ZEND_ENDIAN_LOHI_3(lo, mi, hi)    hi; mi; lo;
-# define ZEND_ENDIAN_LOHI_4(a, b, c, d)    d; c; b; a;
-# define ZEND_ENDIAN_LOHI_C(lo, hi)        hi, lo
-# define ZEND_ENDIAN_LOHI_C_3(lo, mi, hi)  hi, mi, lo,
-# define ZEND_ENDIAN_LOHI_C_4(a, b, c, d)  d, c, b, a
-#else
-# define ZEND_ENDIAN_LOHI(lo, hi)          lo; hi;
-# define ZEND_ENDIAN_LOHI_3(lo, mi, hi)    lo; mi; hi;
-# define ZEND_ENDIAN_LOHI_4(a, b, c, d)    a; b; c; d;
-# define ZEND_ENDIAN_LOHI_C(lo, hi)        lo, hi
-# define ZEND_ENDIAN_LOHI_C_3(lo, mi, hi)  lo, mi, hi,
-# define ZEND_ENDIAN_LOHI_C_4(a, b, c, d)  a, b, c, d
 #endif
 
 #ifdef ZEND_ENABLE_ZVAL_LONG64
