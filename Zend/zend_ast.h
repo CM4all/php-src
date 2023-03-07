@@ -21,7 +21,8 @@
 #ifndef ZEND_AST_H
 #define ZEND_AST_H
 
-#include "zend_types.h" // for zval
+#include "zend_result.h"
+#include "zend_value.h"
 
 #include <stdbool.h>
 #include <stdint.h>

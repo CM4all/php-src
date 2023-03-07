@@ -28,7 +28,7 @@
 #include "zend_resource.h"
 #include "zend_result.h"
 #include "zend_string.h" // for zend_string_copy()
-#include "zend_types.h" // for zval
+#include "zend_value.h"
 
 #include <math.h>
 #include <stddef.h>
