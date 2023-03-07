@@ -22,7 +22,7 @@
 
 #include "zend_class.h"
 #include "zend_portability.h" // for BEGIN_EXTERN_C
-#include "zend_types.h" // for zval
+#include "zend_value.h"
 
 #include <stdint.h>
 

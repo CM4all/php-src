@@ -19,7 +19,7 @@
 
 #include "zend_property_info.h"
 #include "zend_refcounted.h"
-#include "zend_types.h"
+#include "zend_value.h"
 
 struct _zend_reference {
 	zend_refcounted_h              gc;
