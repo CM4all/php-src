@@ -27,6 +27,7 @@
 #include "Zend/zend_bitset.h" // for zend_ulong_ntz()
 #include "Zend/zend_compile.h" // for zend_op, ...
 #include "Zend/zend_constants.h"
+#include "Zend/zend_endian.h" // for ZEND_ENDIAN_LOHI_*
 #include "Zend/zend_long.h"
 #include "Zend/zend_types.h" // for zend_uchar
 #include "Zend/zend_compile.h"
