@@ -22,7 +22,8 @@
 #define ZEND_AST_H
 
 #include "zend_map_ptr.h"
-#include "zend_types.h" // for zval
+#include "zend_result.h"
+#include "zend_value.h"
 
 #include <stdarg.h> // for va_list
 #include <stdbool.h>
