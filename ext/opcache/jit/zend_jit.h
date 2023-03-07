@@ -21,6 +21,7 @@
 
 #include "ZendAccelerator.h" // for ZEND_EXT_API
 #include "zend_compile.h" // for zend_op, ...
+#include "zend_endian.h" // for ZEND_ENDIAN_LOHI_*
 #include "zend_long.h"
 
 #include <stdbool.h>
