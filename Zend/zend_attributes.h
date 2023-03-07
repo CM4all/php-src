@@ -23,7 +23,7 @@
 #include "zend_error.h" // required by zend_constants.h
 #include "zend_constants.h"
 #include "zend_portability.h" // for BEGIN_EXTERN_C
-#include "zend_types.h" // for zval
+#include "zend_value.h"
 
 #include <stdint.h>
 
