@@ -18,7 +18,7 @@
 #define ZEND_OBJECT_H
 
 #include "zend_refcounted.h"
-#include "zend_types.h"
+#include "zend_value.h"
 
 #include <stdint.h>
 
