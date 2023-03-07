@@ -20,7 +20,7 @@
 #include "zend_long.h"
 #include "zend_portability.h" // for BEGIN_EXTERN_C
 #include "zend_result.h"
-#include "zend_types.h" // for zval
+#include "zend_value.h"
 
 #include <stdint.h>
 
