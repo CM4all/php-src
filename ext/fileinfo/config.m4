@@ -52,7 +52,7 @@ int main(void)
   PHP_NEW_EXTENSION(fileinfo, fileinfo.c php_libmagic.c $libmagic_sources, $ext_shared,,-I@ext_srcdir@/libmagic)
   PHP_ADD_BUILD_DIR($ext_builddir/libmagic)
 
-  AC_CHECK_FUNCS([utimes strndup])
+  AC_CHECK_FUNCS([strndup])
 
   PHP_ADD_MAKEFILE_FRAGMENT
 fi
