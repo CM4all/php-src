@@ -34,6 +34,7 @@
 #include "zend_bitset.h" // for zend_ulong_ntz()
 #include "zend_compile.h" // for zend_op, ...
 #include "zend_constants.h"
+#include "zend_endian.h" // for ZEND_ENDIAN_LOHI_*
 #include "zend_long.h"
 #include "zend_portability.h" // for zend_always_inline
 #include "zend_types.h" // for zend_uchar

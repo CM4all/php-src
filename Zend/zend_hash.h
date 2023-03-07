@@ -22,6 +22,7 @@
 #define ZEND_HASH_H
 
 #include "zend_alloc.h" // for pefree()
+#include "zend_endian.h" // for ZEND_ENDIAN_LOHI_4
 #include "zend_func_types.h"
 #include "zend_long.h"
 #include "zend_portability.h" // for BEGIN_EXTERN_C
