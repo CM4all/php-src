@@ -20,8 +20,6 @@
 
 #include "zend_smart_string_public.h"
 
-#include "zend_alloc.h" // for pefree()
-#include "zend_operators.h" // for zend_print_long_to_buf()
 #include "zend_portability.h" // for ZEND_FASTCALL
 
 /* wrapper */
@@ -63,13 +61,7 @@ static zend_always_inline size_t smart_string_alloc(smart_string *str, size_t le
 	return str->len + len;
 }
 
-static zend_always_inline void smart_string_free_ex(smart_string *str, bool persistent) {
-	if (str->c) {
-		pefree(str->c, persistent);
-		str->c = NULL;
-	}
-	str->a = str->len = 0;
-}
+ZEND_API void ZEND_FASTCALL smart_string_free_ex(smart_string *str, bool persistent);
 
 static zend_always_inline void smart_string_0(smart_string *str) {
 	if (str->c) {
@@ -89,17 +81,9 @@ static zend_always_inline void smart_string_appendl_ex(smart_string *dest, const
 
 }
 
-static zend_always_inline void smart_string_append_long_ex(smart_string *dest, zend_long num, bool persistent) {
-	char buf[32];
-	char *result = zend_print_long_to_buf(buf + sizeof(buf) - 1, num);
-	smart_string_appendl_ex(dest, result, buf + sizeof(buf) - 1 - result, persistent);
-}
+ZEND_API void ZEND_FASTCALL smart_string_append_long_ex(smart_string *dest, zend_long num, bool persistent);
 
-static zend_always_inline void smart_string_append_unsigned_ex(smart_string *dest, zend_ulong num, bool persistent) {
-	char buf[32];
-	char *result = zend_print_ulong_to_buf(buf + sizeof(buf) - 1, num);
-	smart_string_appendl_ex(dest, result, buf + sizeof(buf) - 1 - result, persistent);
-}
+ZEND_API void ZEND_FASTCALL smart_string_append_unsigned_ex(smart_string *dest, zend_ulong num, bool persistent);
 
 static zend_always_inline void smart_string_setl(smart_string *dest, char *src, size_t len) {
 	dest->len = len;
