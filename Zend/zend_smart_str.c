@@ -16,8 +16,10 @@
 
 #include "zend_smart_str.h"
 #include "zend_smart_string.h"
+#include "zend_alloc.h" // for pefree()
 #include "zend_globals_macros.h" // for EG()
 #include "zend_globals.h" // struct _zend_executor_globals
+#include "zend_operators.h" // for zend_print_long_to_buf()
 #include "zend_strtod.h" // for zend_gcvt()
 
 #define SMART_STR_OVERHEAD   (ZEND_MM_OVERHEAD + _ZSTR_HEADER_SIZE + 1)
@@ -183,6 +185,26 @@ ZEND_API void ZEND_FASTCALL _smart_string_alloc(smart_string *str, size_t len)
 	}
 }
 
+ZEND_API void ZEND_FASTCALL smart_string_free_ex(smart_string *str, bool persistent) {
+	if (str->c) {
+		pefree(str->c, persistent);
+		str->c = NULL;
+	}
+	str->a = str->len = 0;
+}
+
+ZEND_API void ZEND_FASTCALL smart_string_append_long_ex(smart_string *dest, zend_long num, bool persistent) {
+	char buf[32];
+	char *result = zend_print_long_to_buf(buf + sizeof(buf) - 1, num);
+	smart_string_appendl_ex(dest, result, buf + sizeof(buf) - 1 - result, persistent);
+}
+
+ZEND_API void ZEND_FASTCALL smart_string_append_unsigned_ex(smart_string *dest, zend_ulong num, bool persistent) {
+	char buf[32];
+	char *result = zend_print_ulong_to_buf(buf + sizeof(buf) - 1, num);
+	smart_string_appendl_ex(dest, result, buf + sizeof(buf) - 1 - result, persistent);
+}
+
 ZEND_API void ZEND_FASTCALL smart_str_append_escaped_truncated(smart_str *str, const zend_string *value, size_t length)
 {
 	smart_str_append_escaped(str, ZSTR_VAL(value), MIN(length, ZSTR_LEN(value)));
@@ -222,4 +244,16 @@ ZEND_API void ZEND_FASTCALL smart_str_append_scalar(smart_str *dest, const zval 
 
 		EMPTY_SWITCH_DEFAULT_CASE();
 	}
+}
+
+ZEND_API void smart_str_append_long_ex(smart_str *dest, zend_long num, bool persistent) {
+	char buf[32];
+	char *result = zend_print_long_to_buf(buf + sizeof(buf) - 1, num);
+	smart_str_appendl_ex(dest, result, buf + sizeof(buf) - 1 - result, persistent);
+}
+
+ZEND_API void smart_str_append_unsigned_ex(smart_str *dest, zend_ulong num, bool persistent) {
+	char buf[32];
+	char *result = zend_print_ulong_to_buf(buf + sizeof(buf) - 1, num);
+	smart_str_appendl_ex(dest, result, buf + sizeof(buf) - 1 - result, persistent);
 }
