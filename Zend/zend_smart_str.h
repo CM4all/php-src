@@ -19,7 +19,6 @@
 
 #include "zend_smart_str_public.h"
 
-#include "zend_operators.h" // for zend_print_long_to_buf()
 #include "zend_portability.h" // for BEGIN_EXTERN_C
 #include "zend_string.h"
 
@@ -146,22 +145,14 @@ static zend_always_inline void smart_str_append_smart_str_ex(smart_str *dest, co
 	}
 }
 
-static zend_always_inline void smart_str_append_long_ex(smart_str *dest, zend_long num, bool persistent) {
-	char buf[32];
-	char *result = zend_print_long_to_buf(buf + sizeof(buf) - 1, num);
-	smart_str_appendl_ex(dest, result, buf + sizeof(buf) - 1 - result, persistent);
-}
+ZEND_API void smart_str_append_long_ex(smart_str *dest, zend_long num, bool persistent);
 
 static zend_always_inline void smart_str_append_long(smart_str *dest, zend_long num)
 {
 	smart_str_append_long_ex(dest, num, false);
 }
 
-static zend_always_inline void smart_str_append_unsigned_ex(smart_str *dest, zend_ulong num, bool persistent) {
-	char buf[32];
-	char *result = zend_print_ulong_to_buf(buf + sizeof(buf) - 1, num);
-	smart_str_appendl_ex(dest, result, buf + sizeof(buf) - 1 - result, persistent);
-}
+ZEND_API void smart_str_append_unsigned_ex(smart_str *dest, zend_ulong num, bool persistent);
 
 static zend_always_inline void smart_str_append_unsigned(smart_str *dest, zend_ulong num)
 {
