@@ -91,7 +91,7 @@ static void init_sapi_from_env(sapi_module_struct *sapi_module)
 		sapi_module->php_ini_path_override = p;
 }
 
-static int php_was_startup(sapi_module_struct *sapi_module)
+static zend_result php_was_startup(sapi_module_struct *sapi_module)
 {
 	if (php_module_startup(sapi_module, NULL, 0)==FAILURE) {
 		return FAILURE;
@@ -99,12 +99,12 @@ static int php_was_startup(sapi_module_struct *sapi_module)
 	return SUCCESS;
 }
 
-static int sapi_was_activate(void)
+static zend_result sapi_was_activate(void)
 {
 	return SUCCESS;
 }
 
-static int sapi_was_deactivate(void)
+static zend_result sapi_was_deactivate(void)
 {
 	free(was_cookies);
 	was_cookies = NULL;
@@ -445,10 +445,10 @@ static void init_request_info(struct was_simple *w, const char *request_uri)
 	SG(sapi_headers).http_response_code = 200;
 }
 
-static int was_module_main(struct was_simple *w)
+static zend_result was_module_main(struct was_simple *w)
 {
 	if (php_request_startup() == FAILURE)
-		return -1;
+		return FAILURE;
 
 	zend_file_handle file_handle;
 	memset(&file_handle, 0, sizeof(file_handle));
@@ -462,7 +462,7 @@ static int was_module_main(struct was_simple *w)
 		php_request_shutdown(NULL);
 	} zend_end_try();
 
-	return 0;
+	return SUCCESS;
 }
 
 static bool was_process_request(struct was_simple *w, const char *request_uri)
@@ -476,7 +476,7 @@ static bool was_process_request(struct was_simple *w, const char *request_uri)
 	zend_first_try {
 		init_request_info(w, request_uri);
 
-		if (was_module_main(w) == -1)
+		if (was_module_main(w) != SUCCESS)
 			success = false;
 	} zend_end_try();
 
