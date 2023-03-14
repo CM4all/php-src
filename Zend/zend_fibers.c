@@ -562,6 +562,7 @@ static zend_always_inline zend_fiber_transfer zend_fiber_switch_to(
 
 	/* Forward bailout into current fiber. */
 	if (UNEXPECTED(transfer.flags & ZEND_FIBER_TRANSFER_FLAG_BAILOUT)) {
+		EG(active_fiber) = NULL;
 		zend_bailout();
 	}
 
@@ -662,7 +663,7 @@ static HashTable *zend_fiber_object_gc(zend_object *object, zval **table, int *n
 	zend_get_gc_buffer_add_zval(buf, &fiber->fci.function_name);
 	zend_get_gc_buffer_add_zval(buf, &fiber->result);
 
-	if (fiber->context.status != ZEND_FIBER_STATUS_SUSPENDED) {
+	if (fiber->context.status != ZEND_FIBER_STATUS_SUSPENDED || fiber->caller != NULL) {
 		zend_get_gc_buffer_use(buf, table, num);
 		return NULL;
 	}
@@ -670,7 +671,7 @@ static HashTable *zend_fiber_object_gc(zend_object *object, zval **table, int *n
 	HashTable *lastSymTable = NULL;
 	zend_execute_data *ex = fiber->execute_data;
 	for (; ex; ex = ex->prev_execute_data) {
-		HashTable *symTable = zend_unfinished_execution_gc(ex, ex->call, buf);
+		HashTable *symTable = zend_unfinished_execution_gc_ex(ex, ex->call, buf, false);
 		if (symTable) {
 			if (lastSymTable) {
 				zval *val;
