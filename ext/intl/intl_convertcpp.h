@@ -20,7 +20,10 @@
 #endif
 
 #include <unicode/unistr.h>
-#include <zend_types.h>
+
+#include <stddef.h>
+
+typedef struct _zend_string zend_string;
 
 using icu::UnicodeString;
 
