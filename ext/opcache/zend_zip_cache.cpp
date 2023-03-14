@@ -258,15 +258,24 @@ inline zend_persistent_script *ZendZipCache::LoadScript(std::string_view path) c
 		--i;
 
 		const std::string_view i_path = i->first;
-		if (i_path.size() >= path.size() ||
-		    memcmp(path.data(), i_path.data(), i_path.size()) != 0)
-			return nullptr;
+		if (i_path.size() >= path.size()) {
+			const int cmp = memcmp(path.data(), i_path.data(), path.size());
+			if (cmp > 0)
+				continue;
+			else
+				return nullptr;
 
-		if (path[i_path.size()] == '/') {
+		}
+
+		const int cmp = memcmp(path.data(), i_path.data(), i_path.size());
+		if (cmp == 0 && path[i_path.size()] == '/') {
 			std::string_view filename{path};
 			filename.remove_prefix(i_path.size() + 1);
 			return i->second.LoadScript(filename);
 		}
+
+		if (cmp < 0)
+			break;
 	}
 
 	return nullptr;
