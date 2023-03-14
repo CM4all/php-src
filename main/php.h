@@ -29,7 +29,10 @@
 
 #include "php_version.h"
 #include "zend.h"
+#include "zend_ast_ref.h"
 #include "zend_rc_debug.h"
+#include "zend_reference.h"
+#include "zend_resource.h"
 #include "zend_sort.h"
 #include "php_compat.h"
 #include "zend_range_check.h"
@@ -453,6 +456,7 @@ typedef uintptr_t zend_uintptr_t;
 #include "zend_multiply.h"
 #include "zend_objects.h"
 #include "zend_strtod.h"
+#include "zend_types.h"
 #include <errno.h>
 #include <float.h>
 #include <string.h>

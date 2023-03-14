@@ -21,8 +21,10 @@
 #ifndef ZEND_AST_H
 #define ZEND_AST_H
 
-#include "zend_types.h" // for zval
+#include "zend_result.h"
+#include "zend_value.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #ifndef ZEND_AST_SPEC
@@ -32,6 +34,8 @@
 #define ZEND_AST_SPECIAL_SHIFT      6
 #define ZEND_AST_IS_LIST_SHIFT      7
 #define ZEND_AST_NUM_CHILDREN_SHIFT 8
+
+typedef struct _zend_ast zend_ast;
 
 enum _zend_ast_kind {
 	/* special nodes */

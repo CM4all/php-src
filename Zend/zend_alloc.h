@@ -25,6 +25,7 @@
 #include "zend_result.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #ifndef ZEND_MM_ALIGNMENT

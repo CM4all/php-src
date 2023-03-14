@@ -22,7 +22,7 @@
 
 #include "zend_class.h"
 #include "zend_portability.h" // for BEGIN_EXTERN_C
-#include "zend_types.h" // for zval
+#include "zend_value.h"
 
 #include <stdint.h>
 
@@ -43,8 +43,11 @@
 #define ZEND_ATTRIBUTE_SIZE(argc) \
 	(sizeof(zend_attribute) + sizeof(zend_attribute_arg) * (argc) - sizeof(zend_attribute_arg))
 
+typedef struct _zend_array HashTable;
 typedef struct _zend_class_constant zend_class_constant;
+typedef struct _zend_class_entry zend_class_entry;
 typedef struct _zend_property_info zend_property_info;
+typedef struct _zend_string zend_string;
 
 BEGIN_EXTERN_C()
 

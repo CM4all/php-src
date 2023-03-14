@@ -12,36 +12,31 @@
    | obtain it through the world-wide-web, please send a note to          |
    | license@zend.com so we can mail you a copy immediately.              |
    +----------------------------------------------------------------------+
-   | Authors: Andi Gutmans <andi@php.net>                                 |
-   |          Zeev Suraski <zeev@php.net>                                 |
-   |          Dmitry Stogov <dmitry@php.net>                              |
-   |          Xinchen Hui <laruence@php.net>                              |
-   +----------------------------------------------------------------------+
 */
 
-#ifndef ZEND_TYPES_H
-#define ZEND_TYPES_H
+#ifndef ZEND_ENDIAN_H
+#define ZEND_ENDIAN_H
 
-#ifdef ZEND_ENABLE_ZVAL_LONG64
-# ifdef ZEND_WIN32
-#  define ZEND_SIZE_MAX  _UI64_MAX
-# else
-#  define ZEND_SIZE_MAX  SIZE_MAX
-# endif
+#ifdef PHP_WIN32
+#include "config.w32.h"
 #else
-# if defined(ZEND_WIN32)
-#  define ZEND_SIZE_MAX  _UI32_MAX
-# else
-#  define ZEND_SIZE_MAX SIZE_MAX
-# endif
+#include "zend_config.h"
 #endif
 
-#ifdef ZTS
-#define ZEND_TLS static TSRM_TLS
-#define ZEND_EXT_TLS TSRM_TLS
+#ifdef WORDS_BIGENDIAN
+# define ZEND_ENDIAN_LOHI(lo, hi)          hi; lo;
+# define ZEND_ENDIAN_LOHI_3(lo, mi, hi)    hi; mi; lo;
+# define ZEND_ENDIAN_LOHI_4(a, b, c, d)    d; c; b; a;
+# define ZEND_ENDIAN_LOHI_C(lo, hi)        hi, lo
+# define ZEND_ENDIAN_LOHI_C_3(lo, mi, hi)  hi, mi, lo,
+# define ZEND_ENDIAN_LOHI_C_4(a, b, c, d)  d, c, b, a
 #else
-#define ZEND_TLS static
-#define ZEND_EXT_TLS
+# define ZEND_ENDIAN_LOHI(lo, hi)          lo; hi;
+# define ZEND_ENDIAN_LOHI_3(lo, mi, hi)    lo; mi; hi;
+# define ZEND_ENDIAN_LOHI_4(a, b, c, d)    a; b; c; d;
+# define ZEND_ENDIAN_LOHI_C(lo, hi)        lo, hi
+# define ZEND_ENDIAN_LOHI_C_3(lo, mi, hi)  lo, mi, hi,
+# define ZEND_ENDIAN_LOHI_C_4(a, b, c, d)  a, b, c, d
 #endif
 
-#endif /* ZEND_TYPES_H */
+#endif /* ZEND_ENDIAN_H */

@@ -23,7 +23,9 @@
 #include "zend.h" // for INTERNAL_FUNCTION_PARAMETERS
 #include "zend_ast.h"
 #include "zend_portability.h" //for ZEND_FASTCALL
+#include "zend_type.h"
 
+#include <stddef.h> // for size_t
 #include <stdint.h>
 
 #define SET_UNUSED(op) do { \
@@ -380,17 +382,6 @@ typedef struct _zend_oparray_context {
 #define ZEND_JMP_NULL_BP_VAR_IS 4
 
 char *zend_visibility_string(uint32_t fn_flags);
-
-typedef struct _zend_property_info {
-	uint32_t offset; /* property offset for object properties or
-	                      property index for static properties */
-	uint32_t flags;
-	zend_string *name;
-	zend_string *doc_comment;
-	HashTable *attributes;
-	zend_class_entry *ce;
-	zend_type type;
-} zend_property_info;
 
 #define OBJ_PROP(obj, offset) \
 	((zval*)((char*)(obj) + offset))

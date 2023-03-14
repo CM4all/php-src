@@ -23,6 +23,7 @@
 #include "zend_mmap.h" // for zend_mmap_set_name()
 #include "zend_observer.h"
 #include "zend_objects.h" // for zend_object_std_init()
+#include "zend_types.h" // for ZEND_TLS
 #include "zend_fibers_arginfo.h"
 
 #ifdef ZEND_WIN32

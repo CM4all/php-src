@@ -20,7 +20,9 @@
 #ifndef ZEND_ITERATORS_H
 #define ZEND_ITERATORS_H
 
-#include "zend_types.h" // for zval
+#include "zend_long.h"
+#include "zend_object.h"
+#include "zend_value.h"
 
 /* These iterators were designed to operate within the foreach()
  * structures provided by the engine, but could be extended for use
@@ -29,6 +31,8 @@
  * with similar names.
  * */
 
+typedef struct _zend_array HashTable;
+typedef union  _zend_function zend_function;
 typedef struct _zend_object_iterator zend_object_iterator;
 
 typedef struct _zend_object_iterator_funcs {

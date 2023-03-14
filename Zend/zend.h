@@ -74,12 +74,14 @@ ZEND_TSRMLS_CACHE_EXTERN()
 struct _zend_serialize_data;
 struct _zend_unserialize_data;
 
-typedef struct _zend_serialize_data zend_serialize_data;
-typedef struct _zend_unserialize_data zend_unserialize_data;
 typedef struct _zend_class_iterator_funcs zend_class_iterator_funcs;
 typedef struct _zend_class_arrayaccess_funcs zend_class_arrayaccess_funcs;
-typedef struct _zend_object_iterator zend_object_iterator;
+typedef struct _zend_execute_data zend_execute_data;
 typedef struct _zend_file_handle zend_file_handle;
+typedef struct _zend_object_iterator zend_object_iterator;
+typedef struct _zend_serialize_data zend_serialize_data;
+typedef struct _zend_unserialize_data zend_unserialize_data;
+typedef struct _zval_struct zval;
 
 typedef struct _zend_utility_functions {
 	void (*error_function)(int type, zend_string *error_filename, const uint32_t error_lineno, zend_string *message);

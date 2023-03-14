@@ -21,6 +21,11 @@
 
 #include "zend_iterators.h" // for zend_object_iterator
 #include "zend_portability.h" // for BEGIN_EXTERN_C
+#include "zend_result.h"
+#include "zend_value.h"
+
+#include <stddef.h> // for size_t
+#include <stdint.h>
 
 typedef struct _zend_class_entry zend_class_entry;
 typedef struct _zend_serialize_data zend_serialize_data;
