@@ -8309,7 +8309,6 @@ static int zend_jit_identical(dasm_State    **Dst,
 				}
 				op1_addr = real_addr;
 			}
-			|	LOAD_ZVAL_ADDR FCARG1a, op1_addr
 		}
 		if (opline->op2_type != IS_CONST) {
 			if (Z_MODE(op2_addr) == IS_REG) {
@@ -8320,6 +8319,9 @@ static int zend_jit_identical(dasm_State    **Dst,
 				op2_addr = real_addr;
 			}
 			|	LOAD_ZVAL_ADDR FCARG2a, op2_addr
+		}
+		if (opline->op1_type != IS_CONST) {
+			|	LOAD_ZVAL_ADDR FCARG1a, op1_addr
 		}
 	}
 
@@ -13075,7 +13077,7 @@ static int zend_jit_fetch_obj(dasm_State          **Dst,
 		type_loaded = 1;
 		prop_addr = ZEND_ADDR_MEM_ZVAL(ZREG_FCARG1, 0);
 		if (opline->opcode == ZEND_FETCH_OBJ_W
-		 && (!ce ||	ce_is_instanceof || (ce->ce_flags & ZEND_ACC_HAS_TYPE_HINTS))) {
+		 && (!ce ||	ce_is_instanceof || (ce->ce_flags & (ZEND_ACC_HAS_TYPE_HINTS|ZEND_ACC_TRAIT)))) {
 			uint32_t flags = opline->extended_value & ZEND_FETCH_OBJ_FLAGS;
 
 			|	mov r0, EX->run_time_cache
@@ -13571,7 +13573,7 @@ static int zend_jit_incdec_obj(dasm_State          **Dst,
 		|	mov r2, aword [r0 + opline->extended_value]
 		|	cmp r2, aword [FCARG1a + offsetof(zend_object, ce)]
 		|	jne >7
-		if (!ce || ce_is_instanceof || (ce->ce_flags & ZEND_ACC_HAS_TYPE_HINTS)) {
+		if (!ce || ce_is_instanceof || (ce->ce_flags & (ZEND_ACC_HAS_TYPE_HINTS|ZEND_ACC_TRAIT))) {
 			|	cmp aword [r0 + opline->extended_value + sizeof(void*) * 2], 0
 			|	jnz >7
 		}
@@ -14044,7 +14046,7 @@ static int zend_jit_assign_obj_op(dasm_State          **Dst,
 		|	mov r2, aword [r0 + (opline+1)->extended_value]
 		|	cmp r2, aword [FCARG1a + offsetof(zend_object, ce)]
 		|	jne >7
-		if (!ce || ce_is_instanceof || (ce->ce_flags & ZEND_ACC_HAS_TYPE_HINTS)) {
+		if (!ce || ce_is_instanceof || (ce->ce_flags & (ZEND_ACC_HAS_TYPE_HINTS|ZEND_ACC_TRAIT))) {
 			|	cmp aword [r0 + (opline+1)->extended_value + sizeof(void*) * 2], 0
 			|	jnz >7
 		}
@@ -14463,7 +14465,7 @@ static int zend_jit_assign_obj(dasm_State          **Dst,
 		|	mov r2, aword [r0 + opline->extended_value]
 		|	cmp r2, aword [FCARG1a + offsetof(zend_object, ce)]
 		|	jne >5
-		if (!ce || ce_is_instanceof || (ce->ce_flags & ZEND_ACC_HAS_TYPE_HINTS)) {
+		if (!ce || ce_is_instanceof || (ce->ce_flags & (ZEND_ACC_HAS_TYPE_HINTS|ZEND_ACC_TRAIT))) {
 			|	mov FCARG2a, aword [r0 + opline->extended_value + sizeof(void*) * 2]
 		}
 		|	mov r0, aword [r0 + opline->extended_value + sizeof(void*)]
@@ -14472,7 +14474,7 @@ static int zend_jit_assign_obj(dasm_State          **Dst,
 		|	IF_TYPE byte [FCARG1a + r0 + 8], IS_UNDEF, >5
 		|	add FCARG1a, r0
 		prop_addr = ZEND_ADDR_MEM_ZVAL(ZREG_FCARG1, 0);
-		if (!ce || ce_is_instanceof || (ce->ce_flags & ZEND_ACC_HAS_TYPE_HINTS)) {
+		if (!ce || ce_is_instanceof || (ce->ce_flags & (ZEND_ACC_HAS_TYPE_HINTS|ZEND_ACC_TRAIT))) {
 			|	test FCARG2a, FCARG2a
 			|	jnz >1
 			|.cold_code
@@ -15437,6 +15439,20 @@ static int zend_jit_fe_reset(dasm_State **Dst, const zend_op *opline, uint32_t o
 static int zend_jit_fe_fetch(dasm_State **Dst, const zend_op *opline, uint32_t op1_info, uint32_t op2_info, unsigned int target_label, zend_uchar exit_opcode, const void *exit_addr)
 {
 	zend_jit_addr op1_addr = ZEND_ADDR_MEM_ZVAL(ZREG_FP, opline->op1.var);
+
+	if (!MAY_BE_HASH(op1_info) && !MAY_BE_PACKED(op1_info)) {
+		/* empty array */
+		if (exit_addr) {
+			if (exit_opcode == ZEND_JMP) {
+				|	jmp &exit_addr
+			} else {
+				|	jmp >3
+			}
+		} else {
+			|	jmp =>target_label
+		}
+		return 1;
+	}
 
 	|	// array = EX_VAR(opline->op1.var);
 	|	// fe_ht = Z_ARRVAL_P(array);

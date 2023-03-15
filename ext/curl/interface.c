@@ -62,6 +62,12 @@
 #include "curl_private.h"
 #include "curl_arginfo.h"
 
+#ifdef __GNUC__
+/* don't complain about deprecated CURLOPT_* we're exposing to PHP; we
+   need to keep using those to avoid breaking PHP API compatibiltiy */
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 #ifdef PHP_CURL_NEED_OPENSSL_TSL /* {{{ */
 static MUTEX_T *php_curl_openssl_tsl = NULL;
 
@@ -1541,6 +1547,8 @@ static size_t curl_read(char *data, size_t size, size_t nmemb, void *ctx)
 				if (Z_TYPE(retval) == IS_STRING) {
 					length = MIN((int) (size * nmemb), Z_STRLEN(retval));
 					memcpy(data, Z_STRVAL(retval), length);
+				} else if (Z_TYPE(retval) == IS_LONG) {
+					length = Z_LVAL_P(&retval);
 				}
 				zval_ptr_dtor(&retval);
 			}
@@ -2045,7 +2053,7 @@ static inline int build_mime_structure_from_hash(php_curl *ch, zval *zpostfields
 				postval = Z_STR_P(prop);
 
 				if (php_check_open_basedir(ZSTR_VAL(postval))) {
-					return 1;
+					return FAILURE;
 				}
 
 				prop = zend_read_property(curl_CURLFile_class, Z_OBJ_P(current), "mime", sizeof("mime")-1, 0, &rv);
