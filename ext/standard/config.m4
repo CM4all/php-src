@@ -69,6 +69,8 @@ AS_VAR_IF([php_cv_have_flush_io], [yes],
   [AC_DEFINE([HAVE_FLUSHIO], [1],
     [Define to 1 if flush should be called explicitly after a buffered io.])])
 
+AC_CHECK_FUNCS(posix_spawn)
+
 PHP_ARG_WITH([external-libcrypt],
   [for external libcrypt or libxcrypt],
   [AS_HELP_STRING([--with-external-libcrypt],
