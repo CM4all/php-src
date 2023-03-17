@@ -26,6 +26,13 @@
 #include "ext/date/php_date.h"
 #include "zend_smart_str.h"
 
+#ifdef HAVE_POSIX_SPAWN
+#include <fcntl.h>
+#include <spawn.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#endif
+
 #ifdef HAVE_SYSEXITS_H
 # include <sysexits.h>
 #endif
@@ -528,6 +535,56 @@ PHPAPI int php_mail(const char *to, const char *subject, const char *message, co
 
 #ifdef PHP_WIN32
 	sendmail = popen_ex(sendmail_cmd, "wb", NULL, NULL);
+#elif defined(HAVE_POSIX_SPAWN)
+	int p[2];
+	if (pipe2(p, O_CLOEXEC) < 0) {
+		php_error_docref(NULL, E_WARNING, "Failed to create pipe: %s", strerror(errno));
+#if PHP_SIGCHILD
+		if (sig_handler) {
+			signal(SIGCHLD, sig_handler);
+		}
+#endif
+		MAIL_RET(0);
+	}
+
+	posix_spawn_file_actions_t fa;
+	posix_spawn_file_actions_init(&fa);
+	posix_spawn_file_actions_adddup2(&fa, p[0], STDIN_FILENO);
+
+	char *argv[256];
+	size_t argc = 0;
+
+	char *cmd = estrdup(sendmail_cmd);
+	char *saveptr, *arg = strtok_r(cmd, " ", &saveptr);
+	while (arg != NULL && argc < 255) {
+		argv[argc++] = arg;
+		arg = strtok_r(NULL, " ", &saveptr);
+	}
+
+	argv[argc] = NULL;
+
+	pid_t pid;
+	if (posix_spawn(&pid, argv[0], &fa, NULL, argv, NULL) < 0) {
+		php_error_docref(NULL, E_WARNING, "Could not execute mail delivery program '%s': %s", sendmail_path, strerror(errno));
+		efree(cmd);
+		close(p[0]);
+		close(p[1]);
+		posix_spawn_file_actions_destroy(&fa);
+#if PHP_SIGCHILD
+		if (sig_handler) {
+			signal(SIGCHLD, sig_handler);
+		}
+#endif
+		MAIL_RET(0);
+	}
+
+	efree(cmd);
+
+	posix_spawn_file_actions_destroy(&fa);
+	close(p[0]);
+
+	sendmail = fdopen(p[1], "w");
+
 #else
 	/* Since popen() doesn't indicate if the internal fork() doesn't work
 	 * (e.g. the shell can't be executed) we explicitly set it to 0 to be
@@ -543,7 +600,11 @@ PHPAPI int php_mail(const char *to, const char *subject, const char *message, co
 #ifndef PHP_WIN32
 		if (EACCES == errno) {
 			php_error_docref(NULL, E_WARNING, "Permission denied: unable to execute shell to run mail delivery binary '%s'", sendmail_path);
+#ifdef HAVE_POSIX_SPAWN
+			fclose(sendmail);
+#else
 			pclose(sendmail);
+#endif
 #if PHP_SIGCHILD
 			/* Restore handler in case of error on Windows
 			   Not sure if this applicable on Win but just in case. */
@@ -560,7 +621,16 @@ PHPAPI int php_mail(const char *to, const char *subject, const char *message, co
 			fprintf(sendmail, "%s%s", hdr, line_sep);
 		}
 		fprintf(sendmail, "%s%s%s", line_sep, message, line_sep);
+#ifdef HAVE_POSIX_SPAWN
+		fclose(sendmail);
+
+		int status;
+		ret = waitpid(pid, &status, 0);
+		if (ret >= 0)
+			ret = WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
+#else
 		ret = pclose(sendmail);
+#endif
 
 #if PHP_SIGCHILD
 		if (sig_handler) {
