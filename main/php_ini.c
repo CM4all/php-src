@@ -313,6 +313,19 @@ static void php_ini_parser_cb(zval *arg1, zval *arg2, zval *arg3, int callback_t
 static void php_load_php_extension_cb(void *arg)
 {
 #ifdef HAVE_LIBDL
+	/* is this extension already loaded? (maybe statically linked) */
+	const char *filename = *((char **) arg);
+	const size_t filename_length = strlen(filename);
+	if (filename_length > 3 && memcmp(filename + filename_length - 3, ".so", 3) == 0) {
+		char *module_name = estrndup(filename, filename_length - 3);
+		bool already_loaded = zend_get_module_version(module_name) != NULL;
+		efree(module_name);
+		if (already_loaded)
+			/* yes, it is; silently ignore this
+			   configuration */
+			return;
+	}
+
 	php_load_extension(*((char **) arg), MODULE_PERSISTENT, 0);
 #endif
 }
