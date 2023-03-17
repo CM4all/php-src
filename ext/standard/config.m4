@@ -51,6 +51,7 @@ if test "$ac_cv_flush_io" = "yes"; then
   AC_DEFINE(HAVE_FLUSHIO, 1, [Define if flush should be called explicitly after a buffered io.])
 fi
 
+AC_CHECK_FUNCS(posix_spawn)
 PHP_CHECK_FUNC(crypt, crypt)
 PHP_CHECK_FUNC(crypt_r, crypt)
 if test "$ac_cv_func_crypt_r" = "yes"; then
