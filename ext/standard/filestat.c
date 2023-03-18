@@ -942,13 +942,13 @@ PHPAPI void php_stat(zend_string *filename, int type, zval *return_value)
 	case FS_LSTAT:
 		/* FALLTHROUGH */
 	case FS_STAT: {
-		char *stat_sb_names[] = {
+		static const char *const stat_sb_names[] = {
 			"dev", "ino", "mode", "nlink", "uid", "gid", "rdev",
 			"size", "atime", "mtime", "ctime", "blksize", "blocks"
 		};
 		zval stat_dev, stat_ino, stat_mode, stat_nlink, stat_uid, stat_gid, stat_rdev,
 			stat_size, stat_atime, stat_mtime, stat_ctime, stat_blksize, stat_blocks;
-		zval *stat_sb_addresses[] = {
+		zval *const stat_sb_addresses[] = {
 			&stat_dev, &stat_ino, &stat_mode, &stat_nlink, &stat_uid, &stat_gid, &stat_rdev,
 			&stat_size, &stat_atime, &stat_mtime, &stat_ctime, &stat_blksize, &stat_blocks
 		};
