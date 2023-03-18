@@ -16,6 +16,8 @@
 #include "fopen_wrappers.h"
 #include "php_globals.h"
 
+#include "ext/opcache/ZendAccelerator.h" // for is_persistent_script()
+
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -735,6 +737,19 @@ PHPAPI void php_stat(zend_string *filename, int type, zval *return_value)
 	if (!ZSTR_LEN(filename)) {
 		RETURN_FALSE;
 	}
+
+	if ((type == FS_EXISTS || type == FS_IS_R || type == FS_IS_FILE) &&
+	    /* is an absolute path that ends with ".php" */
+	    ZSTR_LEN(filename) >= 6 &&
+	    ZSTR_VAL(filename)[0] == '/' &&
+	    memcmp(ZSTR_VAL(filename) + ZSTR_LEN(filename) - 4, ".php", 4) == 0 &&
+	    is_persistent_script(filename)) {
+		/* this is a cached script and its time stamp does not
+		 * need revalidation - we can safely pretend it exists
+		 * and it is a regular file */
+		RETURN_TRUE;
+	}
+
 	if (IS_ACCESS_CHECK(type)) {
 		wrapper = php_stream_locate_url_wrapper(ZSTR_VAL(filename), &local, 0);
 		if (wrapper == &php_plain_files_wrapper) {
