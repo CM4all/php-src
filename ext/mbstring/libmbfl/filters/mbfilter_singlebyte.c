@@ -136,7 +136,7 @@ static int mbfl_conv_reverselookup_table(int c, mbfl_convert_filter *filter, int
 	DEF_SB(id, name, mime_name, aliases)
 
 /* The grand-daddy of them all: ASCII */
-static const char *ascii_aliases[] = {"ANSI_X3.4-1968", "iso-ir-6", "ANSI_X3.4-1986", "ISO_646.irv:1991", "US-ASCII", "ISO646-US", "us", "IBM367", "IBM-367", "cp367", "csASCII", NULL};
+static const char *const ascii_aliases[] = {"ANSI_X3.4-1968", "iso-ir-6", "ANSI_X3.4-1986", "ISO_646.irv:1991", "US-ASCII", "ISO646-US", "us", "IBM367", "IBM-367", "cp367", "csASCII", NULL};
 DEF_SB(ascii, "ASCII", "US-ASCII", ascii_aliases);
 
 static int mbfl_filt_conv_ascii_wchar(int c, mbfl_convert_filter *filter)
@@ -191,7 +191,7 @@ static void mb_wchar_to_ascii(uint32_t *in, size_t len, mb_convert_buf *buf, boo
 
 /* ISO-8859-X */
 
-static const char *iso8859_1_aliases[] = {"ISO8859-1", "latin1", NULL};
+static const char *const iso8859_1_aliases[] = {"ISO8859-1", "latin1", NULL};
 DEF_SB(8859_1, "ISO-8859-1", "ISO-8859-1", iso8859_1_aliases);
 
 static int mbfl_filt_conv_8859_1_wchar(int c, mbfl_convert_filter *filter)
@@ -242,7 +242,7 @@ static void mb_wchar_to_8859_1(uint32_t *in, size_t len, mb_convert_buf *buf, bo
 	MB_CONVERT_BUF_STORE(buf, out, limit);
 }
 
-static const char *iso8859_2_aliases[] = {"ISO8859-2", "latin2", NULL};
+static const char *const iso8859_2_aliases[] = {"ISO8859-2", "latin2", NULL};
 static const unsigned short iso8859_2_ucs_table[] = {
 	0x00A0, 0x0104, 0x02D8, 0x0141, 0x00A4, 0x013D, 0x015A, 0x00A7,
 	0x00A8, 0x0160, 0x015E, 0x0164, 0x0179, 0x00AD, 0x017D, 0x017B,
@@ -259,7 +259,7 @@ static const unsigned short iso8859_2_ucs_table[] = {
 };
 DEF_SB_TBL(8859_2, "ISO-8859-2", "ISO-8859-2", iso8859_2_aliases, 0xA0, iso8859_2_ucs_table);
 
-static const char *iso8859_3_aliases[] = {"ISO8859-3", "latin3", NULL};
+static const char *const iso8859_3_aliases[] = {"ISO8859-3", "latin3", NULL};
 static const unsigned short iso8859_3_ucs_table[] = {
 	0x00A0, 0x0126, 0x02D8, 0x00A3, 0x00A4, 0x0000, 0x0124, 0x00A7,
 	0x00A8, 0x0130, 0x015E, 0x011E, 0x0134, 0x00AD, 0x0000, 0x017B,
@@ -276,7 +276,7 @@ static const unsigned short iso8859_3_ucs_table[] = {
 };
 DEF_SB_TBL(8859_3, "ISO-8859-3", "ISO-8859-3", iso8859_3_aliases, 0xA0, iso8859_3_ucs_table);
 
-static const char *iso8859_4_aliases[] = {"ISO8859-4", "latin4", NULL};
+static const char *const iso8859_4_aliases[] = {"ISO8859-4", "latin4", NULL};
 static const unsigned short iso8859_4_ucs_table[] = {
 	0x00A0, 0x0104, 0x0138, 0x0156, 0x00A4, 0x0128, 0x013B, 0x00A7,
 	0x00A8, 0x0160, 0x0112, 0x0122, 0x0166, 0x00AD, 0x017D, 0x00AF,
@@ -293,7 +293,7 @@ static const unsigned short iso8859_4_ucs_table[] = {
 };
 DEF_SB_TBL(8859_4, "ISO-8859-4", "ISO-8859-4", iso8859_4_aliases, 0xA0, iso8859_4_ucs_table);
 
-static const char *iso8859_5_aliases[] = {"ISO8859-5", "cyrillic", NULL};
+static const char *const iso8859_5_aliases[] = {"ISO8859-5", "cyrillic", NULL};
 static const unsigned short iso8859_5_ucs_table[] = {
 	0x00A0, 0x0401, 0x0402, 0x0403, 0x0404, 0x0405, 0x0406, 0x0407,
 	0x0408, 0x0409, 0x040A, 0x040B, 0x040C, 0x00AD, 0x040E, 0x040F,
@@ -310,7 +310,7 @@ static const unsigned short iso8859_5_ucs_table[] = {
 };
 DEF_SB_TBL(8859_5, "ISO-8859-5", "ISO-8859-5", iso8859_5_aliases, 0xA0, iso8859_5_ucs_table);
 
-static const char *iso8859_6_aliases[] = {"ISO8859-6", "arabic", NULL};
+static const char *const iso8859_6_aliases[] = {"ISO8859-6", "arabic", NULL};
 static const unsigned short iso8859_6_ucs_table[] = {
 	0x00A0, 0x0000, 0x0000, 0x0000, 0x00A4, 0x0000, 0x0000, 0x0000,
 	0x0000, 0x0000, 0x0000, 0x0000, 0x060C, 0x00AD, 0x0000, 0x0000,
@@ -327,7 +327,7 @@ static const unsigned short iso8859_6_ucs_table[] = {
 };
 DEF_SB_TBL(8859_6, "ISO-8859-6", "ISO-8859-6", iso8859_6_aliases, 0xA0, iso8859_6_ucs_table);
 
-static const char *iso8859_7_aliases[] = {"ISO8859-7", "greek", NULL};
+static const char *const iso8859_7_aliases[] = {"ISO8859-7", "greek", NULL};
 static const unsigned short iso8859_7_ucs_table[] = {
 	0x00A0, 0x2018, 0x2019, 0x00A3, 0x20AC, 0x20AF, 0x00A6, 0x00A7,
 	0x00A8, 0x00A9, 0x037A, 0x00AB, 0x00AC, 0x00AD, 0x0000, 0x2015,
@@ -344,7 +344,7 @@ static const unsigned short iso8859_7_ucs_table[] = {
 };
 DEF_SB_TBL(8859_7, "ISO-8859-7", "ISO-8859-7", iso8859_7_aliases, 0xA0, iso8859_7_ucs_table);
 
-static const char *iso8859_8_aliases[] = {"ISO8859-8", "hebrew", NULL};
+static const char *const iso8859_8_aliases[] = {"ISO8859-8", "hebrew", NULL};
 static const unsigned short iso8859_8_ucs_table[] = {
 	0x00A0, 0x0000, 0x00A2, 0x00A3, 0x00A4, 0x00A5, 0x00A6, 0x00A7,
 	0x00A8, 0x00A9, 0x00D7, 0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x00AF,
@@ -361,7 +361,7 @@ static const unsigned short iso8859_8_ucs_table[] = {
 };
 DEF_SB_TBL(8859_8, "ISO-8859-8", "ISO-8859-8", iso8859_8_aliases, 0xA0, iso8859_8_ucs_table);
 
-static const char *iso8859_9_aliases[] = {"ISO8859-9", "latin5", NULL};
+static const char *const iso8859_9_aliases[] = {"ISO8859-9", "latin5", NULL};
 static const unsigned short iso8859_9_ucs_table[] = {
 	0x00A0, 0x00A1, 0x00A2, 0x00A3, 0x00A4, 0x00A5, 0x00A6, 0x00A7,
 	0x00A8, 0x00A9, 0x00AA, 0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x00AF,
@@ -378,7 +378,7 @@ static const unsigned short iso8859_9_ucs_table[] = {
 };
 DEF_SB_TBL(8859_9, "ISO-8859-9", "ISO-8859-9", iso8859_9_aliases, 0xA0, iso8859_9_ucs_table);
 
-static const char *iso8859_10_aliases[] = {"ISO8859-10", "latin6", NULL};
+static const char *const iso8859_10_aliases[] = {"ISO8859-10", "latin6", NULL};
 static const unsigned short iso8859_10_ucs_table[] = {
 	0x00A0, 0x0104, 0x0112, 0x0122, 0x012A, 0x0128, 0x0136, 0x00A7,
 	0x013B, 0x0110, 0x0160, 0x0166, 0x017D, 0x00AD, 0x016A, 0x014A,
@@ -395,7 +395,7 @@ static const unsigned short iso8859_10_ucs_table[] = {
 };
 DEF_SB_TBL(8859_10, "ISO-8859-10", "ISO-8859-10", iso8859_10_aliases, 0xA0, iso8859_10_ucs_table);
 
-static const char *iso8859_13_aliases[] = {"ISO8859-13", NULL};
+static const char *const iso8859_13_aliases[] = {"ISO8859-13", NULL};
 static const unsigned short iso8859_13_ucs_table[] = {
 	0x00A0, 0x201D, 0x00A2, 0x00A3, 0x00A4, 0x201E, 0x00A6, 0x00A7,
 	0x00D8, 0x00A9, 0x0156, 0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x00C6,
@@ -412,7 +412,7 @@ static const unsigned short iso8859_13_ucs_table[] = {
 };
 DEF_SB_TBL(8859_13, "ISO-8859-13", "ISO-8859-13", iso8859_13_aliases, 0xA0, iso8859_13_ucs_table);
 
-static const char *iso8859_14_aliases[] = {"ISO8859-14", "latin8", NULL};
+static const char *const iso8859_14_aliases[] = {"ISO8859-14", "latin8", NULL};
 static const unsigned short iso8859_14_ucs_table[] = {
 	0x00A0, 0x1E02, 0x1E03, 0x00A3, 0x010A, 0x010B, 0x1E0A, 0x00A7,
 	0x1E80, 0x00A9, 0x1E82, 0x1E0B, 0x1EF2, 0x00AD, 0x00AE, 0x0178,
@@ -429,7 +429,7 @@ static const unsigned short iso8859_14_ucs_table[] = {
 };
 DEF_SB_TBL(8859_14, "ISO-8859-14", "ISO-8859-14", iso8859_14_aliases, 0xA0, iso8859_14_ucs_table);
 
-static const char *iso8859_15_aliases[] = {"ISO8859-15", NULL};
+static const char *const iso8859_15_aliases[] = {"ISO8859-15", NULL};
 static const unsigned short iso8859_15_ucs_table[] = {
 	0x00A0, 0x00A1, 0x00A2, 0x00A3, 0x20AC, 0x00A5, 0x0160, 0x00A7,
 	0x0161, 0x00A9, 0x00AA, 0x00AB, 0x00AC, 0x00AD, 0x00AE, 0x00AF,
@@ -446,7 +446,7 @@ static const unsigned short iso8859_15_ucs_table[] = {
 };
 DEF_SB_TBL(8859_15, "ISO-8859-15", "ISO-8859-15", iso8859_15_aliases, 0xA0, iso8859_15_ucs_table);
 
-static const char *iso8859_16_aliases[] = {"ISO8859-16", NULL};
+static const char *const iso8859_16_aliases[] = {"ISO8859-16", NULL};
 static const unsigned short iso8859_16_ucs_table[] = {
 	0x00A0, 0x0104, 0x0105, 0x0141, 0x20AC, 0x201E, 0x0160, 0x00A7,
 	0x0161, 0x00A9, 0x0218, 0x00AB, 0x0179, 0x00AD, 0x017A, 0x017B,
@@ -463,7 +463,7 @@ static const unsigned short iso8859_16_ucs_table[] = {
 };
 DEF_SB_TBL(8859_16, "ISO-8859-16", "ISO-8859-16", iso8859_16_aliases, 0xA0, iso8859_16_ucs_table);
 
-static const char *cp1251_aliases[] = {"CP1251", "CP-1251", "WINDOWS-1251", NULL};
+static const char *const cp1251_aliases[] = {"CP1251", "CP-1251", "WINDOWS-1251", NULL};
 static const unsigned short cp1251_ucs_table[] = {
 	0x0402, 0x0403, 0x201A, 0x0453, 0x201E, 0x2026, 0x2020, 0x2021,
 	0x20AC, 0x2030, 0x0409, 0x2039, 0x040A, 0x040C, 0x040B, 0x040F,
@@ -484,7 +484,7 @@ static const unsigned short cp1251_ucs_table[] = {
 };
 DEF_SB_TBL(cp1251, "Windows-1251", "Windows-1251", cp1251_aliases, 0x80, cp1251_ucs_table);
 
-static const char *cp1252_aliases[] = {"cp1252", NULL};
+static const char *const cp1252_aliases[] = {"cp1252", NULL};
 static const unsigned short cp1252_ucs_table[] = {
 	0x20AC, 0x0081, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021,
 	0x02C6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008D, 0x017D, 0x008F,
@@ -575,7 +575,7 @@ static void mb_wchar_to_cp1252(uint32_t *in, size_t len, mb_convert_buf *buf, bo
 	MB_CONVERT_BUF_STORE(buf, out, limit);
 }
 
-static const char *cp1254_aliases[] = {"CP1254", "CP-1254", "WINDOWS-1254", NULL};
+static const char *const cp1254_aliases[] = {"CP1254", "CP-1254", "WINDOWS-1254", NULL};
 static const unsigned short cp1254_ucs_table[] = {
 	0x20AC, 0X0000, 0X201A, 0X0192, 0X201E, 0X2026, 0X2020, 0X2021,
 	0X02C6, 0X2030, 0X0160, 0X2039, 0X0152, 0X0000, 0X0000, 0X0000,
@@ -596,7 +596,7 @@ static const unsigned short cp1254_ucs_table[] = {
 };
 DEF_SB_TBL(cp1254, "Windows-1254", "Windows-1254", cp1254_aliases, 0x80, cp1254_ucs_table);
 
-static const char *cp866_aliases[] = {"CP-866", "IBM866", "IBM-866", NULL};
+static const char *const cp866_aliases[] = {"CP-866", "IBM866", "IBM-866", NULL};
 static const unsigned short cp866_ucs_table[] = {
 	0x0410, 0x0411, 0x0412, 0x0413, 0x0414, 0x0415, 0x0416, 0x0417,
 	0x0418, 0x0419, 0x041A, 0x041B, 0x041C, 0x041D, 0x041E, 0x041F,
@@ -617,7 +617,7 @@ static const unsigned short cp866_ucs_table[] = {
 };
 DEF_SB_TBL(cp866, "CP866", "CP866", cp866_aliases, 0x80, cp866_ucs_table);
 
-static const char *cp850_aliases[] = {"CP-850", "IBM850", "IBM-850", NULL};
+static const char *const cp850_aliases[] = {"CP-850", "IBM850", "IBM-850", NULL};
 static const unsigned short cp850_ucs_table[] = {
 	0x00C7, 0x00FC, 0x00E9, 0x00E2, 0x00E4, 0x00E0, 0x00E5, 0x00E7,
 	0x00EA, 0x00EB, 0x00E8, 0x00EF, 0x00EE, 0x00EC, 0x00C4, 0x00C5,
@@ -638,7 +638,7 @@ static const unsigned short cp850_ucs_table[] = {
 };
 DEF_SB_TBL(cp850, "CP850", "CP850", cp850_aliases, 0x80, cp850_ucs_table);
 
-static const char *koi8r_aliases[] = {"KOI8R", NULL};
+static const char *const koi8r_aliases[] = {"KOI8R", NULL};
 static const unsigned short koi8r_ucs_table[] = {
 	0x2500, 0x2502, 0x250C, 0x2510, 0x2514, 0x2518, 0x251C, 0x2524,
 	0x252C, 0x2534, 0x253C, 0x2580, 0x2584, 0x2588, 0x258C, 0x2590,
@@ -659,7 +659,7 @@ static const unsigned short koi8r_ucs_table[] = {
 };
 DEF_SB_TBL(koi8r, "KOI8-R", "KOI8-R", koi8r_aliases, 0x80, koi8r_ucs_table);
 
-static const char *koi8u_aliases[] = {"KOI8U", NULL};
+static const char *const koi8u_aliases[] = {"KOI8U", NULL};
 static const unsigned short koi8u_ucs_table[] = {
 	0x2500, 0x2502, 0x250C, 0x2510, 0x2514, 0x2518, 0x251C, 0x2524,
 	0x252C, 0x2534, 0x253C, 0x2580, 0x2584, 0x2588, 0x258C, 0x2590,
@@ -680,7 +680,7 @@ static const unsigned short koi8u_ucs_table[] = {
 };
 DEF_SB_TBL(koi8u, "KOI8-U", "KOI8-U", koi8u_aliases, 0x80, koi8u_ucs_table);
 
-static const char *armscii8_aliases[] = {"ArmSCII8", "ARMSCII-8", "ARMSCII8", NULL};
+static const char *const armscii8_aliases[] = {"ArmSCII8", "ARMSCII-8", "ARMSCII8", NULL};
 static const unsigned short armscii8_ucs_table[] = {
 	0x00A0, 0x0000, 0x0587, 0x0589, 0x0029, 0x0028, 0x00BB, 0x00AB,
 	0x2014, 0x002E, 0x055D, 0x002C, 0x002D, 0x058A, 0x2026, 0x055C,
