@@ -2876,13 +2876,13 @@ ZEND_API void zend_update_current_locale(void) /* {{{ */
 
 		if (charmap) {
 			size_t len = strlen(charmap);
-			static const char *ascii_compatible_charmaps[] = {
+			static const char *const ascii_compatible_charmaps[] = {
 				"utf-8",
 				"utf8",
 				// TODO: EUC-* are also ASCII compatible ???
 				NULL
 			};
-			const char **p;
+			const char *const*p;
 			/* Check if current locale is ASCII compatible */
 			for (p = ascii_compatible_charmaps; *p; p++) {
 				if (zend_binary_strcasecmp(charmap, len, *p, strlen(*p)) == 0) {
