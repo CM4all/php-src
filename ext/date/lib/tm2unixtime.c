@@ -26,8 +26,8 @@
 #include "timelib_private.h"
 
 /*                                    dec  jan  feb  mrt  apr  may  jun  jul  aug  sep  oct  nov  dec */
-static int days_in_month_leap[13] = {  31,  31,  29,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31 };
-static int days_in_month[13]      = {  31,  31,  28,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31 };
+static const int days_in_month_leap[13] = {  31,  31,  29,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31 };
+static const int days_in_month[13]      = {  31,  31,  28,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31 };
 
 static void do_range_limit(timelib_sll start, timelib_sll end, timelib_sll adj, timelib_sll *a, timelib_sll *b)
 {
@@ -115,7 +115,7 @@ static int do_range_limit_days(timelib_sll *y, timelib_sll *m, timelib_sll *d)
 	timelib_sll previous_month, previous_year;
 	timelib_sll days_in_previous_month;
 	int retval = 0;
-	int *days_per_month_current_year;
+	const int *days_per_month_current_year;
 
 	/* can jump an entire leap year period quickly */
 	if (*d >= DAYS_PER_ERA || *d <= -DAYS_PER_ERA) {
