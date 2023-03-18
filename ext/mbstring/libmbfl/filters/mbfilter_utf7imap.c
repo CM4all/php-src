@@ -85,7 +85,7 @@ static size_t mb_utf7imap_to_wchar(unsigned char **in, size_t *in_len, uint32_t 
 static void mb_wchar_to_utf7imap(uint32_t *in, size_t len, mb_convert_buf *buf, bool end);
 static bool mb_check_utf7imap(unsigned char *in, size_t in_len);
 
-static const char *mbfl_encoding_utf7imap_aliases[] = {"mUTF-7", NULL};
+static const char *const mbfl_encoding_utf7imap_aliases[] = {"mUTF-7", NULL};
 
 const mbfl_encoding mbfl_encoding_utf7imap = {
 	mbfl_no_encoding_utf7imap,

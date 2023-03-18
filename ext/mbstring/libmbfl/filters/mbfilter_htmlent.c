@@ -54,7 +54,7 @@ static const int htmlentitifieds[256] = {
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 };
 
-static const char *mbfl_encoding_html_ent_aliases[] = {"HTML", "html", NULL};
+static const char *const mbfl_encoding_html_ent_aliases[] = {"HTML", "html", NULL};
 
 const mbfl_encoding mbfl_encoding_html_ent = {
 	mbfl_no_encoding_html_ent,

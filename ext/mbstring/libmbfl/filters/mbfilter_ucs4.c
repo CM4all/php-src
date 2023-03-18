@@ -36,13 +36,13 @@ static void mb_wchar_to_ucs4be(uint32_t *in, size_t len, mb_convert_buf *buf, bo
 static size_t mb_ucs4le_to_wchar(unsigned char **in, size_t *in_len, uint32_t *buf, size_t bufsize, unsigned int *state);
 static void mb_wchar_to_ucs4le(uint32_t *in, size_t len, mb_convert_buf *buf, bool end);
 
-static const char *mbfl_encoding_ucs4_aliases[] = {"ISO-10646-UCS-4", "UCS4", NULL};
+static const char *const mbfl_encoding_ucs4_aliases[] = {"ISO-10646-UCS-4", "UCS4", NULL};
 
 /* This library historically had encodings called 'byte4be' and 'byte4le'
  * which were almost identical to UCS-4
  * Maintain minimal support by aliasing to UCS-4 */
-static const char *mbfl_encoding_ucs4be_aliases[] = {"byte4be", NULL};
-static const char *mbfl_encoding_ucs4le_aliases[] = {"byte4le", NULL};
+static const char *const mbfl_encoding_ucs4be_aliases[] = {"byte4be", NULL};
+static const char *const mbfl_encoding_ucs4le_aliases[] = {"byte4le", NULL};
 
 static int mbfl_filt_conv_ucs4_wchar_flush(mbfl_convert_filter *filter);
 

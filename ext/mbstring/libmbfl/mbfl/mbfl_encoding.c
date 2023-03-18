@@ -54,7 +54,7 @@
 #include "filters/mbfilter_htmlent.h"
 #include "filters/mbfilter_singlebyte.h"
 
-static const mbfl_encoding *mbfl_encoding_ptr_list[] = {
+static const mbfl_encoding *const mbfl_encoding_ptr_list[] = {
 	&mbfl_encoding_base64,
 	&mbfl_encoding_uuencode,
 	&mbfl_encoding_html_ent,
@@ -351,7 +351,7 @@ const mbfl_encoding *mbfl_name2encoding_ex(const char *name, size_t name_len)
 	/* search aliases */
 	for (encoding = mbfl_encoding_ptr_list; *encoding; encoding++) {
 		if ((*encoding)->aliases) {
-			for (const char **alias = (*encoding)->aliases; *alias; alias++) {
+			for (const char *const*alias = (*encoding)->aliases; *alias; alias++) {
 				if (strncasecmp(name, *alias, name_len) == 0 && (*alias)[name_len] == '\0') {
 					return *encoding;
 				}
@@ -364,7 +364,7 @@ const mbfl_encoding *mbfl_name2encoding_ex(const char *name, size_t name_len)
 
 const mbfl_encoding *mbfl_no2encoding(enum mbfl_no_encoding no_encoding)
 {
-	const mbfl_encoding **encoding;
+	const mbfl_encoding *const*encoding;
 
 	for (encoding = mbfl_encoding_ptr_list; *encoding; encoding++) {
 		if ((*encoding)->no_encoding == no_encoding) {
@@ -381,7 +381,7 @@ const char *mbfl_no_encoding2name(enum mbfl_no_encoding no_encoding)
 	return encoding ? encoding->name : "";
 }
 
-const mbfl_encoding **mbfl_get_supported_encodings(void)
+const mbfl_encoding *const*mbfl_get_supported_encodings(void)
 {
 	return mbfl_encoding_ptr_list;
 }
