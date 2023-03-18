@@ -2938,7 +2938,7 @@ static void zps_startup_failure(const char *reason, const char *api_reason, int 
 
 static inline int accel_find_sapi(void)
 {
-	static const char *supported_sapis[] = {
+	static const char *const supported_sapis[] = {
 		"apache",
 		"fastcgi",
 		"cli-server",
@@ -2953,7 +2953,7 @@ static inline int accel_find_sapi(void)
 		"was",
 		NULL
 	};
-	const char **sapi_name;
+	const char *const*sapi_name;
 
 	if (sapi_module.name) {
 		for (sapi_name = supported_sapis; *sapi_name; sapi_name++) {
@@ -3360,7 +3360,7 @@ void accel_shutdown(void)
 
 void zend_accel_schedule_restart(zend_accel_restart_reason reason)
 {
-	const char *zend_accel_restart_reason_text[ACCEL_RESTART_USER + 1] = {
+	static const char *const zend_accel_restart_reason_text[ACCEL_RESTART_USER + 1] = {
 		"out of memory",
 		"hash overflow",
 		"user",

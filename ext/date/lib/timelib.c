@@ -35,7 +35,7 @@
 
 #define TIMELIB_LLABS(y) (y < 0 ? (y * -1) : y)
 
-const char *timelib_error_messages[10] = {
+static const char *const timelib_error_messages[10] = {
 	"No error",
 	"Cannot allocate buffer for parsing",
 	"Corrupt tzfile: The transitions in the file don't always increase",
