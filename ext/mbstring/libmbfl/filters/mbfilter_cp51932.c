@@ -57,7 +57,7 @@ static const unsigned char mblen_table_eucjp[] = { /* 0xA1-0xFE */
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1
 };
 
-static const char *mbfl_encoding_cp51932_aliases[] = {"cp51932", NULL};
+static const char *const mbfl_encoding_cp51932_aliases[] = {"cp51932", NULL};
 
 const mbfl_encoding mbfl_encoding_cp51932 = {
 	mbfl_no_encoding_cp51932,

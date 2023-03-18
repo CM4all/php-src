@@ -54,8 +54,8 @@ static void mb_wchar_to_iso2022jp2004(uint32_t *in, size_t len, mb_convert_buf *
 extern int mbfl_bisec_srch(int w, const unsigned short *tbl, int n);
 extern int mbfl_bisec_srch2(int w, const unsigned short tbl[], int n);
 
-static const char *mbfl_encoding_sjis2004_aliases[] = {"SJIS2004","Shift_JIS-2004", NULL};
-static const char *mbfl_encoding_eucjp2004_aliases[] = {"EUC_JP-2004", NULL};
+static const char *const mbfl_encoding_sjis2004_aliases[] = {"SJIS2004","Shift_JIS-2004", NULL};
+static const char *const mbfl_encoding_eucjp2004_aliases[] = {"EUC_JP-2004", NULL};
 
 const mbfl_encoding mbfl_encoding_sjis2004 = {
 	mbfl_no_encoding_sjis2004,
