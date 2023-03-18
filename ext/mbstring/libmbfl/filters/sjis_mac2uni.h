@@ -234,7 +234,7 @@ static const unsigned short code_ofst_tbl[][2] = {
 	{0x1ff2, 0x20a5},
 };
 
-static const unsigned short *code_map[] = {
+static const unsigned short *const code_map[] = {
 	sjis_mac2wchar1, sjis_mac2wchar2, sjis_mac2wchar3, sjis_mac2wchar4,
 	sjis_mac2wchar5, sjis_mac2wchar6, sjis_mac2wchar7, sjis_mac2wchar8};
 
@@ -253,7 +253,7 @@ static const unsigned short code_tbl_m[][6] = {
 	{0x0523, 0xf862, 0x8ca1, 0x56e3, 0x6cd5, 0x4eba},
 };
 
-static int code_tbl_m_len = sizeof(code_tbl_m)/(sizeof(unsigned short)*6);
+static const int code_tbl_m_len = sizeof(code_tbl_m)/(sizeof(unsigned short)*6);
 
 static const unsigned short s_form_tbl[] = {
 	0x2010,0x2016,0x2026,
@@ -266,7 +266,7 @@ static const unsigned short s_form_tbl[] = {
 	0x21e6,0x21e7,0x21e8,0x21e9, // black arrow f87a (4)
 };
 
-static int s_form_tbl_len = sizeof(s_form_tbl)/sizeof(unsigned short);
+static const int s_form_tbl_len = sizeof(s_form_tbl)/sizeof(unsigned short);
 
 static const unsigned short s_form_sjis_tbl[] = {
 	0xeb5d,0xeb61,0xeb63,
@@ -302,7 +302,7 @@ static const unsigned short wchar2sjis_mac_r_tbl[][3] = {
 	{0x32a4, 0x32a9, 0x04ba},
 };
 
-static int wchar2sjis_mac_r_tbl_len = sizeof(wchar2sjis_mac_r_tbl)/(3*sizeof(unsigned short));
+static const int wchar2sjis_mac_r_tbl_len = sizeof(wchar2sjis_mac_r_tbl)/(3*sizeof(unsigned short));
 
 static const unsigned short wchar2sjis_mac_r_map[][2] = {
 	{0x2660, 0x2667},
@@ -312,9 +312,9 @@ static const unsigned short wchar2sjis_mac_r_map[][2] = {
 	{0xfe30, 0xfe44},
 };
 
-static int wchar2sjis_mac_r_map_len = sizeof(wchar2sjis_mac_r_map)/(2*sizeof(unsigned short));
+static const int wchar2sjis_mac_r_map_len = sizeof(wchar2sjis_mac_r_map)/(2*sizeof(unsigned short));
 
-static const unsigned short *wchar2sjis_mac_code_map[] = {
+static const unsigned short *const wchar2sjis_mac_code_map[] = {
 	wchar2sjis_mac4, wchar2sjis_mac7, wchar2sjis_mac8, wchar2sjis_mac9, wchar2sjis_mac10};
 
 static const unsigned short wchar2sjis_mac_wchar_tbl[][2] = {
@@ -344,4 +344,4 @@ static const unsigned short wchar2sjis_mac_wchar_tbl[][2] = {
 	{0x3094, 0x054c},
 };
 
-static int wchar2sjis_mac_wchar_tbl_len = sizeof(wchar2sjis_mac_wchar_tbl)/(2*sizeof(unsigned short));
+static const int wchar2sjis_mac_wchar_tbl_len = sizeof(wchar2sjis_mac_wchar_tbl)/(2*sizeof(unsigned short));
