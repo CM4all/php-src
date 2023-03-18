@@ -3220,7 +3220,7 @@ PHP_FUNCTION(mb_list_encodings)
 		 * passed to other mbstring functions using a cheap pointer equality check */
 		HashTable *array = emalloc(sizeof(HashTable));
 		zend_hash_init(array, 80, NULL, zval_ptr_dtor_str, false);
-		for (const mbfl_encoding **encodings = mbfl_get_supported_encodings(); *encodings; encodings++) {
+		for (const mbfl_encoding *const*encodings = mbfl_get_supported_encodings(); *encodings; encodings++) {
 			zval tmp;
 			ZVAL_STRING(&tmp, (*encodings)->name);
 			zend_hash_next_index_insert(array, &tmp);
@@ -3250,7 +3250,7 @@ PHP_FUNCTION(mb_encoding_aliases)
 
 	array_init(return_value);
 	if (encoding->aliases != NULL) {
-		for (const char **alias = encoding->aliases; *alias; ++alias) {
+		for (const char *const*alias = encoding->aliases; *alias; ++alias) {
 			add_next_index_string(return_value, (char *)*alias);
 		}
 	}
@@ -3322,7 +3322,7 @@ emit_converted_kana:
 	return mb_convert_buf_result(&buf, encoding);
 }
 
-char mb_convert_kana_flags[17] = {
+static const char mb_convert_kana_flags[17] = {
 	'A', 'R', 'N', 'S', 'K', 'H', 'M', 'C',
 	'a', 'r', 'n', 's', 'k', 'h', 'm', 'c',
 	'V'
@@ -4434,7 +4434,7 @@ PHP_FUNCTION(mb_get_info)
 	char *name;
 	zval row;
 	const mbfl_language *lang = mbfl_no2language(MBSTRG(language));
-	const mbfl_encoding **entry;
+	const mbfl_encoding *const*entry;
 
 	ZEND_PARSE_PARAMETERS_START(0, 1)
 		Z_PARAM_OPTIONAL

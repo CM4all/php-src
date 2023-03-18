@@ -176,7 +176,7 @@ static void mb_wchar_to_utf16le_default(uint32_t *in, size_t len, mb_convert_buf
 static int mbfl_filt_conv_utf16_wchar_flush(mbfl_convert_filter *filter);
 static size_t mb_utf16_to_wchar(unsigned char **in, size_t *in_len, uint32_t *buf, size_t bufsize, unsigned int *state);
 
-static const char *mbfl_encoding_utf16_aliases[] = {"utf16", NULL};
+static const char *const mbfl_encoding_utf16_aliases[] = {"utf16", NULL};
 
 const mbfl_encoding mbfl_encoding_utf16 = {
 	mbfl_no_encoding_utf16,
