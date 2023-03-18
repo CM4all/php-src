@@ -205,7 +205,7 @@ static inline bool is_cacheable_stream_path(const zend_string *filename)
 	       zend_string_starts_with_literal(filename, "phar://");
 }
 
-bool check_no_validate_timestamps_in(const zend_string *filename)
+static bool check_no_validate_timestamps_in(const zend_string *filename)
 {
 	return ZCG(accel_directives).no_validate_timestamps_in != NULL &&
 		*ZCG(accel_directives).no_validate_timestamps_in != 0 &&
