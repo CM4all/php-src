@@ -73,7 +73,7 @@ static zend_always_inline uint8x16_t encode_toascii(const uint8x16_t input, cons
 
 static zend_always_inline unsigned char *neon_base64_encode(const unsigned char *in, size_t inl, unsigned char *out, size_t *left)
 {
-	const uint8_t shift_LUT_[32] = {'a' - 26, '0' - 52, '0' - 52, '0' - 52,
+	static const uint8_t shift_LUT_[32] = {'a' - 26, '0' - 52, '0' - 52, '0' - 52,
 					'0' - 52, '0' - 52, '0' - 52, '0' - 52,
 					'0' - 52, '0' - 52, '0' - 52, '+' - 62,
 					'/' - 63, 'A',      0,        0,
@@ -176,12 +176,12 @@ static zend_always_inline uint8x16_t decode_fromascii(const uint8x16_t input, ui
 
 static zend_always_inline size_t neon_base64_decode(const unsigned char *in, size_t inl, unsigned char *out, size_t *left) {
 	unsigned char *out_orig = out;
-	const uint8_t shiftLUT_[32] = {
+	static const uint8_t shiftLUT_[32] = {
 		0,   0,  19,   4, (uint8_t)-65, (uint8_t)-65, (uint8_t)-71, (uint8_t)-71,
 		0,   0,   0,   0,   0,   0,   0,   0,
 		0,   0,  19,   4, (uint8_t)-65, (uint8_t)-65, (uint8_t)-71, (uint8_t)-71,
 		0,   0,   0,   0,   0,   0,   0,   0};
-	const uint8_t maskLUT_[32] = {
+	static const uint8_t maskLUT_[32] = {
 		/* 0        : 0b1010_1000*/ 0xa8,
 		/* 1 .. 9   : 0b1111_1000*/ 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8, 0xf8,
 		/* 10       : 0b1111_0000*/ 0xf0,
@@ -196,7 +196,7 @@ static zend_always_inline size_t neon_base64_decode(const unsigned char *in, siz
 		/* 12 .. 14 : 0b0101_0000*/ 0x50, 0x50, 0x50,
 		/* 15       : 0b0101_0100*/ 0x54
 	};
-	const uint8_t bitposLUT_[32] = {
+	static const uint8_t bitposLUT_[32] = {
 		0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 
