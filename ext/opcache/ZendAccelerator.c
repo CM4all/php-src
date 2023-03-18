@@ -206,7 +206,7 @@ static inline bool is_cacheable_stream_path(const char *filename)
 	       memcmp(filename, "phar://", sizeof("phar://") - 1) == 0;
 }
 
-bool check_no_validate_timestamps_in(const zend_string *filename)
+static bool check_no_validate_timestamps_in(const zend_string *filename)
 {
 	return ZCG(accel_directives).no_validate_timestamps_in != NULL &&
 		*ZCG(accel_directives).no_validate_timestamps_in != 0 &&
