@@ -2877,7 +2877,7 @@ function gen_vm($def, $skel) {
     out($f,"#include <zend.h>\n");
     out($f,"#include <zend_vm_opcodes.h>\n\n");
 
-    out($f,"static const char *zend_vm_opcodes_names[".($max_opcode + 1)."] = {\n");
+    out($f,"static const char *const zend_vm_opcodes_names[".($max_opcode + 1)."] = {\n");
     for ($i = 0; $i <= $max_opcode; $i++) {
         out($f,"\t".(isset($opcodes[$i]["op"])?'"'.$opcodes[$i]["op"].'"':"NULL").",\n");
     }
