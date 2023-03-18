@@ -25,8 +25,8 @@
 #include "timelib.h"
 #include "timelib_private.h"
 
-static int m_table_common[13] = { -1, 0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5 }; /* 1 = jan */
-static int m_table_leap[13] =   { -1, 6, 2, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5 }; /* 1 = jan */
+static const int m_table_common[13] = { -1, 0, 3, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5 }; /* 1 = jan */
+static const int m_table_leap[13] =   { -1, 6, 2, 3, 6, 1, 4, 6, 2, 5, 0, 3, 5 }; /* 1 = jan */
 
 static timelib_sll positive_mod(timelib_sll x, timelib_sll y)
 {
@@ -75,10 +75,10 @@ timelib_sll timelib_iso_day_of_week(timelib_sll y, timelib_sll m, timelib_sll d)
 }
 
                                 /*     jan  feb  mar  apr  may  jun  jul  aug  sep  oct  nov  dec */
-static int d_table_common[13]  = {  0,   0,  31,  59,  90, 120, 151, 181, 212, 243, 273, 304, 334 };
-static int d_table_leap[13]    = {  0,   0,  31,  60,  91, 121, 152, 182, 213, 244, 274, 305, 335 };
-static int ml_table_common[13] = {  0,  31,  28,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31 };
-static int ml_table_leap[13]   = {  0,  31,  29,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31 };
+static const int d_table_common[13]  = {  0,   0,  31,  59,  90, 120, 151, 181, 212, 243, 273, 304, 334 };
+static const int d_table_leap[13]    = {  0,   0,  31,  60,  91, 121, 152, 182, 213, 244, 274, 305, 335 };
+static const int ml_table_common[13] = {  0,  31,  28,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31 };
+static const int ml_table_leap[13]   = {  0,  31,  29,  31,  30,  31,  30,  31,  31,  30,  31,  30,  31 };
 
 timelib_sll timelib_day_of_year(timelib_sll y, timelib_sll m, timelib_sll d)
 {
@@ -160,7 +160,7 @@ timelib_sll timelib_daynr_from_weeknr(timelib_sll iy, timelib_sll iw, timelib_sl
 void timelib_date_from_isodate(timelib_sll iy, timelib_sll iw, timelib_sll id, timelib_sll *y, timelib_sll *m, timelib_sll *d)
 {
 	timelib_sll daynr = timelib_daynr_from_weeknr(iy, iw, id) + 1;
-	int *table;
+	const int *table;
 	bool is_leap_year;
 
 	// Invariant: is_leap_year == timelib_is_leap(*y)
