@@ -49,7 +49,7 @@ static const unsigned char mbfl_base64_table[] = {
    0x30,0x31,0x32,0x33,0x34,0x35,0x36,0x37,0x38,0x39,0x2b,0x2f,0x00
 };
 
-static const char *mbfl_encoding_utf7_aliases[] = {"utf7", NULL};
+static const char *const mbfl_encoding_utf7_aliases[] = {"utf7", NULL};
 
 const mbfl_encoding mbfl_encoding_utf7 = {
 	mbfl_no_encoding_utf7,
