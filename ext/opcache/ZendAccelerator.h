@@ -334,7 +334,6 @@ BEGIN_EXTERN_C()
 void start_accel_extension(void);
 void accel_shutdown(void);
 
-bool check_no_validate_timestamps_in(const zend_string *filename);
 bool check_validate_timestamps_zstr(const zend_string *filename);
 
 ZEND_RINIT_FUNCTION(zend_accelerator);
