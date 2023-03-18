@@ -3425,7 +3425,7 @@ void accel_shutdown(void)
 
 void zend_accel_schedule_restart(zend_accel_restart_reason reason)
 {
-	const char *zend_accel_restart_reason_text[ACCEL_RESTART_USER + 1] = {
+	static const char *const zend_accel_restart_reason_text[ACCEL_RESTART_USER + 1] = {
 		"out of memory",
 		"hash overflow",
 		"user",
