@@ -303,7 +303,7 @@ therefore no need for it to have a length entry, so use a high value. */
 the definitions above. For some items these values are a basic length to which
 a variable amount has to be added. */
 
-static unsigned char meta_extra_lengths[] = {
+static const unsigned char meta_extra_lengths[] = {
   0,             /* META_END */
   0,             /* META_ALT */
   0,             /* META_ATOMIC */
@@ -686,7 +686,7 @@ static const int alascount = sizeof(alasmeta)/sizeof(alasitem);
 
 /* Offsets from OP_STAR for case-independent and negative repeat opcodes. */
 
-static uint32_t chartypeoffset[] = {
+static const uint32_t chartypeoffset[] = {
   OP_STAR - OP_STAR,    OP_STARI - OP_STAR,
   OP_NOTSTAR - OP_STAR, OP_NOTSTARI - OP_STAR };
 
@@ -744,7 +744,7 @@ static const int posix_class_maps[] = {
 /* The POSIX class Unicode property substitutes that are used in UCP mode must
 be in the order of the POSIX class names, defined above. */
 
-static int posix_substitutes[] = {
+static const int posix_substitutes[] = {
   PT_GC, ucp_L,     /* alpha */
   PT_PC, ucp_Ll,    /* lower */
   PT_PC, ucp_Lu,    /* upper */
