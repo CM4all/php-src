@@ -455,7 +455,7 @@ typedef struct _php_conv_base64_decode {
 static php_conv_err_t php_conv_base64_decode_convert(php_conv_base64_decode *inst, const char **in_p, size_t *in_left, char **out_p, size_t *out_left);
 static void php_conv_base64_decode_dtor(php_conv_base64_decode *inst);
 
-static unsigned int b64_tbl_dec[256] = {
+static const unsigned int b64_tbl_dec[256] = {
 	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
 	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
 	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 62, 64, 64, 64, 63,
