@@ -215,6 +215,29 @@ ZEND_ATTRIBUTE_PURE static bool check_validate_timestamps_fh(const zend_file_han
 	return check_validate_timestamps_zstr(path);
 }
 
+bool is_persistent_script(const zend_string *filename)
+{
+	if (!IS_ABSOLUTE_PATH(ZSTR_VAL(filename), ZSTR_LEN(filename)))
+		return false;
+
+	zend_string *key = normalize_path(filename);
+	const zend_persistent_script *const persistent_script = zend_accel_hash_find(&ZCSG(hash), key);
+	zend_string_efree(key);
+	if (persistent_script == NULL || persistent_script->corrupted)
+		return false;
+
+	if (persistent_script->timestamp == 0)
+		/* preloaded, no validation */
+		return true;
+
+	if (check_validate_timestamps_zstr(filename) &&
+	    (ZCG(accel_directives).revalidate_freq == 0 ||
+	     persistent_script->dynamic_members.revalidate < ZCG(request_time)))
+		return false;
+
+	return true;
+}
+
 /* O+ overrides PHP chdir() function and remembers the current working directory
  * in ZCG(cwd) and ZCG(cwd_len). Later accel_getcwd() can use stored value and
  * avoid getcwd() call.
