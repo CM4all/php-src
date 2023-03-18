@@ -59,7 +59,7 @@ const unsigned char mblen_table_sjis[] = { /* 0x81-0x9F,0xE0-0xEF */
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 };
 
-static const char *mbfl_encoding_sjis_aliases[] = {"x-sjis", "SHIFT-JIS", NULL};
+static const char *const mbfl_encoding_sjis_aliases[] = {"x-sjis", "SHIFT-JIS", NULL};
 
 const mbfl_encoding mbfl_encoding_sjis = {
 	mbfl_no_encoding_sjis,

@@ -37,7 +37,7 @@ static int mbfl_filt_conv_gb18030_wchar_flush(mbfl_convert_filter *filter);
 static size_t mb_gb18030_to_wchar(unsigned char **in, size_t *in_len, uint32_t *buf, size_t bufsize, unsigned int *state);
 static void mb_wchar_to_gb18030(uint32_t *in, size_t len, mb_convert_buf *buf, bool end);
 
-static const char *mbfl_encoding_gb18030_aliases[] = {"gb-18030", "gb-18030-2000", NULL};
+static const char *const mbfl_encoding_gb18030_aliases[] = {"gb-18030", "gb-18030-2000", NULL};
 
 const mbfl_encoding mbfl_encoding_gb18030 = {
 	mbfl_no_encoding_gb18030,
