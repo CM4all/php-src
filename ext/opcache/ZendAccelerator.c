@@ -187,26 +187,26 @@ static time_t zend_accel_get_time(void)
 # define zend_accel_get_time() time(NULL)
 #endif
 
-static inline bool is_cacheable_stream_path(const char *filename)
+static inline ZEND_ATTRIBUTE_PURE bool is_cacheable_stream_path(const char *filename)
 {
 	return memcmp(filename, "file://", sizeof("file://") - 1) == 0 ||
 	       memcmp(filename, "phar://", sizeof("phar://") - 1) == 0;
 }
 
-static bool check_no_validate_timestamps_in(const zend_string *filename)
+static ZEND_ATTRIBUTE_PURE bool check_no_validate_timestamps_in(const zend_string *filename)
 {
 	return ZCG(accel_directives).no_validate_timestamps_in != NULL &&
 		*ZCG(accel_directives).no_validate_timestamps_in != 0 &&
 		zend_string_starts_with_cstr(filename, ZCG(accel_directives).no_validate_timestamps_in, strlen(ZCG(accel_directives).no_validate_timestamps_in));
 }
 
-bool check_validate_timestamps_zstr(const zend_string *filename)
+ZEND_ATTRIBUTE_PURE bool check_validate_timestamps_zstr(const zend_string *filename)
 {
 	return ZCG(accel_directives).validate_timestamps &&
 		!check_no_validate_timestamps_in(filename);
 }
 
-static bool check_validate_timestamps_fh(const zend_file_handle *file_handle)
+ZEND_ATTRIBUTE_PURE static bool check_validate_timestamps_fh(const zend_file_handle *file_handle)
 {
 	const zend_string *path = file_handle->opened_path != NULL
 		? file_handle->opened_path
@@ -1503,7 +1503,7 @@ static void zend_accel_add_key(zend_string *key, zend_accel_hash_entry *bucket)
 	}
 }
 
-static zend_always_inline bool is_phar_file(zend_string *filename)
+static zend_always_inline ZEND_ATTRIBUTE_PURE bool is_phar_file(zend_string *filename)
 {
 	return filename && ZSTR_LEN(filename) >= sizeof(".phar") &&
 		!memcmp(ZSTR_VAL(filename) + ZSTR_LEN(filename) - (sizeof(".phar")-1), ".phar", sizeof(".phar")-1) &&
@@ -1708,7 +1708,7 @@ static zend_persistent_script *cache_script_in_shared_memory(zend_persistent_scr
 #define ZEND_AUTOGLOBAL_MASK_ENV     (1 << 1)
 #define ZEND_AUTOGLOBAL_MASK_REQUEST (1 << 2)
 
-static int zend_accel_get_auto_globals(void)
+static ZEND_ATTRIBUTE_PURE int zend_accel_get_auto_globals(void)
 {
 	int mask = 0;
 	if (zend_hash_exists(&EG(symbol_table), ZSTR_KNOWN(ZEND_STR_AUTOGLOBAL_SERVER))) {
@@ -2910,7 +2910,7 @@ static void zps_startup_failure(const char *reason, const char *api_reason, int 
 	zend_llist_del_element(&zend_extensions, NULL, (int (*)(void *, void *))cb);
 }
 
-static inline zend_result accel_find_sapi(void)
+static inline ZEND_ATTRIBUTE_PURE zend_result accel_find_sapi(void)
 {
 	static const char *const supported_sapis[] = {
 		"apache",
@@ -3466,7 +3466,7 @@ static void preload_restart(void)
 	}
 }
 
-static size_t preload_try_strip_filename(zend_string *filename) {
+static ZEND_ATTRIBUTE_PURE size_t preload_try_strip_filename(zend_string *filename) {
 	/*FIXME: better way to handle eval()'d code? see COMPILED_STRING_DESCRIPTION_FORMAT */
 	if (ZSTR_LEN(filename) > sizeof(" eval()'d code")
 		&& *(ZSTR_VAL(filename) + ZSTR_LEN(filename) - sizeof(" eval()'d code")) == ':') {
