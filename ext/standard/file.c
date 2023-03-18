@@ -200,7 +200,7 @@ PHP_MSHUTDOWN_FUNCTION(file) /* {{{ */
 PHPAPI void php_flock_common(php_stream *stream, zend_long operation,
 	uint32_t operation_arg_num, zval *wouldblock, zval *return_value)
 {
-	int flock_values[] = { LOCK_SH, LOCK_EX, LOCK_UN };
+	static const int flock_values[] = { LOCK_SH, LOCK_EX, LOCK_UN };
 	int act;
 
 	act = operation & PHP_LOCK_UN;
