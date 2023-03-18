@@ -56,7 +56,7 @@ static const unsigned char mblen_table_euctw[] = { /* 0xA1-0xFE */
 };
 
 
-static const char *mbfl_encoding_euc_tw_aliases[] = {"EUC_TW", "eucTW", "x-euc-tw", NULL};
+static const char *const mbfl_encoding_euc_tw_aliases[] = {"EUC_TW", "eucTW", "x-euc-tw", NULL};
 
 const mbfl_encoding mbfl_encoding_euc_tw = {
 	mbfl_no_encoding_euc_tw,

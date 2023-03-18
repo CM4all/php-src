@@ -55,7 +55,7 @@ static const unsigned char mblen_table_euccn[] = { /* 0xA1-0xFE */
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1
 };
 
-static const char *mbfl_encoding_euc_cn_aliases[] = {"CN-GB", "EUC_CN", "eucCN", "x-euc-cn", "gb2312", NULL};
+static const char *const mbfl_encoding_euc_cn_aliases[] = {"CN-GB", "EUC_CN", "eucCN", "x-euc-cn", "gb2312", NULL};
 
 const mbfl_encoding mbfl_encoding_euc_cn = {
 	mbfl_no_encoding_euc_cn,

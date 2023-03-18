@@ -56,7 +56,7 @@ static const unsigned char mblen_table_cp936[] = { /* 0x81-0xFE */
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1
 };
 
-static const char *mbfl_encoding_cp936_aliases[] = {"CP-936", "GBK", NULL};
+static const char *const mbfl_encoding_cp936_aliases[] = {"CP-936", "GBK", NULL};
 
 const mbfl_encoding mbfl_encoding_cp936 = {
 	mbfl_no_encoding_cp936,

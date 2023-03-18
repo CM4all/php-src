@@ -59,7 +59,7 @@ static int mbfl_filt_conv_sjis_mac_wchar_flush(mbfl_convert_filter *filter);
 static size_t mb_sjismac_to_wchar(unsigned char **in, size_t *in_len, uint32_t *buf, size_t bufsize, unsigned int *state);
 static void mb_wchar_to_sjismac(uint32_t *in, size_t len, mb_convert_buf *buf, bool end);
 
-static const char *mbfl_encoding_sjis_mac_aliases[] = {"MacJapanese", "x-Mac-Japanese", NULL};
+static const char *const mbfl_encoding_sjis_mac_aliases[] = {"MacJapanese", "x-Mac-Japanese", NULL};
 
 const mbfl_encoding mbfl_encoding_sjis_mac = {
 	mbfl_no_encoding_sjis_mac,
@@ -866,7 +866,7 @@ static bool process_s_form(uint32_t w, uint32_t w2, unsigned int *s)
 }
 
 /* For codepoints F860-F862, which are treated specially in MacJapanese */
-static int transcoding_hint_cp_width[3] = { 3, 4, 5 };
+static const int transcoding_hint_cp_width[3] = { 3, 4, 5 };
 
 static void mb_wchar_to_sjismac(uint32_t *in, size_t len, mb_convert_buf *buf, bool end)
 {

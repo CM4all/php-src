@@ -39,7 +39,7 @@ static void mb_wchar_to_iso2022jpms(uint32_t *in, size_t len, mb_convert_buf *bu
 
 static int mbfl_filt_conv_2022jpms_wchar_flush(mbfl_convert_filter *filter);
 
-static const char *mbfl_encoding_2022jpms_aliases[] = {"ISO2022JPMS", NULL};
+static const char *const mbfl_encoding_2022jpms_aliases[] = {"ISO2022JPMS", NULL};
 
 const mbfl_encoding mbfl_encoding_2022jpms = {
 	mbfl_no_encoding_2022jpms,
