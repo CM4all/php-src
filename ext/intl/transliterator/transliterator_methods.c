@@ -130,7 +130,7 @@ PHP_FUNCTION( transliterator_create_from_rules )
 	zend_long       direction      = TRANSLITERATOR_FORWARD;
 	UParseError     parse_error;
 	UTransliterator *utrans;
-	UChar           id[] = {0x52, 0x75, 0x6C, 0x65, 0x73, 0x54, 0x72,
+	static const UChar           id[] = {0x52, 0x75, 0x6C, 0x65, 0x73, 0x54, 0x72,
 					       0x61, 0x6E, 0x73, 0x50, 0x48, 0x50, 0}; /* RulesTransPHP */
 	TRANSLITERATOR_METHOD_INIT_VARS;
 
