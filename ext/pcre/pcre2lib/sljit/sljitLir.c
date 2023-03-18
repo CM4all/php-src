@@ -986,37 +986,37 @@ static void sljit_verbose_fparam(struct sljit_compiler *compiler, sljit_s32 p, s
 		sljit_verbose_freg(compiler, p);
 }
 
-static const char* op0_names[] = {
+static const char*const op0_names[] = {
 	"breakpoint", "nop", "lmul.uw", "lmul.sw",
 	"divmod.u", "divmod.s", "div.u", "div.s",
 	"endbr", "skip_frames_before_return"
 };
 
-static const char* op1_names[] = {
+static const char*const op1_names[] = {
 	"", ".u8", ".s8", ".u16",
 	".s16", ".u32", ".s32", "32",
 	".p", "not", "clz",
 };
 
-static const char* op2_names[] = {
+static const char*const op2_names[] = {
 	"add", "addc", "sub", "subc",
 	"mul", "and", "or", "xor",
 	"shl", "lshr", "ashr",
 };
 
-static const char* op_src_names[] = {
+static const char*const op_src_names[] = {
 	"fast_return", "skip_frames_before_fast_return",
 	"prefetch_l1", "prefetch_l2",
 	"prefetch_l3", "prefetch_once",
 };
 
-static const char* fop1_names[] = {
+static const char*const fop1_names[] = {
 	"mov", "conv", "conv", "conv",
 	"conv", "conv", "cmp", "neg",
 	"abs",
 };
 
-static const char* fop2_names[] = {
+static const char*const fop2_names[] = {
 	"add", "sub", "mul", "div"
 };
 
@@ -1024,7 +1024,7 @@ static const char* fop2_names[] = {
 	((type & 0xff) <= SLJIT_NOT_OVERFLOW ? ((type & SLJIT_32) ? "32" : "") \
 	: ((type & 0xff) <= SLJIT_ORDERED_F64 ? ((type & SLJIT_32) ? ".f32" : ".f64") : ""))
 
-static const char* jump_names[] = {
+static const char*const jump_names[] = {
 	"equal", "not_equal",
 	"less", "greater_equal",
 	"greater", "less_equal",
@@ -1040,7 +1040,7 @@ static const char* jump_names[] = {
 	"call", "call.cdecl"
 };
 
-static const char* call_arg_names[] = {
+static const char*const call_arg_names[] = {
 	"void", "w", "32", "p", "f64", "f32"
 };
 
