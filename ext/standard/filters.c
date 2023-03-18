@@ -468,7 +468,7 @@ static php_conv_err_t php_conv_base64_decode_convert(php_conv_base64_decode *ins
 static void php_conv_base64_decode_dtor(php_conv_base64_decode *inst);
 static php_conv_err_t php_conv_base64_decode_reset(php_conv_base64_decode *inst);
 
-static unsigned int b64_tbl_dec[256] = {
+static const unsigned int b64_tbl_dec[256] = {
 	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
 	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
 	64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 62, 64, 64, 64, 63,
