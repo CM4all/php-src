@@ -56,7 +56,7 @@ const unsigned char mblen_table_eucjp[] = { /* 0xA1-0xFE */
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1
 };
 
-static const char *mbfl_encoding_euc_jp_aliases[] = {"EUC", "EUC_JP", "eucJP", "x-euc-jp", NULL};
+static const char *const mbfl_encoding_euc_jp_aliases[] = {"EUC", "EUC_JP", "eucJP", "x-euc-jp", NULL};
 
 const mbfl_encoding mbfl_encoding_euc_jp = {
 	mbfl_no_encoding_euc_jp,

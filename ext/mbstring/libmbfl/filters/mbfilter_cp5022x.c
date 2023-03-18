@@ -49,7 +49,7 @@ static void mb_wchar_to_cp50222(uint32_t *in, size_t len, mb_convert_buf *buf, b
  * Further, mbstring also had a made-up encoding called "JIS-ms"
  * This was the same as CP5022{0,1,2}, but without their special ways of
  * handling conversion of Unicode half-width katakana */
-static const char *cp50220_aliases[] = {"cp50220raw", "cp50220-raw", "JIS-ms", NULL};
+static const char *const cp50220_aliases[] = {"cp50220raw", "cp50220-raw", "JIS-ms", NULL};
 
 const mbfl_encoding mbfl_encoding_cp50220 = {
 	mbfl_no_encoding_cp50220,

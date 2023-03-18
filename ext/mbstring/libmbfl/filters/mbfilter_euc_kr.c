@@ -54,7 +54,7 @@ static const unsigned char mblen_table_euckr[] = { /* 0xA1-0xFE */
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1
 };
 
-static const char *mbfl_encoding_euc_kr_aliases[] = {"EUC_KR", "eucKR", "x-euc-kr", NULL};
+static const char *const mbfl_encoding_euc_kr_aliases[] = {"EUC_KR", "eucKR", "x-euc-kr", NULL};
 
 const mbfl_encoding mbfl_encoding_euc_kr = {
 	mbfl_no_encoding_euc_kr,

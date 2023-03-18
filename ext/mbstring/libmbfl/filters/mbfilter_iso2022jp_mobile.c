@@ -59,7 +59,7 @@ static const int nflags_code_kddi[10] = {
 	0x2549, 0x2546, 0x24C0, 0x2545, 0x2548, 0x2547, 0x2750, 0x254A, 0x24C1, 0x27F7
 };
 
-static const char *mbfl_encoding_2022jp_kddi_aliases[] = {"ISO-2022-JP-KDDI", NULL};
+static const char *const mbfl_encoding_2022jp_kddi_aliases[] = {"ISO-2022-JP-KDDI", NULL};
 
 const mbfl_encoding mbfl_encoding_2022jp_kddi = {
 	mbfl_no_encoding_2022jp_kddi,
