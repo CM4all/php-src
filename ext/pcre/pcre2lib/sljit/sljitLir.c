@@ -1126,45 +1126,45 @@ static void sljit_verbose_fparam(struct sljit_compiler *compiler, sljit_s32 p, s
 		sljit_verbose_freg(compiler, p);
 }
 
-static const char* op0_names[] = {
+static const char*const op0_names[] = {
 	"breakpoint", "nop", "lmul.uw", "lmul.sw",
 	"divmod.u", "divmod.s", "div.u", "div.s",
 	"endbr", "skip_frames_before_return"
 };
 
-static const char* op1_names[] = {
+static const char*const op1_names[] = {
 	"mov", "mov", "mov", "mov",
 	"mov", "mov", "mov", "mov",
 	"mov", "clz", "ctz", "rev",
 	"rev", "rev", "rev", "rev"
 };
 
-static const char* op1_types[] = {
+static const char*const op1_types[] = {
 	"", ".u8", ".s8", ".u16",
 	".s16", ".u32", ".s32", "32",
 	".p", "", "", "",
 	".u16", ".s16", ".u32", ".s32"
 };
 
-static const char* op2_names[] = {
+static const char*const op2_names[] = {
 	"add", "addc", "sub", "subc",
 	"mul", "and", "or", "xor",
 	"shl", "mshl", "lshr", "mlshr",
 	"ashr", "mashr", "rotl", "rotr"
 };
 
-static const char* op2r_names[] = {
+static const char*const op2r_names[] = {
 	"muladd"
 };
 
-static const char* op_src_dst_names[] = {
+static const char*const op_src_dst_names[] = {
 	"fast_return", "skip_frames_before_fast_return",
 	"prefetch_l1", "prefetch_l2",
 	"prefetch_l3", "prefetch_once",
 	"fast_enter", "get_return_address"
 };
 
-static const char* fop1_names[] = {
+static const char*const fop1_names[] = {
 	"mov", "conv", "conv", "conv",
 	"conv", "conv", "conv", "conv",
 	"cmp", "neg", "abs",
@@ -1175,19 +1175,19 @@ static const char* fop1_conv_types[] = {
 	"uw", "u32"
 };
 
-static const char* fop2_names[] = {
+static const char*const fop2_names[] = {
 	"add", "sub", "mul", "div"
 };
 
-static const char* fop2r_names[] = {
+static const char*const fop2r_names[] = {
 	"copysign"
 };
 
-static const char* simd_op2_names[] = {
+static const char*const simd_op2_names[] = {
 	"and", "or", "xor"
 };
 
-static const char* jump_names[] = {
+static const char*const jump_names[] = {
 	"equal", "not_equal",
 	"less", "greater_equal",
 	"greater", "less_equal",
@@ -1210,7 +1210,7 @@ static const char* jump_names[] = {
 	"call", "call_reg_arg"
 };
 
-static const char* call_arg_names[] = {
+static const char*const call_arg_names[] = {
 	"void", "w", "32", "p", "f64", "f32"
 };
 
