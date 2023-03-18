@@ -179,7 +179,7 @@ static zend_string* mb_cut_utf16(unsigned char *str, size_t from, size_t len, un
 static zend_string* mb_cut_utf16be(unsigned char *str, size_t from, size_t len, unsigned char *end);
 static zend_string* mb_cut_utf16le(unsigned char *str, size_t from, size_t len, unsigned char *end);
 
-static const char *mbfl_encoding_utf16_aliases[] = {"utf16", NULL};
+static const char *const mbfl_encoding_utf16_aliases[] = {"utf16", NULL};
 
 const mbfl_encoding mbfl_encoding_utf16 = {
 	mbfl_no_encoding_utf16,
