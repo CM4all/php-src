@@ -70,7 +70,7 @@ static void _str_dtor(zval *zv)
 	pefree(str, GC_FLAGS(str) & IS_STR_PERSISTENT);
 }
 
-static const char *known_strings[] = {
+static const char *const known_strings[] = {
 #define _ZEND_STR_DSC(id, str) str,
 ZEND_KNOWN_STRINGS(_ZEND_STR_DSC)
 #undef _ZEND_STR_DSC

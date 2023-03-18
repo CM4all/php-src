@@ -349,7 +349,7 @@ ZEND_API zend_result zend_get_attribute_object(zval *obj, zend_class_entry *attr
 	return result;
 }
 
-static const char *target_names[] = {
+static const char *const target_names[] = {
 	"class",
 	"function",
 	"method",
