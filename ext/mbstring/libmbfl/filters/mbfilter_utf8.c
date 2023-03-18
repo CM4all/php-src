@@ -52,7 +52,7 @@ const unsigned char mblen_table_utf8[] = {
 static size_t mb_utf8_to_wchar(unsigned char **in, size_t *in_len, uint32_t *buf, size_t bufsize, unsigned int *state);
 static void mb_wchar_to_utf8(uint32_t *in, size_t len, mb_convert_buf *buf, bool end);
 
-static const char *mbfl_encoding_utf8_aliases[] = {"utf8", NULL};
+static const char *const mbfl_encoding_utf8_aliases[] = {"utf8", NULL};
 
 const mbfl_encoding mbfl_encoding_utf8 = {
 	mbfl_no_encoding_utf8,
