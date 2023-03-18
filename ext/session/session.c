@@ -3054,7 +3054,7 @@ static PHP_MSHUTDOWN_FUNCTION(session)
 
 static PHP_MINFO_FUNCTION(session)
 {
-	const ps_module **current_save_handler;
+	const ps_module *const*current_save_handler;
 	ps_serializer *current_serializer;
 	smart_str save_handlers = {0};
 	smart_str ser_handlers = {0};
