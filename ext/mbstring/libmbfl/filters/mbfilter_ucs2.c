@@ -37,14 +37,14 @@ static void mb_wchar_to_ucs2be(uint32_t *in, size_t len, mb_convert_buf *buf, bo
 static size_t mb_ucs2le_to_wchar(unsigned char **in, size_t *in_len, uint32_t *buf, size_t bufsize, unsigned int *state);
 static void mb_wchar_to_ucs2le(uint32_t *in, size_t len, mb_convert_buf *buf, bool end);
 
-static const char *mbfl_encoding_ucs2_aliases[] = {"ISO-10646-UCS-2", "UCS2" , "UNICODE", NULL};
+static const char *const mbfl_encoding_ucs2_aliases[] = {"ISO-10646-UCS-2", "UCS2" , "UNICODE", NULL};
 
 /* This library historically had encodings called 'byte2be' and 'byte2le'
  * which were almost identical to UCS-2, except that they would truncate
  * Unicode codepoints higher than 0xFFFF quietly
  * Maintain minimal support by aliasing to UCS-2 */
-static const char *mbfl_encoding_ucs2be_aliases[] = {"byte2be", NULL};
-static const char *mbfl_encoding_ucs2le_aliases[] = {"byte2le", NULL};
+static const char *const mbfl_encoding_ucs2be_aliases[] = {"byte2be", NULL};
+static const char *const mbfl_encoding_ucs2le_aliases[] = {"byte2le", NULL};
 
 const mbfl_encoding mbfl_encoding_ucs2 = {
 	mbfl_no_encoding_ucs2,
