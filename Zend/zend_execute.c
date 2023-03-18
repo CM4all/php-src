@@ -47,7 +47,7 @@
 /* Virtual current working directory support */
 #include "zend_virtual_cwd.h"
 
-#include "ext/opcache/ZendAccelerator.h"
+#include "ext/opcache/ZendAccelerator.h" // for check_validate_timestamps_zstr()
 
 #ifdef HAVE_GCC_GLOBAL_REGS
 # if defined(__GNUC__) && ZEND_GCC_VERSION >= 4008 && defined(i386)
@@ -4812,7 +4812,7 @@ static zend_never_inline zend_op_array* ZEND_FASTCALL zend_include_or_eval(zval 
 				/* do not open the PHP sources inside
 				   "no_validate_timestamps_in"; they
 				   are probably still cached */
-				if (check_no_validate_timestamps_in(resolved_path) || SUCCESS == zend_stream_open(&file_handle)) {
+				if (!check_validate_timestamps_zstr(resolved_path) || SUCCESS == zend_stream_open(&file_handle)) {
 					if (!file_handle.opened_path) {
 						file_handle.opened_path = zend_string_copy(resolved_path);
 					}
