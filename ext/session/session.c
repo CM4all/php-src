@@ -1124,12 +1124,12 @@ typedef struct {
 #define ADD_HEADER(a) sapi_add_header(a, strlen(a), 1);
 #define MAX_STR 512
 
-static const char *month_names[] = {
+static const char *const month_names[] = {
 	"Jan", "Feb", "Mar", "Apr", "May", "Jun",
 	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
-static const char *week_days[] = {
+static const char *const week_days[] = {
 	"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"
 };
 
@@ -2926,7 +2926,7 @@ static PHP_MSHUTDOWN_FUNCTION(session) /* {{{ */
 
 static PHP_MINFO_FUNCTION(session) /* {{{ */
 {
-	const ps_module **mod;
+	const ps_module *const*mod;
 	ps_serializer *ser;
 	smart_str save_handlers = {0};
 	smart_str ser_handlers = {0};

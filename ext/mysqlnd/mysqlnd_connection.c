@@ -2056,7 +2056,7 @@ MYSQLND_METHOD(mysqlnd_conn, close)(MYSQLND * conn_handle, const enum_connection
 	DBG_INF_FMT("conn=%" PRIu64, conn->thread_id);
 
 	if (GET_CONNECTION_STATE(&conn->state) >= CONN_READY) {
-		static enum_mysqlnd_collected_stats close_type_to_stat_map[MYSQLND_CLOSE_LAST] = {
+		static const enum_mysqlnd_collected_stats close_type_to_stat_map[MYSQLND_CLOSE_LAST] = {
 			STAT_CLOSE_EXPLICIT,
 			STAT_CLOSE_IMPLICIT,
 			STAT_CLOSE_DISCONNECT
