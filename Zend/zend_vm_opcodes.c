@@ -21,7 +21,7 @@
 #include <zend.h>
 #include <zend_vm_opcodes.h>
 
-static const char *zend_vm_opcodes_names[214] = {
+static const char *const zend_vm_opcodes_names[214] = {
 	"ZEND_NOP",
 	"ZEND_ADD",
 	"ZEND_SUB",
