@@ -57,7 +57,7 @@ static const unsigned char mblen_table_big5[] = { /* 0x81-0xFE */
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1
 };
 
-static const char *mbfl_encoding_big5_aliases[] = {"CN-BIG5", "BIG-FIVE", "BIGFIVE", NULL};
+static const char *const mbfl_encoding_big5_aliases[] = {"CN-BIG5", "BIG-FIVE", "BIGFIVE", NULL};
 
 const mbfl_encoding mbfl_encoding_big5 = {
 	mbfl_no_encoding_big5,
@@ -130,7 +130,7 @@ const struct mbfl_convert_vtbl vtbl_wchar_cp950 = {
 #define CK(statement)	do { if ((statement) < 0) return (-1); } while (0)
 
 /* 63 + 94 = 157 or 94 */
-static unsigned short cp950_pua_tbl[][4] = {
+static const unsigned short cp950_pua_tbl[][4] = {
 	{0xe000, 0xe310, 0xfa40, 0xfefe},
 	{0xe311, 0xeeb7, 0x8e40, 0xa0fe},
 	{0xeeb8, 0xf6b0, 0x8140, 0x8dfe},

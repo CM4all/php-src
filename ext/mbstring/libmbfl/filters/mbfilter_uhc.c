@@ -59,7 +59,7 @@ static const unsigned char mblen_table_uhc[] = { /* 0x81-0xFE */
   2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1
 };
 
-static const char *mbfl_encoding_uhc_aliases[] = {"CP949", NULL};
+static const char *const mbfl_encoding_uhc_aliases[] = {"CP949", NULL};
 
 const mbfl_encoding mbfl_encoding_uhc = {
 	mbfl_no_encoding_uhc,

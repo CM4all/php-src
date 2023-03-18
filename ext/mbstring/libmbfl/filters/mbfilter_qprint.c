@@ -34,7 +34,7 @@
 static size_t mb_qprint_to_wchar(unsigned char **in, size_t *in_len, uint32_t *buf, size_t bufsize, unsigned int *state);
 static void mb_wchar_to_qprint(uint32_t *in, size_t len, mb_convert_buf *buf, bool end);
 
-static const char *mbfl_encoding_qprint_aliases[] = {"qprint", NULL};
+static const char *const mbfl_encoding_qprint_aliases[] = {"qprint", NULL};
 
 const mbfl_encoding mbfl_encoding_qprint = {
 	mbfl_no_encoding_qprint,
@@ -162,7 +162,7 @@ int mbfl_filt_conv_qprintenc_flush(mbfl_convert_filter *filter)
 	return 0;
 }
 
-static int hex2code_map[] = {
+static const int hex2code_map[] = {
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,

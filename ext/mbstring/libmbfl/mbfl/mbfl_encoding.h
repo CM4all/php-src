@@ -226,7 +226,7 @@ typedef struct {
 	enum mbfl_no_encoding no_encoding;
 	const char *name;
 	const char *mime_name;
-	const char **aliases;
+	const char *const *aliases;
 	const unsigned char *mblen_table;
 	unsigned int flag;
 	const struct mbfl_convert_vtbl *input_filter;
@@ -239,7 +239,7 @@ typedef struct {
 MBFLAPI extern const mbfl_encoding *mbfl_name2encoding(const char *name);
 MBFLAPI extern const mbfl_encoding *mbfl_no2encoding(enum mbfl_no_encoding no_encoding);
 MBFLAPI extern enum mbfl_no_encoding mbfl_name2no_encoding(const char *name);
-MBFLAPI extern const mbfl_encoding **mbfl_get_supported_encodings(void);
+MBFLAPI extern const mbfl_encoding *const*mbfl_get_supported_encodings(void);
 MBFLAPI extern const char *mbfl_no_encoding2name(enum mbfl_no_encoding no_encoding);
 MBFLAPI extern const char *mbfl_no2preferred_mime_name(enum mbfl_no_encoding no_encoding);
 MBFLAPI extern const char *mbfl_encoding_preferred_mime_name(const mbfl_encoding *encoding);

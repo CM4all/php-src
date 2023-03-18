@@ -37,7 +37,7 @@ static void mb_wchar_to_utf32be(uint32_t *in, size_t len, mb_convert_buf *buf, b
 static size_t mb_utf32le_to_wchar(unsigned char **in, size_t *in_len, uint32_t *buf, size_t bufsize, unsigned int *state);
 static void mb_wchar_to_utf32le(uint32_t *in, size_t len, mb_convert_buf *buf, bool end);
 
-static const char *mbfl_encoding_utf32_aliases[] = {"utf32", NULL};
+static const char *const mbfl_encoding_utf32_aliases[] = {"utf32", NULL};
 
 const mbfl_encoding mbfl_encoding_utf32 = {
 	mbfl_no_encoding_utf32,
