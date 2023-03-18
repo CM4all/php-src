@@ -334,7 +334,7 @@ BEGIN_EXTERN_C()
 void start_accel_extension(void);
 void accel_shutdown(void);
 
-bool check_validate_timestamps_zstr(const zend_string *filename);
+ZEND_ATTRIBUTE_PURE bool check_validate_timestamps_zstr(const zend_string *filename);
 
 ZEND_RINIT_FUNCTION(zend_accelerator);
 zend_result accel_post_deactivate(void);
