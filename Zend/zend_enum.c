@@ -101,7 +101,7 @@ static void zend_verify_enum_magic_methods(zend_class_entry *ce)
 		"__set_state",
 	};
 
-	uint32_t forbidden_methods_length = sizeof(forbidden_methods) / sizeof(forbidden_methods[0]);
+	static const uint32_t forbidden_methods_length = sizeof(forbidden_methods) / sizeof(forbidden_methods[0]);
 	for (uint32_t i = 0; i < forbidden_methods_length; ++i) {
 		const char *forbidden_method = forbidden_methods[i];
 
