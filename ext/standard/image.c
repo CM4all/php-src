@@ -647,7 +647,7 @@ static struct gfxinfo *php_handle_jp2(php_stream *stream)
 	struct gfxinfo *result = NULL;
 	unsigned int box_length;
 	unsigned int box_type;
-	char jp2c_box_id[] = {(char)0x6a, (char)0x70, (char)0x32, (char)0x63};
+	static const char jp2c_box_id[] = {(char)0x6a, (char)0x70, (char)0x32, (char)0x63};
 
 	/* JP2 is a wrapper format for JPEG 2000. Data is contained within "boxes".
 	   Boxes themselves can be contained within "super-boxes". Super-Boxes can
@@ -1096,7 +1096,7 @@ static struct gfxinfo *php_handle_ico(php_stream * stream)
 static struct gfxinfo *php_handle_webp(php_stream * stream)
 {
 	struct gfxinfo *result = NULL;
-	const char sig[3] = {'V', 'P', '8'};
+	static const char sig[3] = {'V', 'P', '8'};
 	unsigned char buf[18];
 	char format;
 
