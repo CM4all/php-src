@@ -134,7 +134,7 @@ static const unsigned short mbfl_sb2uni_pua[6][3] = {
 	{0x2af8, 0x2b35, 0xe501},
 };
 
-static const char *mbfl_encoding_utf8_aliases[] = {"utf8", NULL};
+static const char *const mbfl_encoding_utf8_aliases[] = {"utf8", NULL};
 
 const mbfl_encoding mbfl_encoding_utf8 = {
 	mbfl_no_encoding_utf8,

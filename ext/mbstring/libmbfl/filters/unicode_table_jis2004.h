@@ -5063,7 +5063,7 @@ static const int uni2jis_tbl_range[][2] = {
 	{0xfa0f, 0xfa6a},
 };
 
-static const unsigned short *uni2jis_tbl[] = {
+static const unsigned short *const uni2jis_tbl[] = {
 	ucs_a1_jisx0213_table,
 	ucs_hk_jisx0213_table,
 	ucs_i_jisx0213_table,
