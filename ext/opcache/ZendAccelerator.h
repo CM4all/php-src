@@ -329,6 +329,11 @@ BEGIN_EXTERN_C()
 
 ZEND_ATTRIBUTE_PURE bool check_validate_timestamps_zstr(const zend_string *filename);
 
+/**
+ * Is the specified filename a cached script whose time stamp does not
+ * need to be revalidated currently?
+ */
+ZEND_ATTRIBUTE_PURE bool is_persistent_script(const zend_string *filename);
 
 void accel_shutdown(void);
 zend_result  accel_activate(INIT_FUNC_ARGS);
