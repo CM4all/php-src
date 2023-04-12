@@ -70,7 +70,8 @@ const mbfl_encoding mbfl_encoding_sjis_docomo = {
 	mblen_table_sjis_mobile,
 	MBFL_ENCTYPE_GL_UNSAFE,
 	&vtbl_sjis_docomo_wchar,
-	&vtbl_wchar_sjis_docomo
+	&vtbl_wchar_sjis_docomo,
+	NULL
 };
 
 const mbfl_encoding mbfl_encoding_sjis_kddi = {
@@ -81,7 +82,8 @@ const mbfl_encoding mbfl_encoding_sjis_kddi = {
 	mblen_table_sjis_mobile,
 	MBFL_ENCTYPE_GL_UNSAFE,
 	&vtbl_sjis_kddi_wchar,
-	&vtbl_wchar_sjis_kddi
+	&vtbl_wchar_sjis_kddi,
+	NULL
 };
 
 const mbfl_encoding mbfl_encoding_sjis_sb = {
@@ -92,7 +94,8 @@ const mbfl_encoding mbfl_encoding_sjis_sb = {
 	mblen_table_sjis_mobile,
 	MBFL_ENCTYPE_GL_UNSAFE,
 	&vtbl_sjis_sb_wchar,
-	&vtbl_wchar_sjis_sb
+	&vtbl_wchar_sjis_sb,
+	NULL
 };
 
 const struct mbfl_convert_vtbl vtbl_sjis_docomo_wchar = {
@@ -462,7 +465,7 @@ int mbfilter_unicode2sjis_emoji_kddi(int c, int *s1, mbfl_convert_filter *filter
 
 		/* If none of the KDDI national flag emoji matched, then we have no way
 		 * to convert the previous codepoint... */
-		mbfl_filt_conv_illegal_output(c1, filter);
+		CK(mbfl_filt_conv_illegal_output(c1, filter));
 	}
 
 	if (c == '#' || (c >= '0' && c <= '9')) {
@@ -518,7 +521,7 @@ int mbfilter_unicode2sjis_emoji_sb(int c, int *s1, mbfl_convert_filter *filter)
 			}
 			return 1;
 		} else {
-			(*filter->output_function)(c1, filter->data);
+			CK((*filter->output_function)(c1, filter->data));
 		}
 	} else if (filter->status == 2) {
 		int c1 = filter->cache;
@@ -534,7 +537,7 @@ int mbfilter_unicode2sjis_emoji_sb(int c, int *s1, mbfl_convert_filter *filter)
 
 		/* If none of the SoftBank national flag emoji matched, then we have no way
 		 * to convert the previous codepoint... */
-		mbfl_filt_conv_illegal_output(c1, filter);
+		CK(mbfl_filt_conv_illegal_output(c1, filter));
 	}
 
 	if (c == '#' || (c >= '0' && c <= '9')) {
@@ -819,9 +822,9 @@ int mbfl_filt_conv_wchar_sjis_mobile(int c, mbfl_convert_filter *filter)
 		}
 	}
 
-	if ((filter->to == &mbfl_encoding_sjis_docomo && mbfilter_unicode2sjis_emoji_docomo(c, &s1, filter)) ||
-		  (filter->to == &mbfl_encoding_sjis_kddi   && mbfilter_unicode2sjis_emoji_kddi(c, &s1, filter)) ||
-		  (filter->to == &mbfl_encoding_sjis_sb     && mbfilter_unicode2sjis_emoji_sb(c, &s1, filter))) {
+	if ((filter->to == &mbfl_encoding_sjis_docomo && mbfilter_unicode2sjis_emoji_docomo(c, &s1, filter) > 0) ||
+		  (filter->to == &mbfl_encoding_sjis_kddi   && mbfilter_unicode2sjis_emoji_kddi(c, &s1, filter) > 0) ||
+		  (filter->to == &mbfl_encoding_sjis_sb     && mbfilter_unicode2sjis_emoji_sb(c, &s1, filter) > 0)) {
 		CODE2JIS(c1,c2,s1,s2);
  	}
 
@@ -855,7 +858,7 @@ int mbfl_filt_conv_sjis_mobile_flush(mbfl_convert_filter *filter)
 	} else if (filter->status == 2) {
 		/* First of a pair of Regional Indicator codepoints came at the end of a string */
 		filter->cache = filter->status = 0;
-		mbfl_filt_conv_illegal_output(c1, filter);
+		CK(mbfl_filt_conv_illegal_output(c1, filter));
 	}
 
 	if (filter->flush_function) {
