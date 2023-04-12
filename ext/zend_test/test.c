@@ -457,6 +457,12 @@ static ZEND_FUNCTION(zend_test_parameter_with_attribute)
 	RETURN_LONG(1);
 }
 
+static ZEND_FUNCTION(zend_get_map_ptr_last)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	RETURN_LONG(CG(map_ptr_last));
+}
+
 static zend_object *zend_test_class_new(zend_class_entry *class_type)
 {
 	zend_object *obj = zend_objects_new(class_type);
@@ -540,6 +546,31 @@ static ZEND_METHOD(_ZendTestClass, returnsThrowable)
 {
 	ZEND_PARSE_PARAMETERS_NONE();
 	zend_throw_error(NULL, "Dummy");
+}
+
+static ZEND_METHOD(_ZendTestClass, variadicTest) {
+	int      argc, i;
+	zval    *args = NULL;
+
+	ZEND_PARSE_PARAMETERS_START(0, -1)
+		Z_PARAM_VARIADIC('*', args, argc)
+	ZEND_PARSE_PARAMETERS_END();
+
+	for (i = 0; i < argc; i++) {
+		zval *arg = args + i;
+
+		if (Z_TYPE_P(arg) == IS_STRING) {
+			continue;
+		}
+		if (Z_TYPE_P(arg) == IS_OBJECT && instanceof_function(Z_OBJ_P(arg)->ce, zend_ce_iterator)) {
+			continue;
+		}
+
+		zend_argument_type_error(i + 1, "must be of class Iterator or a string, %s given", zend_zval_type_name(arg));
+		RETURN_THROWS();
+	}
+
+	object_init_ex(return_value, zend_get_called_scope(execute_data));
 }
 
 static ZEND_METHOD(_ZendTestChildClass, returnsThrowable)

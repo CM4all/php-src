@@ -2869,7 +2869,7 @@ ZEND_API zend_string* ZEND_FASTCALL zend_string_tolower_ex(zend_string *str, boo
 		if (BLOCKCONV_FOUND()) {
 			zend_string *res = zend_string_alloc(length, persistent);
 			memcpy(ZSTR_VAL(res), ZSTR_VAL(str), p - (unsigned char *) ZSTR_VAL(str));
-			unsigned char *q = p + (ZSTR_VAL(res) - ZSTR_VAL(str));
+			unsigned char *q = (unsigned char*) ZSTR_VAL(res) + (p - (unsigned char*) ZSTR_VAL(str));
 
 			/* Lowercase the chunk we already compared. */
 			BLOCKCONV_INIT_DELTA('a' - 'A');
@@ -2891,7 +2891,7 @@ ZEND_API zend_string* ZEND_FASTCALL zend_string_tolower_ex(zend_string *str, boo
 			zend_string *res = zend_string_alloc(length, persistent);
 			memcpy(ZSTR_VAL(res), ZSTR_VAL(str), p - (unsigned char*) ZSTR_VAL(str));
 
-			unsigned char *q = p + (ZSTR_VAL(res) - ZSTR_VAL(str));
+			unsigned char *q = (unsigned char*) ZSTR_VAL(res) + (p - (unsigned char*) ZSTR_VAL(str));
 			while (p < end) {
 				*q++ = zend_tolower_ascii(*p++);
 			}
@@ -2918,7 +2918,7 @@ ZEND_API zend_string* ZEND_FASTCALL zend_string_toupper_ex(zend_string *str, boo
 		if (BLOCKCONV_FOUND()) {
 			zend_string *res = zend_string_alloc(length, persistent);
 			memcpy(ZSTR_VAL(res), ZSTR_VAL(str), p - (unsigned char *) ZSTR_VAL(str));
-			unsigned char *q = p + (ZSTR_VAL(res) - ZSTR_VAL(str));
+			unsigned char *q = (unsigned char *) ZSTR_VAL(res) + (p - (unsigned char *) ZSTR_VAL(str));
 
 			/* Uppercase the chunk we already compared. */
 			BLOCKCONV_INIT_DELTA('A' - 'a');
@@ -2940,7 +2940,7 @@ ZEND_API zend_string* ZEND_FASTCALL zend_string_toupper_ex(zend_string *str, boo
 			zend_string *res = zend_string_alloc(length, persistent);
 			memcpy(ZSTR_VAL(res), ZSTR_VAL(str), p - (unsigned char*) ZSTR_VAL(str));
 
-			unsigned char *q = p + (ZSTR_VAL(res) - ZSTR_VAL(str));
+			unsigned char *q = (unsigned char *) ZSTR_VAL(res) + (p - (unsigned char *) ZSTR_VAL(str));
 			while (p < end) {
 				*q++ = zend_toupper_ascii(*p++);
 			}

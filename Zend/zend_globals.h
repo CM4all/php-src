@@ -277,6 +277,12 @@ struct _zend_executor_globals {
 	zend_string *filename_override;
 	zend_long lineno_override;
 
+#ifdef ZEND_MAX_EXECUTION_TIMERS
+	timer_t max_execution_timer_timer;
+	pid_t pid;
+	struct sigaction oldact;
+#endif
+
 	void *reserved[ZEND_MAX_RESERVED_RESOURCES];
 };
 

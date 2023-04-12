@@ -3012,6 +3012,9 @@ PHP_FUNCTION(mb_encode_mimeheader)
 		charset = php_mb_get_encoding(charset_name, 2);
 		if (!charset) {
 			RETURN_THROWS();
+		} else if (charset->mime_name == NULL || charset->mime_name[0] == '\0') {
+			zend_argument_value_error(2, "\"%s\" cannot be used for MIME header encoding", ZSTR_VAL(charset_name));
+			RETURN_THROWS();
 		}
 	} else {
 		const mbfl_language *lang = mbfl_no2language(MBSTRG(language));
@@ -4411,6 +4414,10 @@ MBSTRING_API int php_mb_check_encoding(const char *input, size_t length, const m
 	uint32_t wchar_buf[128];
 	unsigned char *in = (unsigned char*)input;
 	unsigned int state = 0;
+
+	if (encoding->check != NULL) {
+		return encoding->check(in, length);
+	}
 
 	/* If the input string is not encoded in the given encoding, there is a significant chance
 	 * that this will be seen in the first bytes. Therefore, rather than converting an entire

@@ -137,6 +137,8 @@ static zend_always_inline size_t _ZSTR_STRUCT_SIZE(size_t len)
 
 #define ZSTR_ALLOCA_FREE(str, use_heap) free_alloca(str, use_heap)
 
+#define ZSTR_INIT_LITERAL(s, persistent) (zend_string_init((s), strlen(s), (persistent)))
+
 /*---*/
 
 static zend_always_inline zend_ulong zend_string_hash_val(zend_string *s)
