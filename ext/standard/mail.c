@@ -589,7 +589,7 @@ PHPAPI int php_mail(const char *to, const char *subject, const char *message, co
 
 		int status;
 		ret = waitpid(pid, &status, 0);
-		if (ret == 0)
+		if (ret >= 0)
 			ret = WIFEXITED(status) ? WEXITSTATUS(status) : EXIT_FAILURE;
 #else
 		ret = pclose(sendmail);
