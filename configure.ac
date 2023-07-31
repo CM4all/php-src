@@ -17,7 +17,7 @@ dnl Basic autoconf initialization, generation of config.nice.
 dnl ----------------------------------------------------------------------------
 
 AC_PREREQ([2.68])
-AC_INIT([PHP],[8.1.19],[https://github.com/php/php-src/issues],[php],[https://www.php.net])
+AC_INIT([PHP],[8.1.21],[https://github.com/php/php-src/issues],[php],[https://www.php.net])
 AC_CONFIG_SRCDIR([main/php_version.h])
 AC_CONFIG_AUX_DIR([build])
 AC_PRESERVE_HELP_ORDER
@@ -366,6 +366,16 @@ if test "$ac_cv_func_dlopen" = "yes"; then
   AC_DEFINE(HAVE_LIBDL, 1, [ ])
 fi
 AC_CHECK_LIB(m, sin)
+
+case $host_alias in
+  riscv64*)
+    AC_CHECK_LIB(atomic, __atomic_exchange_1, [
+      PHP_ADD_LIBRARY(atomic)
+    ], [
+      AC_MSG_ERROR([Problem with enabling atomic. Please check config.log for details.])
+    ])
+    ;;
+esac
 
 dnl Check for inet_aton in -lc, -lbind and -lresolv.
 PHP_CHECK_FUNC(inet_aton, resolv, bind)
