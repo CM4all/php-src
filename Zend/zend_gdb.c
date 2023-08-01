@@ -30,7 +30,7 @@
 # include <unistd.h> // for read(), readlink()
 #endif
 
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) && __FreeBSD_version >= 1100000
 # include <sys/user.h>
 # include <libutil.h>
 # include <unistd.h> // for getpid()
@@ -148,7 +148,7 @@ ZEND_API bool zend_gdb_present(void)
 
 		close(fd);
 	}
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) && __FreeBSD_version >= 1100000
     struct kinfo_proc *proc = kinfo_getproc(getpid());
 
     if (proc) {

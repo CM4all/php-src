@@ -32,6 +32,11 @@
 #include "test.h"
 #include "test_arginfo.h"
 
+#if defined(HAVE_LIBXML) && !defined(PHP_WIN32)
+# include <libxml/globals.h>
+# include <libxml/parser.h>
+#endif
+
 ZEND_DECLARE_MODULE_GLOBALS(zend_test)
 
 static zend_class_entry *zend_test_interface;
@@ -305,6 +310,20 @@ static ZEND_FUNCTION(zend_get_current_func_name)
 
     RETURN_STR(function_name);
 }
+
+#if defined(HAVE_LIBXML) && !defined(PHP_WIN32)
+static ZEND_FUNCTION(zend_test_override_libxml_global_state)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+
+	xmlLoadExtDtdDefaultValue = 1;
+	xmlDoValidityCheckingDefaultValue = 1;
+	(void) xmlPedanticParserDefault(1);
+	(void) xmlSubstituteEntitiesDefault(1);
+	(void) xmlLineNumbersDefault(1);
+	(void) xmlKeepBlanksDefault(0);
+}
+#endif
 
 /* TESTS Z_PARAM_ITERABLE and Z_PARAM_ITERABLE_OR_NULL */
 static ZEND_FUNCTION(zend_iterable)

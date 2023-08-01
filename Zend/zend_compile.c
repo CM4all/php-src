@@ -3261,6 +3261,9 @@ static void zend_compile_assign(znode *result, zend_ast *ast) /* {{{ */
 				if (!zend_is_variable_or_call(expr_ast)) {
 					zend_error_noreturn(E_COMPILE_ERROR,
 						"Cannot assign reference to non referenceable value");
+				} else if (zend_ast_is_short_circuited(expr_ast)) {
+					zend_error_noreturn(E_COMPILE_ERROR,
+						"Cannot take reference of a nullsafe chain");
 				}
 
 				zend_compile_var(&expr_node, expr_ast, BP_VAR_W, 1);
@@ -4453,7 +4456,14 @@ static void zend_compile_call(znode *result, zend_ast *ast, uint32_t type) /* {{
 		if (runtime_resolution) {
 			if (zend_string_equals_literal_ci(zend_ast_get_str(name_ast), "assert")
 					&& !is_callable_convert) {
-				zend_compile_assert(result, zend_ast_get_list(args_ast), Z_STR(name_node.u.constant), NULL, ast->lineno);
+				if (CG(memoize_mode) == ZEND_MEMOIZE_NONE) {
+					zend_compile_assert(result, zend_ast_get_list(args_ast), Z_STR(name_node.u.constant), NULL, ast->lineno);
+				} else {
+					/* We want to always memoize assert calls, even if they are positioned in
+					 * write-context. This prevents memoizing their arguments that might not be
+					 * evaluated if assertions are disabled, using a TMPVAR that wasn't initialized. */
+					zend_compile_memoized_expr(result, ast);
+				}
 			} else {
 				zend_compile_ns_call(result, &name_node, args_ast, ast->lineno);
 			}
@@ -4472,7 +4482,14 @@ static void zend_compile_call(znode *result, zend_ast *ast, uint32_t type) /* {{
 
 		/* Special assert() handling should apply independently of compiler flags. */
 		if (fbc && zend_string_equals_literal(lcname, "assert") && !is_callable_convert) {
-			zend_compile_assert(result, zend_ast_get_list(args_ast), lcname, fbc, ast->lineno);
+			if (CG(memoize_mode) == ZEND_MEMOIZE_NONE) {
+				zend_compile_assert(result, zend_ast_get_list(args_ast), lcname, fbc, ast->lineno);
+			} else {
+				/* We want to always memoize assert calls, even if they are positioned in
+				 * write-context. This prevents memoizing their arguments that might not be
+				 * evaluated if assertions are disabled, using a TMPVAR that wasn't initialized. */
+				zend_compile_memoized_expr(result, ast);
+			}
 			zend_string_release(lcname);
 			zval_ptr_dtor(&name_node.u.constant);
 			return;
@@ -5414,6 +5431,9 @@ static void zend_compile_if(zend_ast *ast) /* {{{ */
 			zend_compile_stmt(stmt_ast);
 
 			if (i != list->children - 1) {
+				/* Set the lineno of JMP to the position of the if keyword, as we don't want to
+				 * report the last line in the if branch as covered if it hasn't actually executed. */
+				CG(zend_lineno) = elem_ast->lineno;
 				jmp_opnums[i] = zend_emit_jump(0);
 			}
 			zend_update_jump_target_to_next(opnum_jmpz);
@@ -7410,7 +7430,7 @@ static void zend_compile_func_decl(znode *result, zend_ast *ast, bool toplevel) 
 		zend_compile_closure_uses(uses_ast);
 	}
 
-	if (ast->kind == ZEND_AST_ARROW_FUNC) {
+	if (ast->kind == ZEND_AST_ARROW_FUNC && decl->child[2]->kind != ZEND_AST_RETURN) {
 		bool needs_return = true;
 		if (op_array->fn_flags & ZEND_ACC_HAS_RETURN_TYPE) {
 			zend_arg_info *return_info = CG(active_op_array)->arg_info - 1;
