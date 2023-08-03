@@ -13,8 +13,9 @@
    +----------------------------------------------------------------------+
  */
 
-#include "zend.h"
 #include "zend_hrtime.h"
+
+#include <stdio.h> // for fprintf()
 
 /* This file reuses code parts from the cross-platform timer library
 	Public Domain - 2011 Mattias Jansson / Rampant Pixels */
