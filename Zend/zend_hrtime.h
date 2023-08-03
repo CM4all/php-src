@@ -19,6 +19,8 @@
 #include "zend_portability.h"
 #include "zend_types.h"
 
+#include <stdint.h>
+
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
@@ -67,7 +69,6 @@ ZEND_API extern double zend_hrtime_timer_scale;
 #elif ZEND_HRTIME_PLATFORM_APPLE_MACH_ABSOLUTE
 
 # include <mach/mach_time.h>
-# include <string.h>
 ZEND_API extern mach_timebase_info_data_t zend_hrtime_timerlib_info;
 
 #elif ZEND_HRTIME_PLATFORM_POSIX
