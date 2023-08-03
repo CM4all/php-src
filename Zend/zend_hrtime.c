@@ -15,7 +15,6 @@
    +----------------------------------------------------------------------+
  */
 
-#include "zend.h"
 #include "zend_hrtime.h"
 
 /* This file reuses code parts from the cross-platform timer library
