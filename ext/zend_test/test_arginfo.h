@@ -1,5 +1,5 @@
 /* This is a generated file, edit the .stub.php file instead.
- * Stub hash: eb79a01021e58731bfbefab320569fbb0997276a */
+ * Stub hash: fa6d8c58bdef20c6c9c8db75dbb6ede775324193 */
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_test_array_return, 0, 0, IS_ARRAY, 0)
 ZEND_END_ARG_INFO()
@@ -82,11 +82,6 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_get_current_func_name, 0, 0, IS_STRING, 0)
 ZEND_END_ARG_INFO()
 
-#if defined(HAVE_LIBXML) && !defined(PHP_WIN32)
-ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_test_override_libxml_global_state, 0, 0, IS_VOID, 0)
-ZEND_END_ARG_INFO()
-#endif
-
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_call_method, 0, 2, IS_MIXED, 0)
 	ZEND_ARG_TYPE_MASK(0, obj_or_class, MAY_BE_OBJECT|MAY_BE_STRING, NULL)
 	ZEND_ARG_TYPE_INFO(0, method, IS_STRING, 0)
@@ -108,6 +103,11 @@ ZEND_END_ARG_INFO()
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_test_crash, 0, 0, IS_VOID, 0)
 	ZEND_ARG_TYPE_INFO_WITH_DEFAULT_VALUE(0, message, IS_STRING, 1, "null")
 ZEND_END_ARG_INFO()
+
+#if defined(HAVE_LIBXML) && !defined(PHP_WIN32)
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_zend_test_override_libxml_global_state, 0, 0, IS_VOID, 0)
+ZEND_END_ARG_INFO()
+#endif
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_ZendTestNS2_namespaced_func, 0, 0, _IS_BOOL, 0)
 ZEND_END_ARG_INFO()
@@ -202,14 +202,13 @@ static ZEND_FUNCTION(zend_test_zend_ini_parse_uquantity);
 static ZEND_FUNCTION(zend_test_zend_ini_str);
 static ZEND_FUNCTION(zend_get_map_ptr_last);
 static ZEND_FUNCTION(zend_test_crash);
+#if defined(HAVE_LIBXML) && !defined(PHP_WIN32)
+static ZEND_FUNCTION(zend_test_override_libxml_global_state);
+#endif
 static ZEND_FUNCTION(ZendTestNS2_namespaced_func);
 static ZEND_FUNCTION(ZendTestNS2_namespaced_deprecated_func);
 static ZEND_FUNCTION(ZendTestNS2_ZendSubNS_namespaced_func);
 static ZEND_FUNCTION(ZendTestNS2_ZendSubNS_namespaced_deprecated_func);
-
-#if defined(HAVE_LIBXML) && !defined(PHP_WIN32)
-static ZEND_FUNCTION(zend_test_override_libxml_global_state);
-#endif
 static ZEND_METHOD(_ZendTestClass, is_object);
 static ZEND_METHOD(_ZendTestClass, __toString);
 static ZEND_METHOD(_ZendTestClass, returnsStatic);
@@ -259,6 +258,9 @@ static const zend_function_entry ext_functions[] = {
 	ZEND_FE(zend_test_zend_ini_str, arginfo_zend_test_zend_ini_str)
 	ZEND_FE(zend_get_map_ptr_last, arginfo_zend_get_map_ptr_last)
 	ZEND_FE(zend_test_crash, arginfo_zend_test_crash)
+#if defined(HAVE_LIBXML) && !defined(PHP_WIN32)
+	ZEND_FE(zend_test_override_libxml_global_state, arginfo_zend_test_override_libxml_global_state)
+#endif
 	ZEND_NS_FALIAS("ZendTestNS2", namespaced_func, ZendTestNS2_namespaced_func, arginfo_ZendTestNS2_namespaced_func)
 	ZEND_NS_DEP_FALIAS("ZendTestNS2", namespaced_deprecated_func, ZendTestNS2_namespaced_deprecated_func, arginfo_ZendTestNS2_namespaced_deprecated_func)
 	ZEND_NS_FALIAS("ZendTestNS2", namespaced_aliased_func, zend_test_void_return, arginfo_ZendTestNS2_namespaced_aliased_func)
@@ -267,10 +269,6 @@ static const zend_function_entry ext_functions[] = {
 	ZEND_NS_DEP_FALIAS("ZendTestNS2\\ZendSubNS", namespaced_deprecated_func, ZendTestNS2_ZendSubNS_namespaced_deprecated_func, arginfo_ZendTestNS2_ZendSubNS_namespaced_deprecated_func)
 	ZEND_NS_FALIAS("ZendTestNS2\\ZendSubNS", namespaced_aliased_func, zend_test_void_return, arginfo_ZendTestNS2_ZendSubNS_namespaced_aliased_func)
 	ZEND_NS_DEP_FALIAS("ZendTestNS2\\ZendSubNS", namespaced_deprecated_aliased_func, zend_test_void_return, arginfo_ZendTestNS2_ZendSubNS_namespaced_deprecated_aliased_func)
-
-#if defined(HAVE_LIBXML) && !defined(PHP_WIN32)
-	ZEND_FE(zend_test_override_libxml_global_state, arginfo_zend_test_override_libxml_global_state)
-#endif
 	ZEND_FE_END
 };
 
@@ -497,6 +495,19 @@ static zend_class_entry *register_class__ZendTestTrait(void)
 	zend_string *property_testProp_name = zend_string_init("testProp", sizeof("testProp") - 1, 1);
 	zend_declare_property_ex(class_entry, property_testProp_name, &property_testProp_default_value, ZEND_ACC_PUBLIC, NULL);
 	zend_string_release(property_testProp_name);
+
+	zend_string *property_classUnionProp_class_Traversable = zend_string_init("Traversable", sizeof("Traversable") - 1, 1);
+	zend_string *property_classUnionProp_class_Countable = zend_string_init("Countable", sizeof("Countable") - 1, 1);
+	zend_type_list *property_classUnionProp_type_list = malloc(ZEND_TYPE_LIST_SIZE(2));
+	property_classUnionProp_type_list->num_types = 2;
+	property_classUnionProp_type_list->types[0] = (zend_type) ZEND_TYPE_INIT_CLASS(property_classUnionProp_class_Traversable, 0, 0);
+	property_classUnionProp_type_list->types[1] = (zend_type) ZEND_TYPE_INIT_CLASS(property_classUnionProp_class_Countable, 0, 0);
+	zend_type property_classUnionProp_type = ZEND_TYPE_INIT_UNION(property_classUnionProp_type_list, 0);
+	zval property_classUnionProp_default_value;
+	ZVAL_UNDEF(&property_classUnionProp_default_value);
+	zend_string *property_classUnionProp_name = zend_string_init("classUnionProp", sizeof("classUnionProp") - 1, 1);
+	zend_declare_typed_property(class_entry, property_classUnionProp_name, &property_classUnionProp_default_value, ZEND_ACC_PUBLIC, NULL, property_classUnionProp_type);
+	zend_string_release(property_classUnionProp_name);
 
 	return class_entry;
 }

@@ -187,7 +187,7 @@ int dom_document_standalone_read(dom_object *obj, zval *retval)
 		return FAILURE;
 	}
 
-	ZVAL_BOOL(retval, docp->standalone);
+	ZVAL_BOOL(retval, docp->standalone > 0);
 	return SUCCESS;
 }
 
@@ -1118,22 +1118,20 @@ PHP_METHOD(DOMDocument, __construct)
 	}
 
 	intern = Z_DOMOBJ_P(ZEND_THIS);
-	if (intern != NULL) {
-		olddoc = (xmlDocPtr) dom_object_get_node(intern);
-		if (olddoc != NULL) {
-			php_libxml_decrement_node_ptr((php_libxml_node_object *) intern);
-			refcount = php_libxml_decrement_doc_ref((php_libxml_node_object *)intern);
-			if (refcount != 0) {
-				olddoc->_private = NULL;
-			}
+	olddoc = (xmlDocPtr) dom_object_get_node(intern);
+	if (olddoc != NULL) {
+		php_libxml_decrement_node_ptr((php_libxml_node_object *) intern);
+		refcount = php_libxml_decrement_doc_ref((php_libxml_node_object *)intern);
+		if (refcount != 0) {
+			olddoc->_private = NULL;
 		}
-		intern->document = NULL;
-		if (php_libxml_increment_doc_ref((php_libxml_node_object *)intern, docp) == -1) {
-			/* docp is always non-null so php_libxml_increment_doc_ref() never returns -1 */
-			ZEND_UNREACHABLE();
-		}
-		php_libxml_increment_node_ptr((php_libxml_node_object *)intern, (xmlNodePtr)docp, (void *)intern);
 	}
+	intern->document = NULL;
+	if (php_libxml_increment_doc_ref((php_libxml_node_object *)intern, docp) == -1) {
+		/* docp is always non-null so php_libxml_increment_doc_ref() never returns -1 */
+		ZEND_UNREACHABLE();
+	}
+	php_libxml_increment_node_ptr((php_libxml_node_object *)intern, (xmlNodePtr)docp, (void *)intern);
 }
 /* }}} end DOMDocument::__construct */
 
@@ -2107,12 +2105,12 @@ Since: DOM Living Standard (DOM4)
 */
 PHP_METHOD(DOMDocument, append)
 {
-	int argc;
+	int argc = 0;
 	zval *args, *id;
 	dom_object *intern;
 	xmlNode *context;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS(), "+", &args, &argc) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "*", &args, &argc) == FAILURE) {
 		RETURN_THROWS();
 	}
 
@@ -2128,12 +2126,12 @@ Since: DOM Living Standard (DOM4)
 */
 PHP_METHOD(DOMDocument, prepend)
 {
-	int argc;
+	int argc = 0;
 	zval *args, *id;
 	dom_object *intern;
 	xmlNode *context;
 
-	if (zend_parse_parameters(ZEND_NUM_ARGS(), "+", &args, &argc) == FAILURE) {
+	if (zend_parse_parameters(ZEND_NUM_ARGS(), "*", &args, &argc) == FAILURE) {
 		RETURN_THROWS();
 	}
 

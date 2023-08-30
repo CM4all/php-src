@@ -4764,6 +4764,12 @@ PHP_METHOD(DatePeriod, __construct)
 		}
 		dpobj->start_ce = date_ce_date;
 	} else {
+		/* check initialisation */
+		DATE_CHECK_INITIALIZED(Z_PHPDATE_P(start)->time, DateTimeInterface);
+		if (end) {
+			DATE_CHECK_INITIALIZED(Z_PHPDATE_P(end)->time, DateTimeInterface);
+		}
+
 		/* init */
 		php_interval_obj *intobj = Z_PHPINTERVAL_P(interval);
 
@@ -5305,6 +5311,11 @@ static bool php_date_period_initialize_from_hash(php_period_obj *period_obj, Has
 		if (Z_TYPE_P(ht_entry) == IS_OBJECT && instanceof_function(Z_OBJCE_P(ht_entry), date_ce_interface)) {
 			php_date_obj *date_obj;
 			date_obj = Z_PHPDATE_P(ht_entry);
+
+			if (!date_obj->time) {
+				return 0;
+			}
+
 			if (period_obj->start != NULL) {
 				timelib_time_dtor(period_obj->start);
 			}
@@ -5322,6 +5333,11 @@ static bool php_date_period_initialize_from_hash(php_period_obj *period_obj, Has
 		if (Z_TYPE_P(ht_entry) == IS_OBJECT && instanceof_function(Z_OBJCE_P(ht_entry), date_ce_interface)) {
 			php_date_obj *date_obj;
 			date_obj = Z_PHPDATE_P(ht_entry);
+
+			if (!date_obj->time) {
+				return 0;
+			}
+
 			if (period_obj->end != NULL) {
 				timelib_time_dtor(period_obj->end);
 			}
@@ -5338,6 +5354,11 @@ static bool php_date_period_initialize_from_hash(php_period_obj *period_obj, Has
 		if (Z_TYPE_P(ht_entry) == IS_OBJECT && instanceof_function(Z_OBJCE_P(ht_entry), date_ce_interface)) {
 			php_date_obj *date_obj;
 			date_obj = Z_PHPDATE_P(ht_entry);
+
+			if (!date_obj->time) {
+				return 0;
+			}
+
 			if (period_obj->current != NULL) {
 				timelib_time_dtor(period_obj->current);
 			}
@@ -5354,6 +5375,11 @@ static bool php_date_period_initialize_from_hash(php_period_obj *period_obj, Has
 		if (Z_TYPE_P(ht_entry) == IS_OBJECT && Z_OBJCE_P(ht_entry) == date_ce_interval) {
 			php_interval_obj *interval_obj;
 			interval_obj = Z_PHPINTERVAL_P(ht_entry);
+
+			if (!interval_obj->initialized) {
+				return 0;
+			}
+
 			if (period_obj->interval != NULL) {
 				timelib_rel_time_dtor(period_obj->interval);
 			}

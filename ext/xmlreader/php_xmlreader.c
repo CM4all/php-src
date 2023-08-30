@@ -942,7 +942,7 @@ PHP_METHOD(XMLReader, setSchema)
 	id = ZEND_THIS;
 
 	intern = Z_XMLREADER_P(id);
-	if (intern->ptr) {
+	if (intern && intern->ptr) {
 		PHP_LIBXML_SANITIZE_GLOBALS(schema);
 		retval = xmlTextReaderSchemaValidate(intern->ptr, source);
 		PHP_LIBXML_RESTORE_GLOBALS(schema);

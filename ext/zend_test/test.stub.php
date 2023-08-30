@@ -55,6 +55,7 @@ namespace {
     trait _ZendTestTrait {
         /** @var mixed */
         public $testProp;
+        public Traversable|Countable $classUnionProp;
 
         public function testMethod(): bool {}
     }
@@ -174,7 +175,6 @@ namespace {
 #if defined(HAVE_LIBXML) && !defined(PHP_WIN32)
 function zend_test_override_libxml_global_state(): void {}
 #endif
-
 }
 
 namespace ZendTestNS {
