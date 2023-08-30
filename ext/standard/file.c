@@ -112,6 +112,8 @@ php_file_globals file_globals;
 
 #include "file_arginfo.h"
 
+#include <sys/uio.h> // for writev()
+
 /* }}} */
 
 #define PHP_STREAM_TO_ZVAL(stream, arg) \
@@ -452,6 +454,17 @@ PHP_FUNCTION(file_get_contents)
 }
 /* }}} */
 
+ZEND_ATTRIBUTE_PURE
+static bool is_string_array(HashTable *ht)
+{
+	zval *tmp;
+	ZEND_HASH_FOREACH_VAL(ht, tmp) {
+		if (Z_TYPE_P(tmp) != IS_STRING)
+			return false;
+	} ZEND_HASH_FOREACH_END();
+	return true;
+}
+
 /* {{{ Write/Create a file with contents data and return the number of bytes written */
 PHP_FUNCTION(file_put_contents)
 {
@@ -541,6 +554,41 @@ PHP_FUNCTION(file_put_contents)
 			break;
 
 		case IS_ARRAY:
+			if (php_stream_is(stream, PHP_STREAM_IS_STDIO) && zend_hash_num_elements(Z_ARRVAL_P(data)) <= IOV_MAX && is_string_array(Z_ARRVAL_P(data))) {
+				/* if we're writing a string array to
+				   a regular file, use one writev()
+				   system call instead of many
+				   write() calls */
+
+				int fd;
+				if (php_stream_cast(stream, PHP_STREAM_AS_FD, (void *)&fd, 0) == SUCCESS) {
+					struct iovec v[IOV_MAX];
+					size_t n = 0, total = 0;
+
+					zval *tmp;
+					ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(data), tmp) {
+						const size_t length = Z_STRLEN_P(tmp);
+						if (length > 0) {
+							total += length;
+							v[n].iov_len = length;
+							v[n].iov_base = Z_STRVAL_P(tmp);
+							++n;
+						}
+					} ZEND_HASH_FOREACH_END();
+
+					if (n == 0)
+						break;
+
+					numbytes = writev(fd, v, n);
+					if (numbytes != -1 && (size_t)numbytes != total) {
+						php_error_docref(NULL, E_WARNING, "Failed to write %zu bytes to %s", total, filename);
+						numbytes = -1;
+					}
+
+					break;
+				}
+			}
+
 			if (zend_hash_num_elements(Z_ARRVAL_P(data))) {
 				ssize_t bytes_written;
 				zval *tmp;
