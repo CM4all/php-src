@@ -1893,7 +1893,7 @@ AC_DEFUN([PHP_PROG_PHP],[
 
   if test -n "$PHP"; then
     AC_MSG_CHECKING([for php version])
-    php_version=$($PHP -v | head -n1 | cut -d ' ' -f 2)
+    php_version=$($PHP -v | head -n1 | cut -d ' ' -f 2 | cut -d '-' -f 1)
     if test -z "$php_version"; then
       php_version=0.0.0
     fi
@@ -2153,7 +2153,7 @@ EOF
    else
     break
    fi
-   $as_echo "$CURRENT_ARG \\" >>$1
+   AS_ECHO(["$CURRENT_ARG \\"]) >>$1
    CONFIGURE_OPTIONS="$CONFIGURE_OPTIONS $CURRENT_ARG"
   done
   echo '"[$]@"' >> $1

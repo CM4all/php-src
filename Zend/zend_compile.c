@@ -3255,6 +3255,9 @@ static void zend_compile_assign(znode *result, zend_ast *ast) /* {{{ */
 				if (!zend_is_variable_or_call(expr_ast)) {
 					zend_error_noreturn(E_COMPILE_ERROR,
 						"Cannot assign reference to non referenceable value");
+				} else if (zend_ast_is_short_circuited(expr_ast)) {
+					zend_error_noreturn(E_COMPILE_ERROR,
+						"Cannot take reference of a nullsafe chain");
 				}
 
 				zend_compile_var(&expr_node, expr_ast, BP_VAR_W, 1);
@@ -4442,7 +4445,14 @@ static void zend_compile_call(znode *result, zend_ast *ast, uint32_t type) /* {{
 		if (runtime_resolution) {
 			if (zend_string_equals_literal_ci(zend_ast_get_str(name_ast), "assert")
 					&& !is_callable_convert) {
-				zend_compile_assert(result, zend_ast_get_list(args_ast), Z_STR(name_node.u.constant), NULL);
+				if (CG(memoize_mode) == ZEND_MEMOIZE_NONE) {
+					zend_compile_assert(result, zend_ast_get_list(args_ast), Z_STR(name_node.u.constant), NULL);
+				} else {
+					/* We want to always memoize assert calls, even if they are positioned in
+					 * write-context. This prevents memoizing their arguments that might not be
+					 * evaluated if assertions are disabled, using a TMPVAR that wasn't initialized. */
+					zend_compile_memoized_expr(result, ast);
+				}
 			} else {
 				zend_compile_ns_call(result, &name_node, args_ast);
 			}
@@ -4461,7 +4471,14 @@ static void zend_compile_call(znode *result, zend_ast *ast, uint32_t type) /* {{
 
 		/* Special assert() handling should apply independently of compiler flags. */
 		if (fbc && zend_string_equals_literal(lcname, "assert") && !is_callable_convert) {
-			zend_compile_assert(result, zend_ast_get_list(args_ast), lcname, fbc);
+			if (CG(memoize_mode) == ZEND_MEMOIZE_NONE) {
+				zend_compile_assert(result, zend_ast_get_list(args_ast), lcname, fbc);
+			} else {
+				/* We want to always memoize assert calls, even if they are positioned in
+				 * write-context. This prevents memoizing their arguments that might not be
+				 * evaluated if assertions are disabled, using a TMPVAR that wasn't initialized. */
+				zend_compile_memoized_expr(result, ast);
+			}
 			zend_string_release(lcname);
 			zval_ptr_dtor(&name_node.u.constant);
 			return;
