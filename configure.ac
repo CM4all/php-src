@@ -20,7 +20,7 @@ dnl Basic autoconf initialization, generation of config.nice.
 dnl ----------------------------------------------------------------------------
 
 AC_PREREQ([2.68])
-AC_INIT([PHP],[8.2.10],[https://github.com/php/php-src/issues],[php],[https://www.php.net])
+AC_INIT([PHP],[8.2.11],[https://github.com/php/php-src/issues],[php],[https://www.php.net])
 AC_CONFIG_SRCDIR([main/php_version.h])
 AC_CONFIG_AUX_DIR([build])
 AC_PRESERVE_HELP_ORDER
@@ -379,11 +379,7 @@ AC_CHECK_LIB(m, sin)
 
 case $host_alias in
   riscv64*)
-    AC_CHECK_LIB(atomic, __atomic_exchange_1, [
-      PHP_ADD_LIBRARY(atomic)
-    ], [
-      AC_MSG_ERROR([Problem with enabling atomic. Please check config.log for details.])
-    ])
+    PHP_CHECK_FUNC(__atomic_exchange_1, atomic)
     ;;
 esac
 
