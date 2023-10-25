@@ -13,7 +13,7 @@ jobs:
       matrix-include: ${{ steps.set-matrix.outputs.matrix-include }}
       windows-matrix-include: ${{ steps.set-matrix.outputs.windows-matrix-include }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # Set fetch-depth to 0 to clone the full repository
           # including all branches. This is required to find
@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch.ref }}
       - name: Create MSSQL container
@@ -84,6 +84,7 @@ jobs:
       - name: Test Tracing JIT
         uses: ./.github/actions/test-linux
         with:
+          jitType: tracing
           runTestsParameters: >-
             ${{ matrix.run_tests_parameters }}
             -d zend_extension=opcache.so
@@ -102,12 +103,12 @@ jobs:
         if: matrix.test_function_jit
         uses: ./.github/actions/test-linux
         with:
+          jitType: function
           runTestsParameters: >-
             ${{ matrix.run_tests_parameters }}
             -d zend_extension=opcache.so
             -d opcache.enable_cli=1
             -d opcache.jit_buffer_size=16M
-            -d opcache.jit=1205
       - name: Verify generated files are up to date
         uses: ./.github/actions/verify-generated-files
       - name: Notify Slack
@@ -142,7 +143,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: root
     steps:
       - name: git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch.ref }}
       - name: apt
@@ -165,6 +166,7 @@ jobs:
       - name: Test Tracing JIT
         uses: ./.github/actions/test-linux
         with:
+          jitType: tracing
           runTestsParameters: >-
             ${{ matrix.run_tests_parameters }}
             -d zend_extension=opcache.so
@@ -180,12 +182,12 @@ jobs:
       - name: Test Function JIT
         uses: ./.github/actions/test-linux
         with:
+          jitType: function
           runTestsParameters: >-
             ${{ matrix.run_tests_parameters }}
             -d zend_extension=opcache.so
             -d opcache.enable_cli=1
             -d opcache.jit_buffer_size=16M
-            -d opcache.jit=1205
       - name: Notify Slack
         if: failure()
         uses: ./.github/actions/notify-slack
@@ -201,10 +203,10 @@ jobs:
         debug: [true, false]
         zts: [true, false]
     name: "${{ matrix.branch.name }}_MACOS_${{ matrix.debug && 'DEBUG' || 'RELEASE' }}_${{ matrix.zts && 'ZTS' || 'NTS' }}"
-    runs-on: macos-11
+    runs-on: macos-12
     steps:
       - name: git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch.ref }}
       - name: brew
@@ -226,6 +228,7 @@ jobs:
       - name: Test Tracing JIT
         uses: ./.github/actions/test-macos
         with:
+          jitType: tracing
           runTestsParameters: >-
             -d zend_extension=opcache.so
             -d opcache.enable_cli=1
@@ -241,12 +244,12 @@ jobs:
       - name: Test Function JIT
         uses: ./.github/actions/test-macos
         with:
+          jitType: function
           runTestsParameters: >-
             -d zend_extension=opcache.so
             -d opcache.enable_cli=1
             -d opcache.protect_memory=1
             -d opcache.jit_buffer_size=16M
-            -d opcache.jit=1205
       - name: Verify generated files are up to date
         uses: ./.github/actions/verify-generated-files
       - name: Notify Slack
@@ -259,7 +262,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Create MSSQL container
         uses: ./.github/actions/setup-mssql
       - name: Create Oracle container
@@ -308,7 +311,7 @@ jobs:
       USE_TRACKED_ALLOC: 1
     steps:
       - name: git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch.ref }}
       - name: apt
@@ -424,7 +427,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch.ref }}
       - name: Create MSSQL container
@@ -500,7 +503,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch.ref }}
       - name: apt
@@ -599,7 +602,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch.ref }}
       - name: apt
@@ -670,7 +673,7 @@ jobs:
       - name: git config
         run: git config --global core.autocrlf false && git config --global core.eol lf
       - name: git checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ matrix.branch.ref }}
       - name: Setup
