@@ -45,6 +45,7 @@ PHP_SXE_API zend_class_entry *sxe_get_element_class_entry(void) /* {{{ */
 
 static php_sxe_object* php_sxe_object_new(zend_class_entry *ce, zend_function *fptr_count);
 static xmlNodePtr php_sxe_reset_iterator(php_sxe_object *sxe, int use_data);
+static xmlNodePtr php_sxe_reset_iterator_no_clear_iter_data(php_sxe_object *sxe, int use_data);
 static xmlNodePtr php_sxe_iterator_fetch(php_sxe_object *sxe, xmlNodePtr node, int use_data);
 static void php_sxe_iterator_dtor(zend_object_iterator *iter);
 static int php_sxe_iterator_valid(zend_object_iterator *iter);
@@ -77,23 +78,14 @@ static void _node_as_zval(php_sxe_object *sxe, xmlNodePtr node, zval *value, SXE
 }
 /* }}} */
 
-static xmlNodePtr php_sxe_get_first_node(php_sxe_object *sxe, xmlNodePtr node) /* {{{ */
+static xmlNodePtr php_sxe_get_first_node(php_sxe_object *sxe, xmlNodePtr node)
 {
-	php_sxe_object *intern;
-	xmlNodePtr retnode = NULL;
-
 	if (sxe && sxe->iter.type != SXE_ITER_NONE) {
-		php_sxe_reset_iterator(sxe, 1);
-		if (!Z_ISUNDEF(sxe->iter.data)) {
-			intern = Z_SXEOBJ_P(&sxe->iter.data);
-			GET_NODE(intern, retnode)
-		}
-		return retnode;
+		return php_sxe_reset_iterator(sxe, 1);
 	} else {
 		return node;
 	}
 }
-/* }}} */
 
 static inline int match_ns(php_sxe_object *sxe, xmlNodePtr node, xmlChar *name, int prefix) /* {{{ */
 {
@@ -1186,6 +1178,12 @@ static HashTable *sxe_get_prop_hash(zend_object *object, int is_debug) /* {{{ */
 				sxe_properties_add(rv, name, namelen, &value);
 			}
 next_iter:
+			if (UNEXPECTED(node->type == XML_ENTITY_DECL)) {
+				/* Entity decls are linked together via the next pointer.
+				 * The only way to get to an entity decl is via an entity reference in the document.
+				 * If we then continue iterating, we'll end up in the DTD. Even worse, if the entities reference each other we'll infinite loop. */
+				break;
+			}
 			if (use_iter) {
 				node = php_sxe_iterator_fetch(sxe, node->next, 0);
 			} else {
@@ -1322,7 +1320,7 @@ PHP_METHOD(SimpleXMLElement, xpath)
 
 		for (i = 0; i < result->nodeNr; ++i) {
 			nodeptr = result->nodeTab[i];
-			if (nodeptr->type == XML_TEXT_NODE || nodeptr->type == XML_ELEMENT_NODE || nodeptr->type == XML_ATTRIBUTE_NODE || nodeptr->type == XML_PI_NODE) {
+			if (nodeptr->type == XML_TEXT_NODE || nodeptr->type == XML_ELEMENT_NODE || nodeptr->type == XML_ATTRIBUTE_NODE || nodeptr->type == XML_PI_NODE || nodeptr->type == XML_COMMENT_NODE) {
 				/**
 				 * Detect the case where the last selector is text(), simplexml
 				 * always accesses the text() child by default, therefore we assign
@@ -1837,6 +1835,7 @@ static zend_result sxe_object_cast_ex(zend_object *readobj, zval *writeobj, int 
 {
 	php_sxe_object *sxe;
 	xmlChar        *contents = NULL;
+	bool            free_contents = true;
 	xmlNodePtr	    node;
 	zend_result rv;
 
@@ -1867,13 +1866,16 @@ static zend_result sxe_object_cast_ex(zend_object *readobj, zval *writeobj, int 
 		if (sxe->node && sxe->node->node) {
 			if (sxe->node->node->children) {
 				contents = xmlNodeListGetString((xmlDocPtr) sxe->document->ptr, sxe->node->node->children, 1);
+			} else if (sxe->node->node->type == XML_COMMENT_NODE || sxe->node->node->type == XML_PI_NODE) {
+				contents = sxe->node->node->content;
+				free_contents = false;
 			}
 		}
 	}
 
 	rv = cast_object(writeobj, type, (char *)contents);
 
-	if (contents) {
+	if (contents && free_contents) {
 		xmlFree(contents);
 	}
 
@@ -2450,15 +2452,9 @@ static xmlNodePtr php_sxe_iterator_fetch(php_sxe_object *sxe, xmlNodePtr node, i
 }
 /* }}} */
 
-static xmlNodePtr php_sxe_reset_iterator(php_sxe_object *sxe, int use_data) /* {{{ */
+static xmlNodePtr php_sxe_reset_iterator_no_clear_iter_data(php_sxe_object *sxe, int use_data)
 {
 	xmlNodePtr node;
-
-	if (!Z_ISUNDEF(sxe->iter.data)) {
-		zval_ptr_dtor(&sxe->iter.data);
-		ZVAL_UNDEF(&sxe->iter.data);
-	}
-
 	GET_NODE(sxe, node)
 
 	if (node) {
@@ -2471,9 +2467,22 @@ static xmlNodePtr php_sxe_reset_iterator(php_sxe_object *sxe, int use_data) /* {
 			case SXE_ITER_ATTRLIST:
 				node = (xmlNodePtr) node->properties;
 		}
+		if (use_data) {
+			ZEND_ASSERT(Z_ISUNDEF(sxe->iter.data));
+		}
 		return php_sxe_iterator_fetch(sxe, node, use_data);
 	}
 	return NULL;
+}
+
+static xmlNodePtr php_sxe_reset_iterator(php_sxe_object *sxe, int use_data) /* {{{ */
+{
+	if (!Z_ISUNDEF(sxe->iter.data)) {
+		zval_ptr_dtor(&sxe->iter.data);
+		ZVAL_UNDEF(&sxe->iter.data);
+	}
+
+	return php_sxe_reset_iterator_no_clear_iter_data(sxe, use_data);
 }
 /* }}} */
 
