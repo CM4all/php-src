@@ -25,6 +25,7 @@
 #include "zend_exceptions.h"
 #include "zend_closures.h"
 #include "zend_iterators.h"
+#include "zend_weakrefs.h"
 #include "main/SAPI.h"
 
 #include <ffi.h>
@@ -2190,6 +2191,10 @@ static void zend_ffi_ctype_free_obj(zend_object *object) /* {{{ */
 	zend_ffi_ctype *ctype = (zend_ffi_ctype*)object;
 
 	zend_ffi_type_dtor(ctype->type);
+
+    if (UNEXPECTED(GC_FLAGS(object) & IS_OBJ_WEAKLY_REFERENCED)) {
+        zend_weakrefs_notify(object);
+    }
 }
 /* }}} */
 
@@ -2416,6 +2421,10 @@ static void zend_ffi_free_obj(zend_object *object) /* {{{ */
 		zend_hash_destroy(ffi->tags);
 		efree(ffi->tags);
 	}
+
+    if (UNEXPECTED(GC_FLAGS(object) & IS_OBJ_WEAKLY_REFERENCED)) {
+        zend_weakrefs_notify(object);
+    }
 }
 /* }}} */
 
@@ -2424,6 +2433,10 @@ static void zend_ffi_cdata_free_obj(zend_object *object) /* {{{ */
 	zend_ffi_cdata *cdata = (zend_ffi_cdata*)object;
 
 	zend_ffi_cdata_dtor(cdata);
+
+    if (UNEXPECTED(GC_FLAGS(object) & IS_OBJ_WEAKLY_REFERENCED)) {
+        zend_weakrefs_notify(object);
+    }
 }
 /* }}} */
 

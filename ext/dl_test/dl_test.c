@@ -91,6 +91,10 @@ PHP_MINIT_FUNCTION(dl_test)
 		zend_register_functions(NULL, php_dl_test_use_register_functions_directly_functions, NULL, type);
 	}
 
+	if (getenv("PHP_DL_TEST_MODULE_DEBUG")) {
+		fprintf(stderr, "DL TEST MINIT\n");
+	}
+
 	return SUCCESS;
 }
 /* }}} */
@@ -105,6 +109,10 @@ static PHP_MSHUTDOWN_FUNCTION(dl_test)
 		UNREGISTER_INI_ENTRIES();
 	}
 
+	if (getenv("PHP_DL_TEST_MODULE_DEBUG")) {
+		fprintf(stderr, "DL TEST MSHUTDOWN\n");
+	}
+
 	return SUCCESS;
 }
 /* }}} */
@@ -115,6 +123,21 @@ PHP_RINIT_FUNCTION(dl_test)
 #if defined(ZTS) && defined(COMPILE_DL_DL_TEST)
 	ZEND_TSRMLS_CACHE_UPDATE();
 #endif
+
+	if (getenv("PHP_DL_TEST_MODULE_DEBUG")) {
+		fprintf(stderr, "DL TEST RINIT\n");
+	}
+
+	return SUCCESS;
+}
+/* }}} */
+
+/* {{{ PHP_RSHUTDOWN_FUNCTION */
+PHP_RSHUTDOWN_FUNCTION(dl_test)
+{
+	if (getenv("PHP_DL_TEST_MODULE_DEBUG")) {
+		fprintf(stderr, "DL TEST RSHUTDOWN\n");
+	}
 
 	return SUCCESS;
 }
@@ -149,7 +172,7 @@ zend_module_entry dl_test_module_entry = {
 	PHP_MINIT(dl_test),
 	PHP_MSHUTDOWN(dl_test),
 	PHP_RINIT(dl_test),
-	NULL,
+	PHP_RSHUTDOWN(dl_test),
 	PHP_MINFO(dl_test),
 	PHP_DL_TEST_VERSION,
 	PHP_MODULE_GLOBALS(dl_test),

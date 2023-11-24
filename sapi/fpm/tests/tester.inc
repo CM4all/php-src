@@ -331,13 +331,23 @@ class Tester
     }
 
     /**
+     * Skip if shared extension is not available in extension directory.
+     */
+    static public function skipIfSharedExtensionNotFound($extensionName)
+    {
+        $soPath = ini_get('extension_dir') . '/' . $extensionName . '.so';
+        if ( ! file_exists($soPath)) {
+            die("skip $extensionName extension not present in extension_dir");
+        }
+    }
+
+    /**
      * Skip if posix extension not loaded.
      */
-    static public function skipIfUserDoesNotExist($userName)
-    {
+    static public function skipIfUserDoesNotExist($userName) {
         self::skipIfPosixNotLoaded();
-        if (posix_getpwnam($userName) === false) {
-            die("skip user $userName does not exist");
+        if ( posix_getpwnam( $userName ) === false ) {
+            die( "skip user $userName does not exist" );
         }
     }
 
@@ -856,6 +866,38 @@ class Tester
 
             return array_map(fn($request) => new Response(null, true), $requests);
         }
+    }
+
+    /**
+     * Execute request for getting FastCGI values.
+     *
+     * @param string|null $address
+     * @param bool        $connKeepAlive
+     *
+     * @return ValuesResponse
+     * @throws \Exception
+     */
+    public function requestValues(
+        string $address = null,
+        bool $connKeepAlive = false
+    ): ValuesResponse {
+        if ($this->hasError()) {
+            return new Response(null, true);
+        }
+
+        try {
+            $valueResponse = new ValuesResponse(
+                $this->getClient($address, $connKeepAlive)->getValues(['FCGI_MPXS_CONNS'])
+            );
+            if ($this->debug) {
+                $this->response->debugOutput();
+            }
+        } catch (\Exception $exception) {
+            $this->error("Request for getting values failed", $exception);
+            $valueResponse = new ValuesResponse();
+        }
+
+        return $valueResponse;
     }
 
     /**
