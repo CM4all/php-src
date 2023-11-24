@@ -14932,6 +14932,7 @@ static bool zend_jit_fetch_indirect_var(dasm_State **Dst, const zend_op *opline,
 		if (opline->op1_type != IS_VAR ||
 				(opline-1)->result_type != IS_VAR  ||
 				(opline-1)->result.var != opline->op1.var ||
+				(opline-1)->op1_type == IS_VAR ||
 				(opline-1)->op2_type == IS_VAR ||
 				(opline-1)->op2_type == IS_TMP_VAR) {
 			|	GET_ZVAL_PTR FCARG1x, var_addr, TMP1
