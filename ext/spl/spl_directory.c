@@ -928,7 +928,6 @@ PHP_METHOD(SplFileInfo, getFilename)
 
 	path = spl_filesystem_object_get_path(intern);
 
-	ZEND_ASSERT(path);
 	if (path && ZSTR_LEN(path) && ZSTR_LEN(path) < ZSTR_LEN(intern->file_name)) {
 		/* +1 to skip the trailing / of the path in the file name */
 		size_t path_len = ZSTR_LEN(path) + 1;
@@ -936,7 +935,9 @@ PHP_METHOD(SplFileInfo, getFilename)
 	} else {
 		RETVAL_STR_COPY(intern->file_name);
 	}
-	zend_string_release_ex(path, /* persistent */ false);
+	if (path) {
+		zend_string_release_ex(path, /* persistent */ false);
+	}
 }
 /* }}} */
 
@@ -976,14 +977,16 @@ PHP_METHOD(SplFileInfo, getExtension)
 
 	path = spl_filesystem_object_get_path(intern);
 
-	if (ZSTR_LEN(path) && ZSTR_LEN(path) < ZSTR_LEN(intern->file_name)) {
+	if (path && ZSTR_LEN(path) && ZSTR_LEN(path) < ZSTR_LEN(intern->file_name)) {
 		fname = ZSTR_VAL(intern->file_name) + ZSTR_LEN(path) + 1;
 		flen = ZSTR_LEN(intern->file_name) - (ZSTR_LEN(path) + 1);
 	} else {
 		fname = ZSTR_VAL(intern->file_name);
 		flen = ZSTR_LEN(intern->file_name);
 	}
-	zend_string_release_ex(path, /* persistent */ false);
+	if (path) {
+		zend_string_release_ex(path, /* persistent */ false);
+	}
 
 	ret = php_basename(fname, flen, NULL, 0);
 
@@ -1055,7 +1058,9 @@ PHP_METHOD(SplFileInfo, getBasename)
 		fname = ZSTR_VAL(intern->file_name);
 		flen = ZSTR_LEN(intern->file_name);
 	}
-	zend_string_release_ex(path, /* persistent */ false);
+	if (path) {
+		zend_string_release_ex(path, /* persistent */ false);
+	}
 
 	RETURN_STR(php_basename(fname, flen, suffix, slen));
 }

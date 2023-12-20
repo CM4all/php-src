@@ -1106,6 +1106,9 @@ static zend_string* ZEND_FASTCALL zend_jit_fetch_dim_str_r_helper(zend_string *s
 	} else {
 		offset = Z_LVAL_P(dim);
 	}
+	if (UNEXPECTED(EG(exception) != NULL)) {
+		return ZSTR_EMPTY_ALLOC();
+	}
 	return zend_jit_fetch_dim_str_offset(str, offset);
 }
 
@@ -1135,7 +1138,8 @@ try_string_offset:
 				goto try_string_offset;
 			default:
 				zend_jit_illegal_string_offset(dim);
-				break;
+				ZVAL_NULL(result);
+				return;
 		}
 
 		offset = zval_get_long_func(dim, /* is_strict */ false);
@@ -1587,7 +1591,9 @@ static void ZEND_FASTCALL zend_jit_assign_dim_op_helper(zval *container, zval *d
 			}
 			zval_ptr_dtor(&res);
 		} else {
-			zend_error(E_WARNING, "Attempt to assign property of non-object");
+			/* Exception is thrown in this case */
+			GC_DELREF(obj);
+			return;
 		}
 		if (UNEXPECTED(GC_DELREF(obj) == 0)) {
 			zend_objects_store_del(obj);

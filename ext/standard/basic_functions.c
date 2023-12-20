@@ -233,6 +233,8 @@ static void basic_globals_ctor(php_basic_globals *basic_globals_p) /* {{{ */
 
 	BG(page_uid) = -1;
 	BG(page_gid) = -1;
+
+	BG(syslog_device) = NULL;
 }
 /* }}} */
 
@@ -370,9 +372,6 @@ PHP_MINIT_FUNCTION(basic) /* {{{ */
 
 PHP_MSHUTDOWN_FUNCTION(basic) /* {{{ */
 {
-#ifdef HAVE_SYSLOG_H
-	PHP_MSHUTDOWN(syslog)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
-#endif
 #ifdef ZTS
 	ts_free_id(basic_globals_id);
 #ifdef PHP_WIN32
@@ -429,9 +428,6 @@ PHP_RINIT_FUNCTION(basic) /* {{{ */
 	BG(user_shutdown_function_names) = NULL;
 
 	PHP_RINIT(filestat)(INIT_FUNC_ARGS_PASSTHRU);
-#ifdef HAVE_SYSLOG_H
-	BASIC_RINIT_SUBMODULE(syslog)
-#endif
 	BASIC_RINIT_SUBMODULE(dir)
 	BASIC_RINIT_SUBMODULE(url_scanner_ex)
 
@@ -481,9 +477,7 @@ PHP_RSHUTDOWN_FUNCTION(basic) /* {{{ */
 
 	PHP_RSHUTDOWN(filestat)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
 #ifdef HAVE_SYSLOG_H
-#ifdef PHP_WIN32
-	BASIC_RSHUTDOWN_SUBMODULE(syslog)(SHUTDOWN_FUNC_ARGS_PASSTHRU);
-#endif
+	BASIC_RSHUTDOWN_SUBMODULE(syslog);
 #endif
 	BASIC_RSHUTDOWN_SUBMODULE(assert)
 	BASIC_RSHUTDOWN_SUBMODULE(url_scanner_ex)
@@ -1551,7 +1545,7 @@ PHP_FUNCTION(forward_static_call)
 		Z_PARAM_VARIADIC('*', fci.params, fci.param_count)
 	ZEND_PARSE_PARAMETERS_END();
 
-	if (!EX(prev_execute_data)->func->common.scope) {
+	if (!EX(prev_execute_data) || !EX(prev_execute_data)->func->common.scope) {
 		zend_throw_error(NULL, "Cannot call forward_static_call() when no class scope is active");
 		RETURN_THROWS();
 	}

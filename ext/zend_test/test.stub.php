@@ -47,6 +47,11 @@ namespace {
         static public function variadicTest(string|Iterator ...$elements) : static {}
     }
 
+    class _ZendTestMagicCall
+    {
+        public function __call(string $name, array $args): mixed {}
+    }
+
     class _ZendTestChildClass extends _ZendTestClass
     {
         public function returnsThrowable(): Exception {}
@@ -175,6 +180,8 @@ namespace {
 #if defined(HAVE_LIBXML) && !defined(PHP_WIN32)
 function zend_test_override_libxml_global_state(): void {}
 #endif
+
+    function zend_test_is_pcre_bundled(): bool {}
 }
 
 namespace ZendTestNS {
