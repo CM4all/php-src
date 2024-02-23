@@ -23,6 +23,7 @@
 #include "zend_ssa.h"
 #include "zend_inference.h"
 #include "zend_dump.h"
+#include "zend_objects.h" // for zend_objects_destroy_object()
 
 /*
  * T. Kotzmann and H. Mossenbock. Escape analysis  in the context of dynamic
