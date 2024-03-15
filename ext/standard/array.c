@@ -189,7 +189,7 @@ static zend_always_inline int php_array_key_compare_string_case_unstable_i(Bucke
 		l2 = s->key->len;
 	} else {
 		s2 = zend_print_long_to_buf(buf2 + sizeof(buf2) - 1, s->h);
-		l2 = buf2 + sizeof(buf2) - 1 - s1;
+		l2 = buf2 + sizeof(buf2) - 1 - s2;
 	}
 	return zend_binary_strcasecmp_l(s1, l1, s2, l2);
 }
@@ -239,7 +239,7 @@ static int php_array_key_compare_string_natural_general(Bucket *f, Bucket *s, in
 		l2 = s->key->len;
 	} else {
 		s2 = zend_print_long_to_buf(buf2 + sizeof(buf2) - 1, s->h);
-		l2 = buf2 + sizeof(buf2) - 1 - s1;
+		l2 = buf2 + sizeof(buf2) - 1 - s2;
 	}
 	return strnatcmp_ex(s1, l1, s2, l2, fold_case);
 }
@@ -902,18 +902,10 @@ static void php_usort(INTERNAL_FUNCTION_PARAMETERS, bucket_compare_func_t compar
 		RETURN_TRUE;
 	}
 
-	/* Copy array, so the in-place modifications will not be visible to the callback function.
-	 * Unless there are no other references since we know for sure it won't be visible. */
-	bool in_place = zend_may_modify_arg_in_place(array);
-	if (!in_place) {
-		arr = zend_array_dup(arr);
-	}
+	/* Copy array, so the in-place modifications will not be visible to the callback function */
+	arr = zend_array_dup(arr);
 
 	zend_hash_sort(arr, compare_func, renumber);
-
-	if (in_place) {
-		GC_ADDREF(arr);
-	}
 
 	zval garbage;
 	ZVAL_COPY_VALUE(&garbage, array);
