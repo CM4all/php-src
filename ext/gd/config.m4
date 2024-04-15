@@ -150,6 +150,8 @@ dnl or run test insufficient.
 AC_DEFUN([PHP_GD_CHECK_FORMAT],[
   old_LIBS="${LIBS}"
   LIBS="${LIBS} ${GD_SHARED_LIBADD}"
+  old_CFLAGS="${CFLAGS}"
+  CFLAGS="${CFLAGS} ${GDLIB_CFLAGS}"
   AC_MSG_CHECKING([for working gdImageCreateFrom$1 in libgd])
   AC_LANG_PUSH([C])
   AC_RUN_IFELSE([AC_LANG_SOURCE([
@@ -180,6 +182,7 @@ int main(int argc, char** argv) {
     AC_MSG_RESULT([no])
   ])
   AC_LANG_POP([C])
+  CFLAGS="${old_CFLAGS}"
   LIBS="${old_LIBS}"
 ])
 
@@ -239,7 +242,7 @@ dnl Various checks for GD features
 
     PHP_TEST_BUILD(foobar, [], [
       AC_MSG_ERROR([GD build test failed. Please check the config.log for details.])
-    ], [ $GD_SHARED_LIBADD ], [char foobar () {}])
+    ], [ $GD_SHARED_LIBADD ], [char foobar (void) {}])
 
   else
     extra_sources="gd_compat.c"

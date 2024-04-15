@@ -125,7 +125,7 @@ if test "$PHP_OPCACHE" != "no"; then
 #include <unistd.h>
 #include <string.h>
 
-int main() {
+int main(void) {
   pid_t pid;
   int status;
   int ipc_id;
@@ -204,7 +204,7 @@ int main() {
 # define MAP_FAILED ((void*)-1)
 #endif
 
-int main() {
+int main(void) {
   pid_t pid;
   int status;
   char *shm;
@@ -266,7 +266,7 @@ int main() {
 # define MAP_FAILED ((void*)-1)
 #endif
 
-int main() {
+int main(void) {
   pid_t pid;
   int status;
   int fd;

@@ -83,7 +83,7 @@ if test "$PHP_EXTERNAL_LIBCRYPT" != "no"; then
 #include <stdlib.h>
 #include <string.h>
 
-int main() {
+int main(void) {
 #if HAVE_CRYPT
 	char *encrypted = crypt("rasmuslerdorf","rl");
 	return !encrypted || strcmp(encrypted,"rl.3StKT.4T8M");
@@ -113,7 +113,7 @@ int main() {
 #include <stdlib.h>
 #include <string.h>
 
-int main() {
+int main(void) {
 #if HAVE_CRYPT
 	char *encrypted = crypt("rasmuslerdorf","_J9..rasm");
 	return !encrypted || strcmp(encrypted,"_J9..rasmBYk8r9AiWNc");
@@ -143,7 +143,7 @@ int main() {
 #include <stdlib.h>
 #include <string.h>
 
-int main() {
+int main(void) {
 #if HAVE_CRYPT
 	char salt[15], answer[40];
 	char *encrypted;
@@ -183,7 +183,7 @@ int main() {
 #include <stdlib.h>
 #include <string.h>
 
-int main() {
+int main(void) {
 #if HAVE_CRYPT
 	char salt[30], answer[70];
 	char *encrypted;
@@ -220,7 +220,7 @@ int main() {
 #include <stdlib.h>
 #include <string.h>
 
-int main() {
+int main(void) {
 #if HAVE_CRYPT
 	char salt[21], answer[21+86];
 	char *encrypted;
@@ -256,7 +256,7 @@ int main() {
 #include <stdlib.h>
 #include <string.h>
 
-int main() {
+int main(void) {
 #if HAVE_CRYPT
 	char salt[21], answer[21+43];
 	char *encrypted;
