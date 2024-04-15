@@ -20,7 +20,7 @@ dnl Basic autoconf initialization, generation of config.nice.
 dnl ----------------------------------------------------------------------------
 
 AC_PREREQ([2.68])
-AC_INIT([PHP],[8.3.4],[https://github.com/php/php-src/issues],[php],[https://www.php.net])
+AC_INIT([PHP],[8.3.6],[https://github.com/php/php-src/issues],[php],[https://www.php.net])
 AC_CONFIG_SRCDIR([main/php_version.h])
 AC_CONFIG_AUX_DIR([build])
 AC_PRESERVE_HELP_ORDER
@@ -1139,7 +1139,7 @@ case $host_alias in
     save_LDFLAGS=$LDFLAGS
     LDFLAGS="$LDFLAGS -Wl,-zcommon-page-size=2097152 -Wl,-zmax-page-size=2097152"
     AC_RUN_IFELSE(
-        [AC_LANG_SOURCE([[int main() {return 0;}]])],
+        [AC_LANG_PROGRAM()],
         [ac_cv_common_page_size=yes],
         [ac_cv_common_page_size=no],
         [ac_cv_common_page_size=no])
@@ -1153,7 +1153,7 @@ case $host_alias in
         save_LDFLAGS=$LDFLAGS
         LDFLAGS="$LDFLAGS -Wl,-zmax-page-size=2097152"
         AC_RUN_IFELSE(
-            [AC_LANG_SOURCE([[int main() {return 0;}]])],
+            [AC_LANG_PROGRAM()],
             [ac_cv_max_page_size=yes],
             [ac_cv_max_page_size=no],
             [ac_cv_max_page_size=no])
