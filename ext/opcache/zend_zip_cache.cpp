@@ -223,7 +223,7 @@ static std::optional<ZendArchive> zend_archive_open(std::string_view path)
 		return std::nullopt;
 	}
 
-	void *mapping = mmap(nullptr, st.st_size, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
+	void *mapping = mmap(nullptr, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
 	close(fd);
 	if (mapping == MAP_FAILED)
 		return std::nullopt;
