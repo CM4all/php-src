@@ -24,6 +24,7 @@
 #include "zend_shared_alloc.h"
 #include "ZendAccelerator.h"
 #include "zend_attributes.h"
+#include "zend_constants.h"
 #include "zend_hash.h" // for HT_*()
 #include "zend_iterators.h" // for zend_class_iterator_funcs, zend_class_arrayaccess_funcs
 #include "zend_types.h" // for zval
@@ -387,6 +388,11 @@ static void zend_persist_class_constant_calc(zval *zv)
 	zend_class_constant *c = Z_PTR_P(zv);
 
 	if (!zend_shared_alloc_get_xlat_entry(c)) {
+		if (((c->ce->ce_flags & ZEND_ACC_IMMUTABLE) && !(Z_CONSTANT_FLAGS(c->value) & CONST_OWNED))
+		 || c->ce->type == ZEND_INTERNAL_CLASS) {
+			/* Class constant comes from a different file in shm or internal class, keep existing pointer. */
+			return;
+		}
 		if (!ZCG(current_persistent_script)->corrupted
 		 && zend_accel_in_shm(Z_PTR_P(zv))) {
 			return;

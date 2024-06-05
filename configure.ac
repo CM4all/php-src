@@ -20,7 +20,7 @@ dnl Basic autoconf initialization, generation of config.nice.
 dnl ----------------------------------------------------------------------------
 
 AC_PREREQ([2.68])
-AC_INIT([PHP],[8.3.7],[https://github.com/php/php-src/issues],[php],[https://www.php.net])
+AC_INIT([PHP],[8.3.8],[https://github.com/php/php-src/issues],[php],[https://www.php.net])
 AC_CONFIG_SRCDIR([main/php_version.h])
 AC_CONFIG_AUX_DIR([build])
 AC_PRESERVE_HELP_ORDER
@@ -223,6 +223,9 @@ case $host_cpu in
     fi
     ;;
 esac
+
+dnl See https://github.com/php/php-src/issues/14140
+AX_CHECK_COMPILE_FLAG([-ffp-contract=off], [CFLAGS="$CFLAGS -ffp-contract=off"])
 
 dnl Mark symbols hidden by default if the compiler (for example, gcc >= 4)
 dnl supports it. This can help reduce the binary size and startup time.
