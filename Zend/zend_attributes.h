@@ -97,6 +97,8 @@ ZEND_API zend_attribute *zend_add_attribute(
 		HashTable **attributes, zend_string *name, uint32_t argc,
 		uint32_t flags, uint32_t offset, uint32_t lineno);
 
+uint32_t zend_attribute_attribute_get_flags(zend_attribute *attr, zend_class_entry *scope);
+
 ZEND_API zend_attribute *zend_add_class_attribute(zend_class_entry *ce, zend_string *name, uint32_t argc);
 ZEND_API zend_attribute *zend_add_function_attribute(zend_function *func, zend_string *name, uint32_t argc);
 ZEND_API zend_attribute *zend_add_parameter_attribute(zend_function *func, uint32_t offset, zend_string *name, uint32_t argc);
