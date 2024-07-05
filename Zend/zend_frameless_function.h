@@ -117,7 +117,7 @@ extern size_t zend_flf_capacity;
 ZEND_API extern void **zend_flf_handlers;
 ZEND_API extern zend_function **zend_flf_functions;
 
-typedef struct {
+typedef struct _zend_frameless_function_info {
 	void *handler;
 	uint32_t num_args;
 } zend_frameless_function_info;
