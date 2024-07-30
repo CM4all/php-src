@@ -20,6 +20,7 @@
 #ifndef ZEND_LIST_H
 #define ZEND_LIST_H
 
+#include "zend_result.h"
 #include "zend_portability.h" // for BEGIN_EXTERN_C
 
 typedef struct _zend_array HashTable;
@@ -58,7 +59,7 @@ void zend_destroy_rsrc_list_dtors(void);
 
 ZEND_API zval* ZEND_FASTCALL zend_list_insert(void *ptr, int type);
 ZEND_API void ZEND_FASTCALL zend_list_free(zend_resource *res);
-ZEND_API int ZEND_FASTCALL zend_list_delete(zend_resource *res);
+ZEND_API zend_result ZEND_FASTCALL zend_list_delete(zend_resource *res);
 ZEND_API void ZEND_FASTCALL zend_list_close(zend_resource *res);
 
 ZEND_API zend_resource *zend_register_resource(void *rsrc_pointer, int rsrc_type);
