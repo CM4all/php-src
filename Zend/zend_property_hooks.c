@@ -16,11 +16,17 @@
    +----------------------------------------------------------------------+
 */
 
-#include "zend.h"
-#include "zend_API.h"
-#include "zend_hash.h"
-#include "zend_lazy_objects.h"
 #include "zend_property_hooks.h"
+#include "zend_API.h" // for zend_read_property_ex()
+#include "zend_class.h"
+#include "zend_compile.h" // for ZEND_ACC_*
+#include "zend_exceptions.h" // for zend_throw_error()
+#include "zend_hash.h"
+#include "zend_iterators.h"
+#include "zend_lazy_objects.h"
+#include "zend_object_handlers.h" // for zend_check_property_access()
+#include "zend_property_info.h"
+#include "zend_variables.h" // for zval_ptr_dtor()
 
 typedef struct {
 	zend_object_iterator it;
