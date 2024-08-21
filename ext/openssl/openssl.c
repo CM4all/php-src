@@ -69,6 +69,10 @@
 /* Common */
 #include <time.h>
 
+#ifdef HAVE_JEMALLOC
+#include <jemalloc/jemalloc.h>
+#endif // HAVE_JEMALLOC
+
 #if (defined(PHP_WIN32) && defined(_MSC_VER) && _MSC_VER >= 1900)
 #define timezone _timezone	/* timezone is called _timezone in LibC */
 #endif
@@ -1249,6 +1253,37 @@ PHP_INI_BEGIN()
 PHP_INI_END()
 /* }}} */
 
+#ifdef HAVE_JEMALLOC
+
+static void *
+je_CRYPTO_malloc(size_t num, const char *file, int line)
+{
+	(void)file;
+	(void)line;
+
+	return je_malloc(num);
+}
+
+static void *
+je_CRYPTO_realloc(void *addr, size_t num, const char *file, int line)
+{
+	(void)file;
+	(void)line;
+
+	return je_realloc(addr, num);
+}
+
+static void
+je_CRYPTO_free(void *addr, const char *file, int line)
+{
+	(void)file;
+	(void)line;
+
+	je_free(addr);
+}
+
+#endif // HAVE_JEMALLOC
+
 /* {{{ PHP_MINIT_FUNCTION */
 PHP_MINIT_FUNCTION(openssl)
 {
@@ -1286,6 +1321,10 @@ PHP_MINIT_FUNCTION(openssl)
 	php_openssl_pkey_object_handlers.get_constructor = php_openssl_pkey_get_constructor;
 	php_openssl_pkey_object_handlers.clone_obj = NULL;
 	php_openssl_pkey_object_handlers.compare = zend_objects_not_comparable;
+
+#ifdef HAVE_JEMALLOC
+	CRYPTO_set_mem_functions(je_CRYPTO_malloc, je_CRYPTO_realloc, je_CRYPTO_free);
+#endif // HAVE_JEMALLOC
 
 #ifdef LIBRESSL_VERSION_NUMBER
 	OPENSSL_config(NULL);
