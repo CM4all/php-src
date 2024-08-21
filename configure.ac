@@ -1044,6 +1044,20 @@ if test "$PHP_DMALLOC" = "yes"; then
   ])
 fi
 
+PHP_ARG_ENABLE([jemalloc],
+  [whether to enable jemalloc],
+  [AS_HELP_STRING([--enable-jemalloc],
+    [Enable jemalloc])],
+  [no],
+  [no])
+
+if test "$PHP_JEMALLOC" = "yes"; then
+  PKG_CHECK_MODULES([JEMALLOC], [jemalloc],, [AC_MSG_ERROR([jemalloc not found])])
+  AC_DEFINE(HAVE_JEMALLOC, 1, [Whether you have jemalloc])
+  PHP_EVAL_LIBLINE($JEMALLOC_LIBS)
+  PHP_EVAL_INCLINE($JEMALLOC_CFLAGS)
+fi
+
 PHP_ARG_ENABLE([ipv6],
   [whether to enable IPv6 support],
   [AS_HELP_STRING([--disable-ipv6],
