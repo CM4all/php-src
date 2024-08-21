@@ -953,6 +953,20 @@ AS_VAR_IF([PHP_DMALLOC], [yes],
       AS_VAR_APPEND([CPPFLAGS], [" -DDMALLOC_FUNC_CHECK"])],
     [AC_MSG_FAILURE([The dmalloc check failed. Cannot enable dmalloc.])])])
 
+PHP_ARG_ENABLE([jemalloc],
+  [whether to enable jemalloc],
+  [AS_HELP_STRING([--enable-jemalloc],
+    [Enable jemalloc])],
+  [no],
+  [no])
+
+if test "$PHP_JEMALLOC" = "yes"; then
+  PKG_CHECK_MODULES([JEMALLOC], [jemalloc],, [AC_MSG_ERROR([jemalloc not found])])
+  AC_DEFINE(HAVE_JEMALLOC, 1, [Whether you have jemalloc])
+  PHP_EVAL_LIBLINE($JEMALLOC_LIBS)
+  PHP_EVAL_INCLINE($JEMALLOC_CFLAGS)
+fi
+
 PHP_ARG_ENABLE([ipv6],
   [whether to enable IPv6 support],
   [AS_HELP_STRING([--disable-ipv6],
