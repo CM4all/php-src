@@ -44,6 +44,10 @@
 #include <libxml/xmlschemastypes.h>
 #endif
 
+#ifdef HAVE_JEMALLOC
+#include <jemalloc/jemalloc.h>
+#endif // HAVE_JEMALLOC
+
 #include "php_libxml.h"
 #include "image_svg.h"
 
@@ -932,9 +936,26 @@ PHP_LIBXML_API void php_libxml_error_handler(void *ctx, const char *msg, ...)
 	va_end(args);
 }
 
+#ifdef HAVE_JEMALLOC
+
+static char *
+je_xmlMemStrdup(const char *src)
+{
+	const size_t size = strlen(src) + 1;
+	char *dest = je_malloc(size);
+	if (dest != NULL)
+		memcpy(dest, src, size);
+	return dest;
+}
+
+#endif // HAVE_JEMALLOC
+
 PHP_LIBXML_API void php_libxml_initialize(void)
 {
 	if (!php_libxml_initialized) {
+#ifdef HAVE_JEMALLOC
+		xmlMemSetup(je_free, je_malloc, je_realloc, je_xmlMemStrdup);
+#endif
 		/* we should be the only one's to ever init!! */
 		ZEND_IGNORE_LEAKS_BEGIN();
 
