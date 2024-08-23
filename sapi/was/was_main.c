@@ -751,6 +751,8 @@ RunMultiWas(struct was_multi *m)
 
 int main(int argc, char *argv[])
 {
+	signal(SIGPIPE, SIG_IGN);
+
 	zend_signal_startup();
 
 	struct CommandLine command_line = { .ini_ignore = false };
