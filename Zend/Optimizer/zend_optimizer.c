@@ -28,7 +28,6 @@
 #include "zend_dump.h" // for zend_dump_op_array()
 #include "zend_inference.h" // for OP1_INFO(), ...
 #include "zend_ini.h"
-#include "zend_observer.h"
 #include "zend_virtual_cwd.h" //for IS_ABSOLUTE_PATH()
 #include "zend_vm.h"
 
@@ -1101,8 +1100,6 @@ static void zend_revert_pass_two(zend_op_array *op_array)
 	}
 #endif
 
-	op_array->T -= ZEND_OBSERVER_ENABLED;
-
 	op_array->fn_flags &= ~ZEND_ACC_DONE_PASS_TWO;
 }
 
@@ -1131,8 +1128,6 @@ static void zend_redo_pass_two(zend_op_array *op_array)
 		op_array->literals = NULL;
 	}
 #endif
-
-	op_array->T += ZEND_OBSERVER_ENABLED; // reserve last temporary for observers if enabled
 
 	opline = op_array->opcodes;
 	end = opline + op_array->last;
@@ -1562,12 +1557,6 @@ ZEND_API void zend_optimize_script(zend_script *script, zend_long optimization_l
 			}
 		}
 
-		if (ZEND_OBSERVER_ENABLED) {
-			for (i = 0; i < call_graph.op_arrays_count; i++) {
-				++call_graph.op_arrays[i]->T; // ensure accurate temporary count for stack size precalculation
-			}
-		}
-
 		if (ZEND_OPTIMIZER_PASS_12 & optimization_level) {
 			for (i = 0; i < call_graph.op_arrays_count; i++) {
 				zend_adjust_fcall_stack_size_graph(call_graph.op_arrays[i]);
@@ -1583,8 +1572,6 @@ ZEND_API void zend_optimize_script(zend_script *script, zend_long optimization_l
 					zend_recalc_live_ranges(op_array, needs_live_range);
 				}
 			} else {
-				op_array->T -= ZEND_OBSERVER_ENABLED; // redo_pass_two will re-increment it
-
 				zend_redo_pass_two(op_array);
 				if (op_array->live_range) {
 					zend_recalc_live_ranges(op_array, NULL);
