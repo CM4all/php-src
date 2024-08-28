@@ -1588,12 +1588,6 @@ NEWLINE ("\r"|"\n"|"\r\n")
 	RETURN_TOKEN_WITH_STR(T_STRING, 0);
 }
 
-<ST_LOOKING_FOR_PROPERTY>{ANY_CHAR} {
-	yyless(0);
-	yy_pop_state();
-	goto restart;
-}
-
 <ST_IN_SCRIPTING>"::" {
 	RETURN_TOKEN(T_PAAMAYIM_NEKUDOTAYIM);
 }
@@ -2376,7 +2370,7 @@ inline_char_handler:
 }
 
 
-<ST_IN_SCRIPTING>"#"|"//" {
+<ST_IN_SCRIPTING,ST_LOOKING_FOR_PROPERTY>"#"|"//" {
 	while (YYCURSOR < YYLIMIT) {
 		switch (*YYCURSOR++) {
 			case '\r':
@@ -2400,7 +2394,7 @@ inline_char_handler:
 	RETURN_OR_SKIP_TOKEN(T_COMMENT);
 }
 
-<ST_IN_SCRIPTING>"/*"|"/**"{WHITESPACE} {
+<ST_IN_SCRIPTING,ST_LOOKING_FOR_PROPERTY>"/*"|"/**"{WHITESPACE} {
 	int doc_com;
 
 	if (yyleng > 2) {
@@ -2434,6 +2428,12 @@ inline_char_handler:
 	}
 
 	RETURN_OR_SKIP_TOKEN(T_COMMENT);
+}
+
+<ST_LOOKING_FOR_PROPERTY>{ANY_CHAR} {
+	yyless(0);
+	yy_pop_state();
+	goto restart;
 }
 
 <ST_IN_SCRIPTING>"?>"{NEWLINE}? {

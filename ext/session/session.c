@@ -58,6 +58,7 @@
 PHPAPI ZEND_DECLARE_MODULE_GLOBALS(ps)
 
 static zend_result php_session_rfc1867_callback(unsigned int event, void *event_data, void **extra);
+/* the following signature must match (*php_rfc1867_callback) in main/rfc1867.h */
 static int (*php_session_rfc1867_orig_callback)(unsigned int event, void *event_data, void **extra);
 static void php_session_track_init(void);
 
@@ -123,7 +124,7 @@ static inline void php_rinit_session_globals(void) /* {{{ */
 /* }}} */
 
 /* Dispatched by RSHUTDOWN and by php_session_destroy */
-static inline void php_rshutdown_session_globals(void) /* {{{ */
+static void php_rshutdown_session_globals(void) /* {{{ */
 {
 	/* Do NOT destroy PS(mod_user_names) here! */
 	if (!Z_ISUNDEF(PS(http_session_vars))) {
