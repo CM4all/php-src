@@ -1200,7 +1200,7 @@ CWD_API zend_result virtual_chdir(const char *path) /* {{{ */
 
 
 /* returns 0 for ok, 1 for empty string, -1 on error */
-CWD_API int virtual_chdir_file(const char *path, int (*p_chdir)(const char *path)) /* {{{ */
+CWD_API zend_result virtual_chdir_file(const char *path, int (*p_chdir)(const char *path)) /* {{{ */
 {
 	size_t length = strlen(path);
 	char *temp;
