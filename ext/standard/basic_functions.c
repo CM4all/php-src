@@ -112,6 +112,10 @@ PHPAPI php_basic_globals basic_globals;
 #include "streamsfuncs.h"
 #include "basic_functions_arginfo.h"
 
+#if __has_feature(memory_sanitizer)
+# include <sanitizer/msan_interface.h>
+#endif
+
 #if defined(HAVE_NANOSLEEP) || !defined(PHP_WIN32)
 #include <errno.h>
 #endif
@@ -2267,6 +2271,10 @@ PHP_FUNCTION(getservbyport)
 		RETURN_FALSE;
 	}
 
+	/* MSAN false positive, getservbyport() is not properly intercepted. */
+#if __has_feature(memory_sanitizer)
+	__msan_unpoison_string(serv->s_name);
+#endif
 	RETURN_STRING(serv->s_name);
 }
 /* }}} */

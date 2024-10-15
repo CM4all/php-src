@@ -36,7 +36,8 @@
 
 #define zend_set_str_gc_flags(str) do { \
 	GC_SET_REFCOUNT(str, 2); \
-	if (file_cache_only) { \
+	if (file_cache_only \
+	 || (ZCG(current_persistent_script) && ZCG(current_persistent_script)->corrupted)) { \
 		GC_TYPE_INFO(str) = GC_STRING | (IS_STR_INTERNED << GC_FLAGS_SHIFT); \
 	} else { \
 		GC_TYPE_INFO(str) = GC_STRING | ((IS_STR_INTERNED | IS_STR_PERMANENT) << GC_FLAGS_SHIFT); \
@@ -688,7 +689,10 @@ static void zend_persist_op_array(zval *zv)
 			}
 		}
 #ifdef HAVE_JIT
-		if (JIT_G(on) && JIT_G(opt_level) <= ZEND_JIT_LEVEL_OPT_FUNCS) {
+		if (JIT_G(on)
+		 && JIT_G(opt_level) <= ZEND_JIT_LEVEL_OPT_FUNCS
+		 && (!ZCG(current_persistent_script)
+		  || !ZCG(current_persistent_script)->corrupted)) {
 			zend_jit_op_array(op_array, ZCG(current_persistent_script) ? &ZCG(current_persistent_script)->script : NULL);
 		}
 #endif
