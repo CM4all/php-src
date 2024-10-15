@@ -1,5 +1,65 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+26 Sep 2024, PHP 8.3.12
+
+- CGI:
+  . Fixed bug GHSA-p99j-rfp4-xqvq (Bypass of CVE-2024-4577, Parameter Injection
+    Vulnerability). (CVE-2024-8926) (nielsdos)
+  . Fixed bug GHSA-94p6-54jq-9mwp (cgi.force_redirect configuration is
+    bypassable due to the environment variable collision). (CVE-2024-8927)
+    (nielsdos)
+
+- Core:
+  . Fixed bug GH-15408 (MSan false-positve on zend_max_execution_timer).
+    (zeriyoshi)
+  . Fixed bug GH-15515 (Configure error grep illegal option q). (Peter Kokot)
+  . Fixed bug GH-15514 (Configure error: genif.sh: syntax error). (Peter Kokot)
+  . Fixed bug GH-15565 (--disable-ipv6 during compilation produces error
+    EAI_SYSTEM not found). (nielsdos)
+  . Fixed bug GH-15587 (CRC32 API build error on arm 32-bit).
+    (Bernd Kuhls, Thomas Petazzoni)
+  . Fixed bug GH-15330 (Do not scan generator frames more than once). (Arnaud)
+  . Fixed uninitialized lineno in constant AST of internal enums. (ilutov)
+
+- Curl:
+  . FIxed bug GH-15547 (curl_multi_select overflow on timeout argument).
+    (David Carlier)
+
+- DOM:
+  . Fixed bug GH-15551 (Segmentation fault (access null pointer) in
+    ext/dom/xml_common.h). (nielsdos)
+  . Fixed bug GH-15654 (Signed integer overflow in ext/dom/nodelist.c).
+    (nielsdos)
+
+- Fileinfo:
+  . Fixed bug GH-15752 (Incorrect error message for finfo_file
+    with an empty filename argument). (DanielEScherzer)
+
+- FPM:
+  . Fixed bug GHSA-865w-9rf3-2wh5 (Logs from childrens may be altered).
+    (CVE-2024-9026) (Jakub Zelenka)
+
+- MySQLnd:
+  . Fixed bug GH-15432 (Heap corruption when querying a vector). (cmb,
+    Kamil Tekiela)
+
+- Opcache:
+  . Fixed bug GH-15661 (Access null pointer in
+    Zend/Optimizer/zend_inference.c). (nielsdos)
+  . Fixed bug GH-15658 (Segmentation fault in Zend/zend_vm_execute.h).
+    (nielsdos)
+
+- SAPI:
+  . Fixed bug GHSA-9pqp-7h25-4f32 (Erroneous parsing of multipart form data).
+    (CVE-2024-8925) (Arnaud)
+
+- Standard:
+  . Fixed bug GH-15552 (Signed integer overflow in ext/standard/scanf.c). (cmb)
+
+- Streams:
+  . Fixed bug GH-15628 (php_stream_memory_get_buffer() not zero-terminated).
+    (cmb)
+
 29 Aug 2024, PHP 8.3.11
 
 - Core:
@@ -51,6 +111,10 @@ PHP                                                                        NEWS
     (zend_hash_num_elements() Zend/zend_hash.h)). (nielsdos)
   . Fixed bug GH-15210 use-after-free on watchpoint allocations. (nielsdos)
 
+- Random:
+  . Fixed part of bug GH-15381, checking getrandom availability on solaris.
+    (David Carlier)
+
 - Soap:
   . Fixed bug #55639 (Digest autentication dont work). (nielsdos)
   . Fix SoapFault property destruction. (nielsdos)
@@ -60,6 +124,7 @@ PHP                                                                        NEWS
 - Standard:
   . Fix passing non-finite timeout values in stream functions. (nielsdos)
   . Fixed GH-14780 p(f)sockopen timeout overflow. (David Carlier)
+  . Fixed GH-15653 overflow on fgetcsv length parameter. (David Carlier)
 
 - Streams:
   . Fixed bug GH-15028 (Memory leak in ext/phar/stream.c). (nielsdos)

@@ -28,6 +28,7 @@
 
 typedef struct _zend_class_entry zend_class_entry;
 typedef struct _zend_execute_data zend_execute_data;
+typedef struct _zend_get_gc_buffer zend_get_gc_buffer;
 typedef struct _zend_object zend_object;
 typedef struct _zval_struct zval;
 typedef struct _zend_array HashTable;
@@ -138,6 +139,8 @@ static zend_always_inline zend_generator *zend_generator_get_current(zend_genera
 
 	return zend_generator_update_current(generator);
 }
+
+HashTable *zend_generator_frame_gc(zend_get_gc_buffer *gc_buffer, zend_generator *generator);
 
 END_EXTERN_C()
 
