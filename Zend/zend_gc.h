@@ -91,7 +91,7 @@ static zend_always_inline void gc_check_possible_root(zend_refcounted *ref)
  * over heterogeneous structures. See zend_generator_get_gc() for
  * a usage example. */
 
-typedef struct {
+typedef struct _zend_get_gc_buffer {
 	zval *cur;
 	zval *end;
 	zval *start;
