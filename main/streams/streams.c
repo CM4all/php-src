@@ -1389,8 +1389,13 @@ PHPAPI int _php_stream_seek(php_stream *stream, zend_off_t offset, int whence)
 
 		switch(whence) {
 			case SEEK_CUR:
-				offset = stream->position + offset;
-				whence = SEEK_SET;
+				ZEND_ASSERT(stream->position >= 0);
+				if (UNEXPECTED(offset > ZEND_LONG_MAX - stream->position)) {
+					offset = ZEND_LONG_MAX;
+				} else {
+					offset = stream->position + offset;
+				}
+ 				whence = SEEK_SET;
 				break;
 		}
 		ret = stream->ops->seek(stream, offset, whence, &stream->position);
@@ -2238,6 +2243,9 @@ PHPAPI php_stream *_php_stream_open_wrapper_ex(const char *path, const char *mod
 			options &= ~USE_PATH;
 		}
 		if (EG(exception)) {
+			if (resolved_path) {
+				zend_string_release_ex(resolved_path, false);
+			}
 			return NULL;
 		}
 	}

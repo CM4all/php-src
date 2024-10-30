@@ -820,11 +820,62 @@ int dom_node_text_content_write(dom_object *obj, zval *newval)
 
 /* }}} */
 
+/* Returns true if the node was changed, false otherwise. */
+static bool dom_set_document_ref_obj_single(xmlNodePtr node, xmlDocPtr doc, php_libxml_ref_obj *document)
+{
+	dom_object *childobj = php_dom_object_get_data(node);
+	if (childobj && !childobj->document) {
+		childobj->document = document;
+		document->refcount++;
+		return true;
+	}
+	return false;
+}
+
+/* TODO: on 8.4 replace the loop with the tree walk helper function. */
+static void dom_set_document_pointers(xmlNodePtr node, xmlDocPtr doc, php_libxml_ref_obj *document)
+{
+	/* Applies the document to the entire subtree. */
+	xmlSetTreeDoc(node, doc);
+
+	if (!dom_set_document_ref_obj_single(node, doc, document)) {
+		return;
+	}
+
+	xmlNodePtr base = node;
+	node = node->children;
+	while (node != NULL) {
+		ZEND_ASSERT(node != base);
+
+		if (!dom_set_document_ref_obj_single(node, doc, document)) {
+			break;
+		}
+
+		if (node->type == XML_ELEMENT_NODE) {
+			if (node->children) {
+				node = node->children;
+				continue;
+			}
+		}
+
+		if (node->next) {
+			node = node->next;
+		} else {
+			/* Go upwards, until we find a parent node with a next sibling, or until we hit the base. */
+			do {
+				node = node->parent;
+				if (node == base) {
+					return;
+				}
+			} while (node->next == NULL);
+			node = node->next;
+		}
+	}
+}
+
 static xmlNodePtr _php_dom_insert_fragment(xmlNodePtr nodep, xmlNodePtr prevsib, xmlNodePtr nextsib, xmlNodePtr fragment, dom_object *intern, dom_object *childobj) /* {{{ */
 {
-	xmlNodePtr newchild, node;
-
-	newchild = fragment->children;
+	xmlNodePtr newchild = fragment->children;
 
 	if (newchild) {
 		if (prevsib == NULL) {
@@ -840,17 +891,10 @@ static xmlNodePtr _php_dom_insert_fragment(xmlNodePtr nodep, xmlNodePtr prevsib,
 			nextsib->prev = fragment->last;
 		}
 
-		node = newchild;
+		/* Assign parent node pointer */
+		xmlNodePtr node = newchild;
 		while (node != NULL) {
 			node->parent = nodep;
-			if (node->doc != nodep->doc) {
-				xmlSetTreeDoc(node, nodep->doc);
-				if (node->_private != NULL) {
-					childobj = node->_private;
-					childobj->document = intern->document;
-					php_libxml_increment_doc_ref((php_libxml_node_object *)childobj, NULL);
-				}
-			}
 			if (node == fragment->last) {
 				break;
 			}
@@ -864,6 +908,39 @@ static xmlNodePtr _php_dom_insert_fragment(xmlNodePtr nodep, xmlNodePtr prevsib,
 	return newchild;
 }
 /* }}} */
+
+static bool dom_node_check_legacy_insertion_validity(xmlNodePtr parentp, xmlNodePtr child, bool stricterror)
+{
+	if (dom_node_is_read_only(parentp) == SUCCESS ||
+		(child->parent != NULL && dom_node_is_read_only(child->parent) == SUCCESS)) {
+		php_dom_throw_error(NO_MODIFICATION_ALLOWED_ERR, stricterror);
+		return false;
+	}
+
+	if (dom_hierarchy(parentp, child) == FAILURE) {
+		php_dom_throw_error(HIERARCHY_REQUEST_ERR, stricterror);
+		return false;
+	}
+
+	if (child->doc != parentp->doc && child->doc != NULL) {
+		php_dom_throw_error(WRONG_DOCUMENT_ERR, stricterror);
+		return false;
+	}
+
+	if (child->type == XML_DOCUMENT_FRAG_NODE && child->children == NULL) {
+		/* TODO Drop Warning? */
+		php_error_docref(NULL, E_WARNING, "Document Fragment is empty");
+		return false;
+	}
+
+	/* In old DOM only text nodes and entity nodes can be added as children to attributes. */
+	if (parentp->type == XML_ATTRIBUTE_NODE && child->type != XML_TEXT_NODE && child->type != XML_ENTITY_REF_NODE) {
+		php_dom_throw_error(HIERARCHY_REQUEST_ERR, stricterror);
+		return false;
+	}
+
+	return true;
+}
 
 /* {{{ URL: http://www.w3.org/TR/2003/WD-DOM-Level-3-Core-20030226/DOM3-Core.html#core-ID-952280727
 Since:
@@ -892,31 +969,12 @@ PHP_METHOD(DOMNode, insertBefore)
 
 	stricterror = dom_get_strict_error(intern->document);
 
-	if (dom_node_is_read_only(parentp) == SUCCESS ||
-		(child->parent != NULL && dom_node_is_read_only(child->parent) == SUCCESS)) {
-		php_dom_throw_error(NO_MODIFICATION_ALLOWED_ERR, stricterror);
-		RETURN_FALSE;
-	}
-
-	if (dom_hierarchy(parentp, child) == FAILURE) {
-		php_dom_throw_error(HIERARCHY_REQUEST_ERR, stricterror);
-		RETURN_FALSE;
-	}
-
-	if (child->doc != parentp->doc && child->doc != NULL) {
-		php_dom_throw_error(WRONG_DOCUMENT_ERR, stricterror);
-		RETURN_FALSE;
-	}
-
-	if (child->type == XML_DOCUMENT_FRAG_NODE && child->children == NULL) {
-		/* TODO Drop Warning? */
-		php_error_docref(NULL, E_WARNING, "Document Fragment is empty");
+	if (!dom_node_check_legacy_insertion_validity(parentp, child, stricterror)) {
 		RETURN_FALSE;
 	}
 
 	if (child->doc == NULL && parentp->doc != NULL) {
-		childobj->document = intern->document;
-		php_libxml_increment_doc_ref((php_libxml_node_object *)childobj, NULL);
+		dom_set_document_pointers(child, parentp->doc, intern->document);
 	}
 
 	php_libxml_invalidate_node_list_cache(intern->document);
@@ -934,9 +992,6 @@ PHP_METHOD(DOMNode, insertBefore)
 
 		if (child->type == XML_TEXT_NODE && (refp->type == XML_TEXT_NODE ||
 			(refp->prev != NULL && refp->prev->type == XML_TEXT_NODE))) {
-			if (child->doc == NULL) {
-				xmlSetTreeDoc(child, parentp->doc);
-			}
 			new_child = child;
 			new_child->parent = refp->parent;
 			new_child->next = refp;
@@ -988,9 +1043,6 @@ PHP_METHOD(DOMNode, insertBefore)
 		}
 		if (child->type == XML_TEXT_NODE && parentp->last != NULL && parentp->last->type == XML_TEXT_NODE) {
 			child->parent = parentp;
-			if (child->doc == NULL) {
-				xmlSetTreeDoc(child, parentp->doc);
-			}
 			new_child = child;
 			if (parentp->children == NULL) {
 				parentp->children = child;
@@ -1096,6 +1148,10 @@ PHP_METHOD(DOMNode, replaceChild)
 		RETURN_FALSE;
 	}
 
+	if (newchild->doc == NULL && nodep->doc != NULL) {
+		dom_set_document_pointers(newchild, nodep->doc, intern->document);
+	}
+
 	if (newchild->type == XML_DOCUMENT_FRAG_NODE) {
 		xmlNodePtr prevsib, nextsib;
 		prevsib = oldchild->prev;
@@ -1112,11 +1168,6 @@ PHP_METHOD(DOMNode, replaceChild)
 		xmlDtdPtr intSubset = xmlGetIntSubset(nodep->doc);
 		replacedoctype = (intSubset == (xmlDtd *) oldchild);
 
-		if (newchild->doc == NULL && nodep->doc != NULL) {
-			xmlSetTreeDoc(newchild, nodep->doc);
-			newchildobj->document = intern->document;
-			php_libxml_increment_doc_ref((php_libxml_node_object *)newchildobj, NULL);
-		}
 		xmlReplaceNode(oldchild, newchild);
 		dom_reconcile_ns(nodep->doc, newchild);
 
@@ -1196,31 +1247,12 @@ PHP_METHOD(DOMNode, appendChild)
 
 	stricterror = dom_get_strict_error(intern->document);
 
-	if (dom_node_is_read_only(nodep) == SUCCESS ||
-		(child->parent != NULL && dom_node_is_read_only(child->parent) == SUCCESS)) {
-		php_dom_throw_error(NO_MODIFICATION_ALLOWED_ERR, stricterror);
-		RETURN_FALSE;
-	}
-
-	if (dom_hierarchy(nodep, child) == FAILURE) {
-		php_dom_throw_error(HIERARCHY_REQUEST_ERR, stricterror);
-		RETURN_FALSE;
-	}
-
-	if (!(child->doc == NULL || child->doc == nodep->doc)) {
-		php_dom_throw_error(WRONG_DOCUMENT_ERR, stricterror);
-		RETURN_FALSE;
-	}
-
-	if (child->type == XML_DOCUMENT_FRAG_NODE && child->children == NULL) {
-		/* TODO Drop Warning? */
-		php_error_docref(NULL, E_WARNING, "Document Fragment is empty");
+	if (!dom_node_check_legacy_insertion_validity(nodep, child, stricterror)) {
 		RETURN_FALSE;
 	}
 
 	if (child->doc == NULL && nodep->doc != NULL) {
-		childobj->document = intern->document;
-		php_libxml_increment_doc_ref((php_libxml_node_object *)childobj, NULL);
+		dom_set_document_pointers(child, nodep->doc, intern->document);
 	}
 
 	if (child->parent != NULL){
@@ -1229,9 +1261,6 @@ PHP_METHOD(DOMNode, appendChild)
 
 	if (child->type == XML_TEXT_NODE && nodep->last != NULL && nodep->last->type == XML_TEXT_NODE) {
 		child->parent = nodep;
-		if (child->doc == NULL) {
-			xmlSetTreeDoc(child, nodep->doc);
-		}
 		new_child = child;
 		if (nodep->children == NULL) {
 			nodep->children = child;
