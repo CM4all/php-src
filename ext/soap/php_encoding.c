@@ -1410,7 +1410,9 @@ static zval *to_zval_object_ex(zval *ret, encodeTypePtr type, xmlNodePtr data, z
 					return ret;
 				}
 
-				object_init_ex(ret, ce);
+				if (object_init_ex(ret, ce) != SUCCESS) {
+					return ret;
+				}
 				master_to_zval_int(&base, enc, data);
 				set_zval_property(ret, "_", &base);
 			} else {
@@ -1419,7 +1421,9 @@ static zval *to_zval_object_ex(zval *ret, encodeTypePtr type, xmlNodePtr data, z
 				if (soap_check_xml_ref(ret, data)) {
 					return ret;
 				}
-				object_init_ex(ret, ce);
+				if (object_init_ex(ret, ce) != SUCCESS) {
+					return ret;
+				}
 				soap_add_xml_ref(ret, data);
 			}
 		} else if (sdlType->kind == XSD_TYPEKIND_EXTENSION &&
@@ -1464,7 +1468,9 @@ static zval *to_zval_object_ex(zval *ret, encodeTypePtr type, xmlNodePtr data, z
 					return ret;
 				}
 
-				object_init_ex(ret, ce);
+				if (object_init_ex(ret, ce) != SUCCESS) {
+					return ret;
+				}
 				soap_add_xml_ref(ret, data);
 				master_to_zval_int(&base, sdlType->encode, data);
 				set_zval_property(ret, "_", &base);
@@ -1475,7 +1481,9 @@ static zval *to_zval_object_ex(zval *ret, encodeTypePtr type, xmlNodePtr data, z
 			if (soap_check_xml_ref(ret, data)) {
 				return ret;
 			}
-			object_init_ex(ret, ce);
+			if (object_init_ex(ret, ce) != SUCCESS) {
+				return ret;
+			}
 			soap_add_xml_ref(ret, data);
 		}
 		if (sdlType->model) {
@@ -1535,7 +1543,9 @@ static zval *to_zval_object_ex(zval *ret, encodeTypePtr type, xmlNodePtr data, z
 			return ret;
 		}
 
-		object_init_ex(ret, ce);
+		if (object_init_ex(ret, ce) != SUCCESS) {
+			return ret;
+		}
 		soap_add_xml_ref(ret, data);
 		trav = data->children;
 

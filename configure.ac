@@ -20,7 +20,7 @@ dnl Basic autoconf initialization, generation of config.nice.
 dnl ----------------------------------------------------------------------------
 
 AC_PREREQ([2.68])
-AC_INIT([PHP],[8.2.24],[https://github.com/php/php-src/issues],[php],[https://www.php.net])
+AC_INIT([PHP],[8.2.25],[https://github.com/php/php-src/issues],[php],[https://www.php.net])
 AC_CONFIG_SRCDIR([main/php_version.h])
 AC_CONFIG_AUX_DIR([build])
 AC_PRESERVE_HELP_ORDER
@@ -849,10 +849,7 @@ if test "$PHP_GCOV" = "yes"; then
   PHP_ADD_MAKEFILE_FRAGMENT($abs_srcdir/build/Makefile.gcov, $abs_srcdir)
 
   dnl Remove all optimization flags from CFLAGS.
-  changequote({,})
-  CFLAGS=`echo "$CFLAGS" | "${SED}" -e 's/-O[0-9s]*//g'`
-  CXXFLAGS=`echo "$CXXFLAGS" | "${SED}" -e 's/-O[0-9s]*//g'`
-  changequote([,])
+  PHP_REMOVE_OPTIMIZATION_FLAGS
 
   dnl Add the special gcc flags.
   CFLAGS="$CFLAGS -O0 -fprofile-arcs -ftest-coverage"
@@ -869,10 +866,7 @@ PHP_ARG_ENABLE([debug],
 if test "$PHP_DEBUG" = "yes"; then
   PHP_DEBUG=1
   ZEND_DEBUG=yes
-  changequote({,})
-  CFLAGS=`echo "$CFLAGS" | "${SED}" -e 's/-O[0-9s]*//g'`
-  CXXFLAGS=`echo "$CXXFLAGS" | "${SED}" -e 's/-O[0-9s]*//g'`
-  changequote([,])
+  PHP_REMOVE_OPTIMIZATION_FLAGS
   dnl Add -O0 only if GCC or ICC is used.
   if test "$GCC" = "yes" || test "$ICC" = "yes"; then
     CFLAGS="$CFLAGS -O0"

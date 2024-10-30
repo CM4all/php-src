@@ -52,7 +52,12 @@ set ODBC_TEST_DSN=Driver={ODBC Driver 17 for SQL Server};Server=^(local^)\SQLEXP
 set PDOTEST_DSN=odbc:%ODBC_TEST_DSN%
 
 rem setup Firebird related exts
-curl -sLo Firebird.zip https://github.com/FirebirdSQL/firebird/releases/download/v3.0.9/Firebird-3.0.9.33560-0_x64.zip
+if "%PLATFORM%" == "x64" (
+	set PHP_FIREBIRD_DOWNLOAD_URL=https://github.com/FirebirdSQL/firebird/releases/download/v3.0.9/Firebird-3.0.9.33560-0_x64.zip
+) else (
+	set PHP_FIREBIRD_DOWNLOAD_URL=https://github.com/FirebirdSQL/firebird/releases/download/v3.0.9/Firebird-3.0.9.33560-0_Win32.zip
+)
+curl -sLo Firebird.zip %PHP_FIREBIRD_DOWNLOAD_URL%
 7z x -oC:\Firebird Firebird.zip
 set PDO_FIREBIRD_TEST_DATABASE=C:\test.fdb
 set PDO_FIREBIRD_TEST_DSN=firebird:dbname=%PDO_FIREBIRD_TEST_DATABASE%
@@ -105,7 +110,7 @@ popd
 
 rem prepare for snmp
 set MIBDIRS=%DEPS_DIR%\share\mibs
-start %DEPS_DIR%\bin\snmpd.exe -C -c %APPVEYOR_BUILD_FOLDER%\ext\snmp\tests\snmpd.conf -Ln
+start %DEPS_DIR%\bin\snmpd.exe -C -c %GITHUB_WORKSPACE%\ext\snmp\tests\snmpd.conf -Ln
 
 set PHP_BUILD_DIR=%PHP_BUILD_OBJ_DIR%\Release
 if "%THREAD_SAFE%" equ "1" set PHP_BUILD_DIR=%PHP_BUILD_DIR%_TS

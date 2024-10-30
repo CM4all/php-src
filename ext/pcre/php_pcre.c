@@ -1136,6 +1136,11 @@ static void php_do_pcre_match(INTERNAL_FUNCTION_PARAMETERS, int global) /* {{{ *
 		RETURN_FALSE;
 	}
 
+	if (start_offset == ZEND_LONG_MIN) {
+		zend_argument_value_error(5, "must be greater than " ZEND_LONG_FMT, ZEND_LONG_MIN);
+		RETURN_THROWS();
+	}
+
 	pce->refcount++;
 	php_pcre_match_impl(pce, subject, return_value, subpats,
 		global, ZEND_NUM_ARGS() >= 4, flags, start_offset);
@@ -1743,9 +1748,11 @@ matched:
 						}
 						if (preg_get_backref(&walk, &backref)) {
 							if (backref < count) {
-								match_len = offsets[(backref<<1)+1] - offsets[backref<<1];
-								memcpy(walkbuf, subject + offsets[backref<<1], match_len);
-								walkbuf += match_len;
+								if (offsets[backref<<1] < SIZE_MAX) {
+									match_len = offsets[(backref<<1)+1] - offsets[backref<<1];
+									memcpy(walkbuf, subject + offsets[backref<<1], match_len);
+									walkbuf += match_len;
+								}
 							}
 							continue;
 						}

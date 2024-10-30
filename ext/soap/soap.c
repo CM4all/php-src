@@ -412,6 +412,7 @@ PHP_MINIT_FUNCTION(soap)
 	memcpy(&soap_server_object_handlers, &std_object_handlers, sizeof(zend_object_handlers));
 	soap_server_object_handlers.offset = XtOffsetOf(soap_server_object, std);
 	soap_server_object_handlers.free_obj = soap_server_object_free;
+	soap_server_object_handlers.clone_obj = NULL;
 
 	/* Register SoapFault class */
 	soap_fault_class_entry = register_class_SoapFault(zend_ce_exception);
@@ -837,6 +838,9 @@ PHP_METHOD(SoapServer, __construct)
 
 		if ((tmp = zend_hash_str_find(ht, "classmap", sizeof("classmap")-1)) != NULL &&
 			Z_TYPE_P(tmp) == IS_ARRAY) {
+			if (HT_IS_PACKED(Z_ARRVAL_P(tmp))) {
+				php_error_docref(NULL, E_ERROR, "'classmap' option must be an associative array");
+			}
 			service->class_map = zend_array_dup(Z_ARRVAL_P(tmp));
 		}
 
@@ -2003,6 +2007,9 @@ PHP_METHOD(SoapClient, __construct)
 		}
 		if ((tmp = zend_hash_str_find(ht, "classmap", sizeof("classmap")-1)) != NULL &&
 			Z_TYPE_P(tmp) == IS_ARRAY) {
+			if (HT_IS_PACKED(Z_ARRVAL_P(tmp))) {
+				php_error_docref(NULL, E_ERROR, "'classmap' option must be an associative array");
+			}
 			ZVAL_COPY(Z_CLIENT_CLASSMAP_P(this_ptr), tmp);
 		}
 
