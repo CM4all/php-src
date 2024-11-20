@@ -1500,11 +1500,13 @@ static X509 *php_openssl_x509_from_zval(
 
 	*free_cert = 1;
 
-	if (!try_convert_to_string(val)) {
+	zend_string *str = zval_try_get_string(val);
+	if (str == NULL) {
 		return NULL;
 	}
-
-	return php_openssl_x509_from_str(Z_STR_P(val), arg_num, is_from_array, option_name);
+	X509 *cert = php_openssl_x509_from_str(str, arg_num, is_from_array, option_name);
+	zend_string_release(str);
+	return cert;
 }
 /* }}} */
 
@@ -2129,7 +2131,7 @@ PHP_FUNCTION(openssl_x509_parse)
 	/* Can return NULL on error or memory allocation failure */
 	if (!bn_serial) {
 		php_openssl_store_errors();
-		RETURN_FALSE;
+		goto err;
 	}
 
 	hex_serial = BN_bn2hex(bn_serial);
@@ -2137,7 +2139,7 @@ PHP_FUNCTION(openssl_x509_parse)
 	/* Can return NULL on error or memory allocation failure */
 	if (!hex_serial) {
 		php_openssl_store_errors();
-		RETURN_FALSE;
+		goto err;
 	}
 
 	str_serial = i2s_ASN1_INTEGER(NULL, asn1_serial);
@@ -2209,19 +2211,15 @@ PHP_FUNCTION(openssl_x509_parse)
 		bio_out = BIO_new(BIO_s_mem());
 		if (bio_out == NULL) {
 			php_openssl_store_errors();
-			RETURN_FALSE;
+			goto err_subitem;
 		}
 		if (nid == NID_subject_alt_name) {
 			if (openssl_x509v3_subjectAltName(bio_out, extension) == 0) {
 				BIO_get_mem_ptr(bio_out, &bio_buf);
 				add_assoc_stringl(&subitem, extname, bio_buf->data, bio_buf->length);
 			} else {
-				zend_array_destroy(Z_ARR_P(return_value));
 				BIO_free(bio_out);
-				if (cert_str) {
-					X509_free(cert);
-				}
-				RETURN_FALSE;
+				goto err_subitem;
 			}
 		}
 		else if (X509V3_EXT_print(bio_out, extension, 0, 0)) {
@@ -2236,6 +2234,16 @@ PHP_FUNCTION(openssl_x509_parse)
 	if (cert_str) {
 		X509_free(cert);
 	}
+	return;
+
+err_subitem:
+	zval_ptr_dtor(&subitem);
+err:
+	zend_array_destroy(Z_ARR_P(return_value));
+	if (cert_str) {
+		X509_free(cert);
+	}
+	RETURN_FALSE;
 }
 /* }}} */
 
@@ -3238,6 +3246,11 @@ PHP_FUNCTION(openssl_csr_sign)
 		goto cleanup;
 	}
 
+	if (num_days < 0 || num_days > LONG_MAX / 86400) {
+		php_error_docref(NULL, E_WARNING, "Days must be between 0 and %ld", LONG_MAX / 86400);
+		goto cleanup;
+	}
+
 	if (PHP_SSL_REQ_PARSE(&req, args) == FAILURE) {
 		goto cleanup;
 	}
@@ -3289,7 +3302,7 @@ PHP_FUNCTION(openssl_csr_sign)
 		goto cleanup;
 	}
 	X509_gmtime_adj(X509_getm_notBefore(new_cert), 0);
-	X509_gmtime_adj(X509_getm_notAfter(new_cert), 60*60*24*(long)num_days);
+	X509_gmtime_adj(X509_getm_notAfter(new_cert), 60*60*24*num_days);
 	i = X509_set_pubkey(new_cert, key);
 	if (!i) {
 		php_openssl_store_errors();

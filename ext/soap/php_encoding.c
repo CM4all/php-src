@@ -2138,6 +2138,13 @@ static void add_xml_array_elements(xmlNodePtr xmlParam,
 	xmlNodePtr xparam;
 
 	if (data && Z_TYPE_P(data) == IS_ARRAY) {
+		if (UNEXPECTED(Z_IS_RECURSIVE_P(data))) {
+			zend_value_error("Recursive array cannot be encoded");
+			return;
+		}
+
+		GC_TRY_PROTECT_RECURSION(Z_ARRVAL_P(data));
+
 		ZEND_HASH_FOREACH_VAL_IND(Z_ARRVAL_P(data), zdata) {
 	 		if (j >= dims[0]) {
 	 			break;
@@ -2186,6 +2193,8 @@ static void add_xml_array_elements(xmlNodePtr xmlParam,
 				j++;
 			}
 		}
+
+		GC_TRY_UNPROTECT_RECURSION(Z_ARRVAL_P(data));
 	} else {
 		for (j=0; j<dims[0]; j++) {
 			if (dimension == 1) {
@@ -2248,8 +2257,8 @@ static xmlNodePtr to_xml_array(encodeTypePtr type, zval *data, int style, xmlNod
 
 		iter = ce->get_iterator(ce, data, 0);
 
-		if (EG(exception)) {
-			goto iterator_done;
+		if (!iter) {
+			goto iterator_failed_to_get;
 		}
 
 		if (iter->funcs->rewind) {
@@ -2289,6 +2298,7 @@ static xmlNodePtr to_xml_array(encodeTypePtr type, zval *data, int style, xmlNod
 		}
 iterator_done:
 		OBJ_RELEASE(&iter->std);
+iterator_failed_to_get:
 		if (EG(exception)) {
 			zval_ptr_dtor(&array_copy);
 			ZVAL_UNDEF(&array_copy);
@@ -2703,6 +2713,13 @@ static xmlNodePtr to_xml_map(encodeTypePtr type, zval *data, int style, xmlNodeP
 	FIND_ZVAL_NULL(data, xmlParam, style);
 
 	if (Z_TYPE_P(data) == IS_ARRAY) {
+		if (UNEXPECTED(Z_IS_RECURSIVE_P(data))) {
+			zend_value_error("Recursive array cannot be encoded");
+			return NULL;
+		}
+
+		GC_TRY_PROTECT_RECURSION(Z_ARRVAL_P(data));
+
 		ZEND_HASH_FOREACH_KEY_VAL_IND(Z_ARRVAL_P(data), int_val, key_val, temp_data) {
 			item = xmlNewNode(NULL, BAD_CAST("item"));
 			xmlAddChild(xmlParam, item);
@@ -2730,6 +2747,8 @@ static xmlNodePtr to_xml_map(encodeTypePtr type, zval *data, int style, xmlNodeP
 			xparam = master_to_xml(get_conversion(Z_TYPE_P(temp_data)), temp_data, style, item);
 			xmlNodeSetName(xparam, BAD_CAST("value"));
 		} ZEND_HASH_FOREACH_END();
+
+		GC_TRY_UNPROTECT_RECURSION(Z_ARRVAL_P(data));
 	}
 	if (style == SOAP_ENCODED) {
 		set_ns_and_type(xmlParam, type);
