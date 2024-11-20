@@ -872,6 +872,17 @@ static bool dom_node_check_legacy_insertion_validity(xmlNodePtr parentp, xmlNode
 		php_dom_throw_error(HIERARCHY_REQUEST_ERR, stricterror);
 		return false;
 	}
+	/* Attributes must be in elements. */
+	if (child->type == XML_ATTRIBUTE_NODE && parentp->type != XML_ELEMENT_NODE) {
+		php_dom_throw_error(HIERARCHY_REQUEST_ERR, stricterror);
+		return false;
+	}
+
+	/* Documents can never be a child. */
+	if (child->type == XML_DOCUMENT_NODE || child->type == XML_HTML_DOCUMENT_NODE) {
+		php_dom_throw_error(HIERARCHY_REQUEST_ERR, stricterror);
+		return false;
+	}
 
 	return true;
 }
@@ -882,7 +893,7 @@ Since:
 PHP_METHOD(DOMNode, insertBefore)
 {
 	zval *id, *node, *ref = NULL;
-	xmlNodePtr child, new_child, parentp, refp;
+	xmlNodePtr child, new_child, parentp, refp = NULL;
 	dom_object *intern, *childobj, *refpobj;
 	int ret, stricterror;
 
@@ -907,18 +918,21 @@ PHP_METHOD(DOMNode, insertBefore)
 		RETURN_FALSE;
 	}
 
-	if (child->doc == NULL && parentp->doc != NULL) {
-		childobj->document = intern->document;
-		php_libxml_increment_doc_ref((php_libxml_node_object *)childobj, NULL);
-	}
-
+	/* Fetch and perform sanity checks before modifying reference pointers. */
 	if (ref != NULL) {
 		DOM_GET_OBJ(refp, ref, xmlNodePtr, refpobj);
 		if (refp->parent != parentp) {
 			php_dom_throw_error(NOT_FOUND_ERR, stricterror);
 			RETURN_FALSE;
 		}
+	}
 
+	if (child->doc == NULL && parentp->doc != NULL) {
+		childobj->document = intern->document;
+		php_libxml_increment_doc_ref((php_libxml_node_object *)childobj, NULL);
+	}
+
+	if (ref != NULL) {
 		if (child->parent != NULL) {
 			xmlUnlinkNode(child);
 		}
@@ -1078,6 +1092,13 @@ PHP_METHOD(DOMNode, replaceChild)
 	}
 
 	if (dom_hierarchy(nodep, newchild) == FAILURE) {
+		php_dom_throw_error(HIERARCHY_REQUEST_ERR, stricterror);
+		RETURN_FALSE;
+	}
+
+	/* This is already disallowed by libxml, but we should check it here to avoid
+	 * breaking assumptions and assertions. */
+	if ((oldchild->type == XML_ATTRIBUTE_NODE) != (newchild->type == XML_ATTRIBUTE_NODE)) {
 		php_dom_throw_error(HIERARCHY_REQUEST_ERR, stricterror);
 		RETURN_FALSE;
 	}
