@@ -43,6 +43,7 @@
 #include "zend_gc.h"
 #include "zend_hash.h"
 #include "zend_object_handlers.h"
+#include "zend_objects.h" // for zend_objects_new()
 #include "zend_objects_API.h"
 #include "zend_operators.h"
 #include "zend_types.h"
