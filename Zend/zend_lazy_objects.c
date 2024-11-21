@@ -41,8 +41,11 @@
 #include "zend_compile.h"
 #include "zend_execute.h"
 #include "zend_gc.h"
+#include "zend_globals.h" // struct _zend_compiler_globals
+#include "zend_globals_macros.h" // for CG()
 #include "zend_hash.h"
 #include "zend_object_handlers.h"
+#include "zend_objects.h" // for zend_objects_new()
 #include "zend_objects_API.h"
 #include "zend_operators.h"
 #include "zend_types.h"
