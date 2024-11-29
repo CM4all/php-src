@@ -141,6 +141,10 @@ static char *sapi_was_getenv(const char *name, size_t name_len)
 static bool send_was_header(struct was_simple *w,
 			    const char *data, size_t length)
 {
+	if (length > 0xffff)
+		/* the WAS protocol is limited by its 16 bit "length" field */
+		return false;
+
 	const char *const end = data + length;
 	const char *colon = memchr(data, ':', length);
 	if (colon == NULL || colon == data)
