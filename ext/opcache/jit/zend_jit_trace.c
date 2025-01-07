@@ -4648,7 +4648,7 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 						if (opline->op1_type == IS_UNUSED) {
 							op1_info = MAY_BE_OBJECT|MAY_BE_RC1|MAY_BE_RCN;
 							ce = op_array->scope;
-							ce_is_instanceof = (ce->ce_flags & ZEND_ACC_FINAL) != 0;
+							ce_is_instanceof = !(ce->ce_flags & ZEND_ACC_FINAL);
 							op1_addr = 0;
 							on_this = 1;
 						} else {
@@ -4739,7 +4739,7 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 						if (opline->op1_type == IS_UNUSED) {
 							op1_info = MAY_BE_OBJECT|MAY_BE_RC1|MAY_BE_RCN;
 							ce = op_array->scope;
-							ce_is_instanceof = (ce->ce_flags & ZEND_ACC_FINAL) != 0;
+							ce_is_instanceof = !(ce->ce_flags & ZEND_ACC_FINAL);
 							op1_addr = 0;
 							on_this = 1;
 						} else {
@@ -4819,7 +4819,7 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 						if (opline->op1_type == IS_UNUSED) {
 							op1_info = MAY_BE_OBJECT|MAY_BE_RC1|MAY_BE_RCN;
 							ce = op_array->scope;
-							ce_is_instanceof = (ce->ce_flags & ZEND_ACC_FINAL) != 0;
+							ce_is_instanceof = !(ce->ce_flags & ZEND_ACC_FINAL);
 							op1_addr = 0;
 							on_this = 1;
 						} else {
@@ -5404,6 +5404,9 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 							res_type = Z_TYPE_P(RT_CONSTANT(opline, opline->op1));
 						} else if (op1_type != IS_UNKNOWN) {
 							res_type = op1_type;
+							if (res_type == IS_UNDEF) {
+								res_type = IS_NULL;
+							}
 						}
 						if (op_array->type == ZEND_EVAL_CODE
 						 // TODO: support for top-level code
@@ -5839,7 +5842,7 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 						if (opline->op1_type == IS_UNUSED) {
 							op1_info = MAY_BE_OBJECT|MAY_BE_RC1|MAY_BE_RCN;
 							ce = op_array->scope;
-							ce_is_instanceof = (ce->ce_flags & ZEND_ACC_FINAL) != 0;
+							ce_is_instanceof = !(ce->ce_flags & ZEND_ACC_FINAL);
 							op1_addr = 0;
 							on_this = 1;
 						} else {
@@ -6118,7 +6121,7 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 						if (opline->op1_type == IS_UNUSED) {
 							op1_info = MAY_BE_OBJECT|MAY_BE_RC1|MAY_BE_RCN;
 							ce = op_array->scope;
-							ce_is_instanceof = (ce->ce_flags & ZEND_ACC_FINAL) != 0;
+							ce_is_instanceof = !(ce->ce_flags & ZEND_ACC_FINAL);
 							op1_addr = 0;
 							on_this = 1;
 						} else {
@@ -7164,6 +7167,11 @@ static zend_jit_trace_stop zend_jit_compile_root_trace(zend_jit_trace_rec *trace
 			t->polymorphism = 0;
 			t->jmp_table_size = 0;
 			t->op_array = trace_buffer[0].op_array;
+			if (!(t->op_array->fn_flags & ZEND_ACC_IMMUTABLE)) {
+				zend_jit_op_array_trace_extension *jit_extension =
+					(zend_jit_op_array_trace_extension*)ZEND_FUNC_INFO(t->op_array);
+				t->op_array = jit_extension->op_array;
+			}
 			t->opline = trace_buffer[1].opline;
 			t->exit_info = exit_info;
 			t->stack_map = NULL;
