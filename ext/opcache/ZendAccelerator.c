@@ -2202,7 +2202,10 @@ static zend_op_array *persistent_compile_file_inner(zend_file_handle *file_handl
 		 */
 		from_shared_memory = false;
 		if (persistent_script) {
+			/* See GH-17246: we disable GC so that user code cannot be executed during the optimizer run. */
+			bool orig_gc_state = gc_enable(false);
 			persistent_script = cache_script_in_shared_memory(persistent_script, key, &from_shared_memory);
+			gc_enable(orig_gc_state);
 		}
 
 		/* Caching is disabled, returning op_array;

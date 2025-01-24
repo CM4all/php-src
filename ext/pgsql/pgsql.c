@@ -985,12 +985,15 @@ PHP_FUNCTION(pg_query)
 		}
 		link = FETCH_DEFAULT_LINK();
 		CHECK_DEFAULT_LINK(link);
-	} else {
+	} else if (ZEND_NUM_ARGS() == 2) {
 		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os", &pgsql_link, pgsql_link_ce, &query, &query_len) == FAILURE) {
 			RETURN_THROWS();
 		}
 		link = Z_PGSQL_LINK_P(pgsql_link);
 		CHECK_PGSQL_LINK(link);
+	} else {
+		zend_wrong_parameters_count_error(1, 2);
+		RETURN_THROWS();
 	}
 
 	pgsql = link->conn;
@@ -1079,12 +1082,15 @@ PHP_FUNCTION(pg_query_params)
 		}
 		link = FETCH_DEFAULT_LINK();
 		CHECK_DEFAULT_LINK(link);
-	} else {
+	} else if (ZEND_NUM_ARGS() == 3) {
 		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Osa", &pgsql_link, pgsql_link_ce, &query, &query_len, &pv_param_arr) == FAILURE) {
 			RETURN_THROWS();
 		}
 		link = Z_PGSQL_LINK_P(pgsql_link);
 		CHECK_PGSQL_LINK(link);
+	} else {
+		zend_wrong_parameters_count_error(2, 3);
+		RETURN_THROWS();
 	}
 
 	pgsql = link->conn;
@@ -1184,12 +1190,15 @@ PHP_FUNCTION(pg_prepare)
 		}
 		link = FETCH_DEFAULT_LINK();
 		CHECK_DEFAULT_LINK(link);
-	} else {
+	} else if (ZEND_NUM_ARGS() == 3) {
 		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Oss", &pgsql_link, pgsql_link_ce, &stmtname, &stmtname_len, &query, &query_len) == FAILURE) {
 			RETURN_THROWS();
 		}
 		link = Z_PGSQL_LINK_P(pgsql_link);
 		CHECK_PGSQL_LINK(link);
+	} else {
+		zend_wrong_parameters_count_error(2, 3);
+		RETURN_THROWS();
 	}
 
 	pgsql = link->conn;
@@ -1265,12 +1274,15 @@ PHP_FUNCTION(pg_execute)
 		}
 		link = FETCH_DEFAULT_LINK();
 		CHECK_DEFAULT_LINK(link);
-	} else {
+	} else if (ZEND_NUM_ARGS() == 3) {
 		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Osa", &pgsql_link, pgsql_link_ce, &stmtname, &stmtname_len, &pv_param_arr) == FAILURE) {
 			RETURN_THROWS();
 		}
 		link = Z_PGSQL_LINK_P(pgsql_link);
 		CHECK_PGSQL_LINK(link);
+	} else {
+		zend_wrong_parameters_count_error(2, 3);
+		RETURN_THROWS();
 	}
 
 	pgsql = link->conn;
@@ -1711,7 +1723,7 @@ PHP_FUNCTION(pg_fetch_result)
 			Z_PARAM_OBJECT_OF_CLASS(result, pgsql_result_ce)
 			Z_PARAM_STR_OR_LONG(field_name, field_offset)
 		ZEND_PARSE_PARAMETERS_END();
-	} else {
+	} else if (ZEND_NUM_ARGS() == 3) {
 		ZEND_PARSE_PARAMETERS_START(3, 3)
 			Z_PARAM_OBJECT_OF_CLASS(result, pgsql_result_ce)
 			if (zend_string_equals_literal(EG(current_execute_data)->func->common.function_name, "pg_result")) {
@@ -1721,6 +1733,9 @@ PHP_FUNCTION(pg_fetch_result)
 			}
 			Z_PARAM_STR_OR_LONG(field_name, field_offset)
 		ZEND_PARSE_PARAMETERS_END();
+	} else {
+		zend_wrong_parameters_count_error(2, 3);
+		RETURN_THROWS();
 	}
 
 	pg_result = Z_PGSQL_RESULT_P(result);
@@ -2022,7 +2037,7 @@ static void php_pgsql_data_info(INTERNAL_FUNCTION_PARAMETERS, int entry_type, bo
 			Z_PARAM_OBJECT_OF_CLASS(result, pgsql_result_ce)
 			Z_PARAM_STR_OR_LONG(field_name, field_offset)
 		ZEND_PARSE_PARAMETERS_END();
-	} else {
+	} else if (ZEND_NUM_ARGS() == 3) {
 		ZEND_PARSE_PARAMETERS_START(3, 3)
 			Z_PARAM_OBJECT_OF_CLASS(result, pgsql_result_ce)
 			if (nullable_row) {
@@ -2032,6 +2047,9 @@ static void php_pgsql_data_info(INTERNAL_FUNCTION_PARAMETERS, int entry_type, bo
 			}
 			Z_PARAM_STR_OR_LONG(field_name, field_offset)
 		ZEND_PARSE_PARAMETERS_END();
+	} else {
+		zend_wrong_parameters_count_error(2, 3);
+		RETURN_THROWS();
 	}
 
 	pg_result = Z_PGSQL_RESULT_P(result);
@@ -2847,12 +2865,15 @@ PHP_FUNCTION(pg_set_error_verbosity)
 		}
 		link = FETCH_DEFAULT_LINK();
 		CHECK_DEFAULT_LINK(link);
-	} else {
+	} else if (ZEND_NUM_ARGS() == 2) {
 		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Ol", &pgsql_link, pgsql_link_ce, &verbosity) == FAILURE) {
 			RETURN_THROWS();
 		}
 		link = Z_PGSQL_LINK_P(pgsql_link);
 		CHECK_PGSQL_LINK(link);
+	} else {
+		zend_wrong_parameters_count_error(1, 2);
+		RETURN_THROWS();
 	}
 
 	pgsql = link->conn;
@@ -2905,12 +2926,15 @@ PHP_FUNCTION(pg_set_client_encoding)
 		}
 		link = FETCH_DEFAULT_LINK();
 		CHECK_DEFAULT_LINK(link);
-	} else {
+	} else if (ZEND_NUM_ARGS() == 2) {
 		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os", &pgsql_link, pgsql_link_ce, &encoding, &encoding_len) == FAILURE) {
 			RETURN_THROWS();
 		}
 		link = Z_PGSQL_LINK_P(pgsql_link);
 		CHECK_PGSQL_LINK(link);
+	} else {
+		zend_wrong_parameters_count_error(1, 2);
+		RETURN_THROWS();
 	}
 
 	pgsql = link->conn;
@@ -2994,12 +3018,15 @@ PHP_FUNCTION(pg_put_line)
 		}
 		link = FETCH_DEFAULT_LINK();
 		CHECK_DEFAULT_LINK(link);
-	} else {
+	} else if (ZEND_NUM_ARGS() == 2) {
 		if (zend_parse_parameters(ZEND_NUM_ARGS(), "Os", &pgsql_link, pgsql_link_ce, &query, &query_len) == FAILURE) {
 			RETURN_THROWS();
 		}
 		link = Z_PGSQL_LINK_P(pgsql_link);
 		CHECK_PGSQL_LINK(link);
+	} else {
+		zend_wrong_parameters_count_error(1, 2);
+		RETURN_THROWS();
 	}
 
 	pgsql = link->conn;

@@ -1482,7 +1482,10 @@ static zend_always_inline zval *zend_try_array_init_size(zval *zv, uint32_t size
 		}
 		zv = &ref->val;
 	}
-	zval_ptr_dtor(zv);
+	zval garbage;
+	ZVAL_COPY_VALUE(&garbage, zv);
+	ZVAL_NULL(zv);
+	zval_ptr_dtor(&garbage);
 	ZVAL_ARR(zv, arr);
 	return zv;
 }
