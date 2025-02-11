@@ -3752,6 +3752,12 @@ static uint32_t zend_compile_args(
 					"Cannot use argument unpacking after named arguments");
 			}
 
+			/* Unpack may contain named arguments. */
+			may_have_undef = 1;
+			if (!fbc || (fbc->common.fn_flags & ZEND_ACC_VARIADIC)) {
+				*may_have_extra_named_args = 1;
+			}
+
 			uses_arg_unpack = 1;
 			fbc = NULL;
 
@@ -3760,11 +3766,6 @@ static uint32_t zend_compile_args(
 			opline->op2.num = arg_count;
 			opline->result.var = EX_NUM_TO_VAR(arg_count - 1);
 
-			/* Unpack may contain named arguments. */
-			may_have_undef = 1;
-			if (!fbc || (fbc->common.fn_flags & ZEND_ACC_VARIADIC)) {
-				*may_have_extra_named_args = 1;
-			}
 			continue;
 		}
 
@@ -5097,7 +5098,8 @@ static bool zend_compile_parent_property_hook_call(znode *result, zend_ast *ast,
 		zend_error_noreturn(E_COMPILE_ERROR, "Cannot create Closure for parent property hook call");
 	}
 
-	zend_string *property_name = zend_ast_get_str(class_ast->child[1]);
+	zval *property_hook_name_zv = zend_ast_get_zval(class_ast->child[1]);
+	zend_string *property_name = zval_get_string(property_hook_name_zv);
 	zend_string *hook_name = zend_ast_get_str(method_ast);
 	zend_property_hook_kind hook_kind = zend_get_property_hook_kind_from_name(hook_name);
 	ZEND_ASSERT(hook_kind != (uint32_t)-1);
@@ -5121,7 +5123,6 @@ static bool zend_compile_parent_property_hook_call(znode *result, zend_ast *ast,
 	zend_op *opline = get_next_op();
 	opline->opcode = ZEND_INIT_PARENT_PROPERTY_HOOK_CALL;
 	opline->op1_type = IS_CONST;
-	zend_string_copy(property_name);
 	opline->op1.constant = zend_add_literal_string(&property_name);
 	opline->op2.num = hook_kind;
 
@@ -8633,6 +8634,13 @@ static void zend_compile_prop_decl(zend_ast *ast, zend_ast *type_ast, uint32_t f
 		zend_type type = ZEND_TYPE_INIT_NONE(0);
 		flags |= zend_property_is_virtual(ce, name, hooks_ast, flags) ? ZEND_ACC_VIRTUAL : 0;
 
+		/* FIXME: This is a dirty fix to maintain ABI compatibility. We don't
+		 * have an actual property info yet, but we really only need the name
+		 * anyway. We should convert this to a zend_string. */
+		ZEND_ASSERT(!CG(context).active_property_info);
+		zend_property_info dummy_prop_info = { .name = name };
+		CG(context).active_property_info = &dummy_prop_info;
+
 		if (!hooks_ast) {
 			if (ce->ce_flags & ZEND_ACC_INTERFACE) {
 				zend_error_noreturn(E_COMPILE_ERROR,
@@ -8725,6 +8733,8 @@ static void zend_compile_prop_decl(zend_ast *ast, zend_ast *type_ast, uint32_t f
 		if (attr_ast) {
 			zend_compile_attributes(&info->attributes, attr_ast, 0, ZEND_ATTRIBUTE_TARGET_PROPERTY, 0);
 		}
+
+		CG(context).active_property_info = NULL;
 	}
 }
 /* }}} */

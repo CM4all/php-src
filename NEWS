@@ -1,6 +1,125 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-16 Jan 2025, PHP 8.4.3
+13 Feb 2025, PHP 8.4.4
+
+- Core:
+  . Fixed bug GH-17234 (Numeric parent hook call fails with assertion).
+    (nielsdos)
+  . Fixed bug GH-16892 (ini_parse_quantity() fails to parse inputs starting
+    with 0x0b). (nielsdos)
+  . Fixed bug GH-16886 (ini_parse_quantity() fails to emit warning for 0x+0).
+    (nielsdos)
+  . Fixed bug GH-17222 (__PROPERTY__ magic constant does not work in all
+    constant expression contexts). (ilutov)
+  . Fixed bug GH-17214 (Relax final+private warning for trait methods with
+    inherited final). (ilutov)
+  . Fixed NULL arithmetic during system program execution on Windows. (cmb,
+    nielsdos)
+  . Fixed potential OOB when checking for trailing spaces on Windows. (cmb)
+  . Fixed bug GH-17408 (Assertion failure Zend/zend_exceptions.c).
+    (nielsdos, ilutov)
+  . Fix may_have_extra_named_args flag for ZEND_AST_UNPACK. (nielsdos)
+  . Fix NULL arithmetic in System V shared memory emulation for Windows. (cmb)
+  . Fixed bug GH-17597 (#[\Deprecated] does not work for __call() and
+    __callStatic()). (timwolla)
+
+- DOM:
+  . Fixed bug GH-17397 (Assertion failure ext/dom/php_dom.c). (nielsdos)
+  . Fixed bug GH-17486 (Incorrect error line numbers reported in
+    Dom\HTMLDocument::createFromString). (nielsdos)
+  . Fixed bug GH-17481 (UTF-8 corruption in \Dom\HTMLDocument). (nielsdos)
+  . Fixed bug GH-17500 (Segfault with requesting nodeName on nameless doctype).
+    (nielsdos)
+  . Fixed bug GH-17485 (upstream fix, Self-closing tag on void elements
+    shouldn't be a parse error/warning in \Dom\HTMLDocument). (lexborisov)
+  . Fixed bug GH-17572 (getElementsByTagName returns collections with
+    tagName-based indexing). (nielsdos)
+
+- Enchant:
+  . Fix crashes in enchant when passing null bytes. (nielsdos)
+
+- FTP:
+  . Fixed bug GH-16800 (ftp functions can abort with EINTR). (nielsdos)
+
+- GD:
+  . Fixed bug GH-17349 (Tiled truecolor filling looses single color
+    transparency). (cmb)
+  . Fixed bug GH-17373 (imagefttext() ignores clipping rect for palette
+    images). (cmb)
+  . Ported fix for libgd 223 (gdImageRotateGeneric() does not properly
+    interpolate). (cmb)
+  . Added support for reading GIFs without colormap to bundled libgd. (Andrew
+    Burley, cmb)
+
+- Gettext:
+  . Fixed bug GH-17400 (bindtextdomain SEGV on invalid domain).
+    (David Carlier)
+
+- Intl:
+  . Fixed bug GH-11874 (intl causing segfault in docker images). (nielsdos)
+ 
+- Opcache:
+  . Fixed bug GH-15981 (Segfault with frameless jumps and minimal JIT).
+    (nielsdos)
+  . Fixed bug GH-17307 (Internal closure causes JIT failure). (nielsdos)
+  . Fixed bug GH-17428 (Assertion failure ext/opcache/jit/zend_jit_ir.c:8940).
+    (nielsdos)
+  . Fixed bug GH-17564 (Potential UB when reading from / writing to struct
+    padding). (ilutov)
+
+- PCNTL:
+  . Fixed pcntl_setcpuaffinity exception type from ValueError to TypeError for
+    the cpu mask argument with entries type different than int/string.
+    (David Carlier)
+
+- PCRE:
+  . Fixed bug GH-17122 (memory leak in regex). (nielsdos)
+
+- PDO:
+  . Fixed a memory leak when the GC is used to free a PDOStatment. (Girgias)
+  . Fixed a crash in the PDO Firebird Statement destructor. (nielsdos)
+  . Fixed UAFs when changing default fetch class ctor args. (Girgias, nielsdos)
+
+- PgSql:
+  . Fixed build failure when the constant PGRES_TUPLES_CHUNK is not present
+    in the system. (chschneider)
+
+- Phar:
+  . Fixed bug GH-17518 (offset overflow phar extractTo()). (nielsdos)
+
+- PHPDBG:
+  . Fix crashes in function registration + test. (nielsdos, Girgias)
+
+- Session:
+  . Fix type confusion with session SID constant. (nielsdos)
+  . Fixed bug GH-17541 (ext/session NULL pointer dereferencement during
+    ID reset). (Girgias)
+
+- SimpleXML:
+  . Fixed bug GH-17409 (Assertion failure Zend/zend_hash.c:1730). (nielsdos)
+
+- SNMP:
+  . Fixed bug GH-17330 (SNMP::setSecurity segfault on closed session).
+    (David Carlier)
+
+- SPL:
+  . Fixed bug GH-15833 (Segmentation fault (access null pointer) in
+    ext/spl/spl_array.c). (nielsdos)
+  . Fixed bug GH-17516 (SplFileTempObject::getPathInfo() Undefined behavior
+    on invalid class). (David Carlier)
+
+- Standard:
+  . Fixed bug GH-17447 (Assertion failure when array popping a self addressing
+    variable). (nielsdos)
+
+- Windows:
+  . Fixed clang compiler detection. (cmb)
+
+- Zip:
+  . Fixed bug GH-17139 (Fix zip_entry_name() crash on invalid entry).
+    (nielsdos)
+
+02 Jan 2025, PHP 8.4.3
 
 - BcMath:
   . Fixed bug GH-17049 (Correctly compare 0 and -0). (Saki Takamachi)
