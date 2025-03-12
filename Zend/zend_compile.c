@@ -1035,10 +1035,17 @@ uint32_t zend_add_member_modifier(uint32_t flags, uint32_t new_flag, zend_modifi
 			"Multiple readonly modifiers are not allowed", 0);
 		return 0;
 	}
-	if (target == ZEND_MODIFIER_TARGET_METHOD && (new_flags & ZEND_ACC_ABSTRACT) && (new_flags & ZEND_ACC_FINAL)) {
-		zend_throw_exception(zend_ce_compile_error,
-			"Cannot use the final modifier on an abstract method", 0);
-		return 0;
+	if ((new_flags & ZEND_ACC_ABSTRACT) && (new_flags & ZEND_ACC_FINAL)) {
+		if (target == ZEND_MODIFIER_TARGET_METHOD) {
+			zend_throw_exception(zend_ce_compile_error,
+				"Cannot use the final modifier on an abstract method", 0);
+			return 0;
+		}
+		if (target == ZEND_MODIFIER_TARGET_PROPERTY) {
+			zend_throw_exception(zend_ce_compile_error,
+				"Cannot use the final modifier on an abstract property", 0);
+			return 0;
+		}
 	}
 	if (target == ZEND_MODIFIER_TARGET_PROPERTY || target == ZEND_MODIFIER_TARGET_CPP) {
 		if ((flags & ZEND_ACC_PPP_SET_MASK) && (new_flag & ZEND_ACC_PPP_SET_MASK)) {
@@ -11632,6 +11639,8 @@ static zend_op *zend_compile_var_inner(znode *result, zend_ast *ast, uint32_t ty
 
 static zend_op *zend_compile_var(znode *result, zend_ast *ast, uint32_t type, bool by_ref) /* {{{ */
 {
+	zend_check_stack_limit();
+
 	uint32_t checkpoint = zend_short_circuiting_checkpoint();
 	zend_op *opcode = zend_compile_var_inner(result, ast, type, by_ref);
 	zend_short_circuiting_commit(checkpoint, result, ast);
@@ -11640,6 +11649,8 @@ static zend_op *zend_compile_var(znode *result, zend_ast *ast, uint32_t type, bo
 
 static zend_op *zend_delayed_compile_var(znode *result, zend_ast *ast, uint32_t type, bool by_ref) /* {{{ */
 {
+	zend_check_stack_limit();
+
 	switch (ast->kind) {
 		case ZEND_AST_VAR:
 			return zend_compile_simple_var(result, ast, type, 1);

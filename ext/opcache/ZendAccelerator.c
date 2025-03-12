@@ -1380,7 +1380,12 @@ zend_string *accel_make_persistent_key(zend_string *str)
 		    EXPECTED((parent_script = zend_get_executed_filename_ex()) != NULL)) {
 
 			parent_script_len = ZSTR_LEN(parent_script);
-			while ((--parent_script_len > 0) && !IS_SLASH(ZSTR_VAL(parent_script)[parent_script_len]));
+			while (parent_script_len > 0) {
+				--parent_script_len;
+				if (IS_SLASH(ZSTR_VAL(parent_script)[parent_script_len])) {
+					break;
+				}
+			}
 
 			if (UNEXPECTED((size_t)(key_length + parent_script_len + 1) >= ZCG_KEY_LEN)) {
 				return NULL;
@@ -2744,6 +2749,7 @@ static void zend_reset_cache_vars(void)
 	ZCSG(restart_pending) = false;
 	ZCSG(force_restart_time) = 0;
 	ZCSG(map_ptr_last) = CG(map_ptr_last);
+	ZCSG(map_ptr_static_last) = zend_map_ptr_static_last;
 }
 
 static void accel_reset_pcre_cache(void)
@@ -2759,7 +2765,7 @@ static void accel_reset_pcre_cache(void)
 	} ZEND_HASH_FOREACH_END();
 }
 
-zend_result accel_activate(INIT_FUNC_ARGS)
+ZEND_RINIT_FUNCTION(zend_accelerator)
 {
 	if (!ZCG(enabled) || !accel_startup_ok) {
 		ZCG(accelerator_enabled) = false;
@@ -3092,12 +3098,15 @@ static void accel_globals_ctor(zend_accel_globals *accel_globals)
 	GC_MAKE_PERSISTENT_LOCAL(accel_globals->key);
 }
 
-#ifdef ZTS
 static void accel_globals_dtor(zend_accel_globals *accel_globals)
 {
+#ifdef ZTS
 	zend_string_free(accel_globals->key);
-}
 #endif
+	if (accel_globals->preloaded_internal_run_time_cache) {
+		pefree(accel_globals->preloaded_internal_run_time_cache, 1);
+	}
+}
 
 static int accel_startup(zend_extension *extension)
 {
@@ -3357,6 +3366,8 @@ void accel_shutdown(void)
 	if (!ZCG(enabled) || !accel_startup_ok) {
 #ifdef ZTS
 		ts_free_id(accel_globals_id);
+#else
+		accel_globals_dtor(&accel_globals);
 #endif
 		return;
 	}
@@ -3371,6 +3382,8 @@ void accel_shutdown(void)
 
 #ifdef ZTS
 	ts_free_id(accel_globals_id);
+#else
+	accel_globals_dtor(&accel_globals);
 #endif
 
 	if (!_file_cache_only) {
@@ -4268,7 +4281,7 @@ static zend_persistent_script* preload_script_in_shared_memory(zend_persistent_s
 	return new_persistent_script;
 }
 
-static void preload_load(void)
+static void preload_load(size_t orig_map_ptr_static_last)
 {
 	/* Load into process tables */
 	zend_script *script = &ZCSG(preload_script)->script;
@@ -4303,14 +4316,42 @@ static void preload_load(void)
 	if (EG(class_table)) {
 		EG(persistent_classes_count)   = EG(class_table)->nNumUsed;
 	}
-	if (CG(map_ptr_last) != ZCSG(map_ptr_last)) {
-		size_t old_map_ptr_last = CG(map_ptr_last);
+
+	size_t old_map_ptr_last = CG(map_ptr_last);
+	if (zend_map_ptr_static_last != ZCSG(map_ptr_static_last) || old_map_ptr_last != ZCSG(map_ptr_last)) {
 		CG(map_ptr_last) = ZCSG(map_ptr_last);
-		CG(map_ptr_size) = ZEND_MM_ALIGNED_SIZE_EX(CG(map_ptr_last) + 1, 4096);
-		CG(map_ptr_real_base) = perealloc(CG(map_ptr_real_base), CG(map_ptr_size) * sizeof(void*), 1);
+		CG(map_ptr_size) = ZEND_MM_ALIGNED_SIZE_EX(ZCSG(map_ptr_last) + 1, 4096);
+		zend_map_ptr_static_last = ZCSG(map_ptr_static_last);
+
+		/* Grow map_ptr table as needed, but allocate once for static + regular map_ptrs */
+		size_t new_static_size = ZEND_MM_ALIGNED_SIZE_EX(zend_map_ptr_static_last, 4096);
+		if (zend_map_ptr_static_size != new_static_size) {
+			void *new_base = pemalloc((new_static_size + CG(map_ptr_size)) * sizeof(void *), 1);
+			if (CG(map_ptr_real_base)) {
+				memcpy((void **) new_base + new_static_size - zend_map_ptr_static_size, CG(map_ptr_real_base), (old_map_ptr_last + zend_map_ptr_static_size) * sizeof(void *));
+				pefree(CG(map_ptr_real_base), 1);
+			}
+			CG(map_ptr_real_base) = new_base;
+			zend_map_ptr_static_size = new_static_size;
+		} else {
+			CG(map_ptr_real_base) = perealloc(CG(map_ptr_real_base), (zend_map_ptr_static_size + CG(map_ptr_size)) * sizeof(void *), 1);
+		}
+
+		memset((void **) CG(map_ptr_real_base) + zend_map_ptr_static_size + old_map_ptr_last, 0, (CG(map_ptr_last) - old_map_ptr_last) * sizeof(void *));
 		CG(map_ptr_base) = ZEND_MAP_PTR_BIASED_BASE(CG(map_ptr_real_base));
-		memset((void **) CG(map_ptr_real_base) + old_map_ptr_last, 0,
-			(CG(map_ptr_last) - old_map_ptr_last) * sizeof(void *));
+	}
+
+	if (orig_map_ptr_static_last != zend_map_ptr_static_last) {
+		/* preloaded static entries currently are all runtime cache pointers, just assign them as such */
+		size_t runtime_cache_size = zend_internal_run_time_cache_reserved_size();
+		ZCG(preloaded_internal_run_time_cache_size) = (zend_map_ptr_static_last - orig_map_ptr_static_last) * runtime_cache_size;
+		char *cache = pemalloc(ZCG(preloaded_internal_run_time_cache_size), 1);
+		ZCG(preloaded_internal_run_time_cache) = cache;
+
+		for (size_t cur_static_map_ptr = orig_map_ptr_static_last; cur_static_map_ptr < zend_map_ptr_static_last; ++cur_static_map_ptr) {
+            *ZEND_MAP_PTR_STATIC_NUM_TO_PTR(cur_static_map_ptr) = cache;
+			cache += runtime_cache_size;
+		}
 	}
 }
 
@@ -4319,7 +4360,7 @@ static zend_result accel_preload(const char *config, bool in_child)
 	zend_file_handle file_handle;
 	zend_result ret;
 	char *orig_open_basedir;
-	size_t orig_map_ptr_last;
+	size_t orig_map_ptr_last, orig_map_ptr_static_last;
 	uint32_t orig_compiler_options;
 
 	ZCG(enabled) = false;
@@ -4330,6 +4371,7 @@ static zend_result accel_preload(const char *config, bool in_child)
 	accelerator_orig_compile_file = preload_compile_file;
 
 	orig_map_ptr_last = CG(map_ptr_last);
+	orig_map_ptr_static_last = zend_map_ptr_static_last;
 
 	/* Compile and execute preloading script */
 	zend_stream_init_filename(&file_handle, (char *) config);
@@ -4509,7 +4551,7 @@ static zend_result accel_preload(const char *config, bool in_child)
 		SHM_PROTECT();
 		HANDLE_UNBLOCK_INTERRUPTIONS();
 
-		preload_load();
+		preload_load(orig_map_ptr_static_last);
 
 		/* Store individual scripts with unlinked classes */
 		HANDLE_BLOCK_INTERRUPTIONS();
@@ -4780,7 +4822,7 @@ static zend_result accel_finish_startup(void)
 
 	if (ZCSG(preload_script)) {
 		/* Preloading was done in another process */
-		preload_load();
+		preload_load(zend_map_ptr_static_last);
 		zend_shared_alloc_unlock();
 		return SUCCESS;
 	}
@@ -4808,7 +4850,7 @@ static zend_result accel_finish_startup(void)
 		}
 
 		if (ZCSG(preload_script)) {
-			preload_load();
+			preload_load(zend_map_ptr_static_last);
 		}
 
 		zend_shared_alloc_unlock();
@@ -4822,6 +4864,12 @@ static zend_result accel_finish_startup(void)
 #endif /* ZEND_WIN32 */
 }
 
+static void accel_activate(void) {
+	if (ZCG(preloaded_internal_run_time_cache)) {
+		memset(ZCG(preloaded_internal_run_time_cache), 0, ZCG(preloaded_internal_run_time_cache_size));
+	}
+}
+
 ZEND_EXT_API zend_extension opcache_zend_extension_entry = {
 	ACCELERATOR_PRODUCT_NAME,               /* name */
 	PHP_VERSION,							/* version */
@@ -4830,7 +4878,7 @@ ZEND_EXT_API zend_extension opcache_zend_extension_entry = {
 	"Copyright (c)",						/* copyright */
 	accel_startup,					   		/* startup */
 	NULL,									/* shutdown */
-	NULL,									/* per-script activation */
+	accel_activate,							/* per-script activation */
 #ifdef HAVE_JIT
 	accel_deactivate,                       /* per-script deactivation */
 #else
