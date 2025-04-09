@@ -454,7 +454,7 @@ zend_property_hook_kind zend_get_property_hook_kind_from_name(zend_string *name)
 #define OBJ_PROP_TO_OFFSET(num) \
 	((uint32_t)(XtOffsetOf(zend_object, properties_table) + sizeof(zval) * (num)))
 #define OBJ_PROP_TO_NUM(offset) \
-	((offset - OBJ_PROP_TO_OFFSET(0)) / sizeof(zval))
+	(((offset) - OBJ_PROP_TO_OFFSET(0)) / sizeof(zval))
 
 typedef struct _zend_class_constant {
 	zval value; /* flags are stored in u2 */

@@ -82,6 +82,8 @@ ZEND_API size_t zend_object_properties_size(zend_class_entry *ce);
 
 ZEND_API void *zend_object_alloc(size_t obj_size, zend_class_entry *ce);
 
+ZEND_API ZEND_COLD zend_property_info *zend_get_property_info_for_slot_slow(zend_object *obj, zval *slot);
+
 /* Use when 'slot' was obtained directly from obj->properties_table, or when
  * 'obj' can not be lazy. Otherwise, use zend_get_property_info_for_slot(). */
 ZEND_API ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_property_info_for_slot_self(zend_object *obj, zval *slot);

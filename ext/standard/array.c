@@ -6629,7 +6629,8 @@ static zend_result php_array_find(const HashTable *array, zend_fcall_info fci, z
 		ZVAL_COPY(&args[0], operand);
 
 		zend_result result = zend_call_function(&fci, &fci_cache);
-		if (EXPECTED(result == SUCCESS)) {
+		ZEND_ASSERT(result == SUCCESS);
+		if (EXPECTED(!Z_ISUNDEF(retval))) {
 			int retval_true;
 
 			retval_true = zend_is_true(&retval);
@@ -6657,7 +6658,7 @@ static zend_result php_array_find(const HashTable *array, zend_fcall_info fci, z
 		zval_ptr_dtor(&args[0]);
 		zval_ptr_dtor(&args[1]);
 
-		if (UNEXPECTED(result != SUCCESS)) {
+		if (UNEXPECTED(Z_ISUNDEF(retval))) {
 			return FAILURE;
 		}
 	} ZEND_HASH_FOREACH_END();
@@ -6726,7 +6727,11 @@ PHP_FUNCTION(array_any)
 		RETURN_THROWS();
 	}
 
-	RETURN_BOOL(Z_TYPE_P(return_value) != IS_UNDEF);
+	bool retval = !Z_ISUNDEF_P(return_value);
+	if (Z_TYPE_P(return_value) == IS_STRING) {
+		zval_ptr_dtor_str(return_value);
+	}
+	RETURN_BOOL(retval);
 }
 /* }}} */
 
@@ -6746,7 +6751,11 @@ PHP_FUNCTION(array_all)
 		RETURN_THROWS();
 	}
 
-	RETURN_BOOL(Z_TYPE_P(return_value) == IS_UNDEF);
+	bool retval = Z_ISUNDEF_P(return_value);
+	if (Z_TYPE_P(return_value) == IS_STRING) {
+		zval_ptr_dtor_str(return_value);
+	}
+	RETURN_BOOL(retval);
 }
 /* }}} */
 

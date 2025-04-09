@@ -206,6 +206,18 @@ ZEND_API void ZEND_FASTCALL zend_objects_store_del(zend_object *object) /* {{{ *
 }
 /* }}} */
 
+ZEND_API ZEND_COLD zend_property_info *zend_get_property_info_for_slot_slow(zend_object *obj, zval *slot)
+{
+	uintptr_t offset = (uintptr_t)slot - (uintptr_t)obj->properties_table;
+	zend_property_info *prop_info;
+	ZEND_HASH_MAP_FOREACH_PTR(&obj->ce->properties_info, prop_info) {
+		if (prop_info->offset == offset) {
+			return prop_info;
+		}
+	} ZEND_HASH_FOREACH_END();
+	return NULL;
+}
+
 ZEND_API void zend_object_store_ctor_failed(zend_object *obj)
 {
 	GC_ADD_FLAGS(obj, IS_OBJ_DESTRUCTOR_CALLED);
@@ -238,7 +250,11 @@ ZEND_API ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_property_info_for_slot
 	zend_property_info **table = obj->ce->properties_info_table;
 	intptr_t prop_num = slot - obj->properties_table;
 	ZEND_ASSERT(prop_num >= 0 && prop_num < obj->ce->default_properties_count);
-	return table[prop_num];
+	if (table[prop_num]) {
+		return table[prop_num];
+	} else {
+		return zend_get_property_info_for_slot_slow(obj, slot);
+	}
 }
 
 ZEND_API ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_property_info_for_slot(zend_object *obj, zval *slot)
@@ -249,7 +265,11 @@ ZEND_API ZEND_ATTRIBUTE_PURE zend_property_info *zend_get_property_info_for_slot
 	zend_property_info **table = obj->ce->properties_info_table;
 	intptr_t prop_num = slot - obj->properties_table;
 	ZEND_ASSERT(prop_num >= 0 && prop_num < obj->ce->default_properties_count);
-	return table[prop_num];
+	if (table[prop_num]) {
+		return table[prop_num];
+	} else {
+		return zend_get_property_info_for_slot_slow(obj, slot);
+	}
 }
 
 /* Helper for cases where we're only interested in property info of typed properties. */
