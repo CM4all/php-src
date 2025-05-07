@@ -3452,11 +3452,13 @@ PHP_FUNCTION(pg_copy_from)
 					if (UNEXPECTED(!tmp)) {
 						return;
 					}
-					zend_string *zquery = zend_string_alloc(ZSTR_LEN(tmp) + 1, false);
+					// we give allocation room for a potential command line `\n` terminator addition
+					zend_string *zquery = zend_string_alloc(ZSTR_LEN(tmp) + 2, false);
 					memcpy(ZSTR_VAL(zquery), ZSTR_VAL(tmp), ZSTR_LEN(tmp) + 1);
 					ZSTR_LEN(zquery) = ZSTR_LEN(tmp);
-					if (ZSTR_LEN(tmp) > 0 && ZSTR_VAL(zquery)[ZSTR_LEN(tmp)]  != '\n') {
+					if (ZSTR_LEN(tmp) > 0 && ZSTR_VAL(zquery)[ZSTR_LEN(tmp) - 1]  != '\n') {
 						ZSTR_VAL(zquery)[ZSTR_LEN(tmp)] = '\n';
+						ZSTR_VAL(zquery)[ZSTR_LEN(tmp) + 1] = '\0';
 						ZSTR_LEN(zquery) ++;
 					}
 					if (PQputCopyData(pgsql, ZSTR_VAL(zquery), ZSTR_LEN(zquery)) != 1) {
@@ -6214,7 +6216,7 @@ PHP_FUNCTION(pg_put_copy_end)
 {
 	zval *pgsql_link;
 	pgsql_link_handle *link;
-	zend_string *error;
+	zend_string *error = NULL;
 	char *err = NULL;
 
 	ZEND_PARSE_PARAMETERS_START(1, 2)

@@ -1,5 +1,80 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+?? ??? ????, PHP 8.4.7
+
+- Core:
+  . Fixed bug GH-18038 (Lazy proxy calls magic methods twice). (Arnaud)
+  . Fixed bug GH-18209 (Use-after-free in extract() with EXTR_REFS). (ilutov)
+  . Fixed bug GH-18268 (Segfault in array_walk() on object with added property
+    hooks). (ilutov)
+  . Fixed bug GH-18304 (Changing the properties of a DateInterval through
+    dynamic properties triggers a SegFault). (nielsdos)
+  . Fix some leaks in php_scandir. (nielsdos)
+
+- DBA:
+  . FIxed bug GH-18247 dba_popen() memory leak on invalid path. (David Carlier)
+
+- Filter:
+  . Fixed bug GH-18309 (ipv6 filter integer overflow). (nielsdos)
+
+- GD:
+  . Fixed imagecrop() overflow with rect argument with x/width y/heigh usage
+    in gdImageCrop(). (David Carlier)
+  . Fixed GH-18243 imagettftext() overflow/underflow on font size value.
+    (David Carlier)
+
+- Intl:
+  . Fix reference support for intltz_get_offset(). (nielsdos)
+
+- LDAP:
+  . Fixed bug GH-17776 (LDAP_OPT_X_TLS_* options can't be overridden). (Remi)
+  . Fix NULL deref on high modification key. (nielsdos)
+
+- libxml:
+  . Fixed custom external entity loader returning an invalid resource leading
+    to a confusing TypeError message. (Girgias)
+
+- Opcache:
+  . Fixed bug GH-18294 (assertion failure zend_jit_ir.c). (nielsdos)
+  . Fixed bug GH-18289 (Fix segfault in JIT). (Florian Engelhardt)
+  . Fixed bug GH-18136 (tracing JIT floating point register clobbering on
+    Windows and ARM64). (nielsdos)
+
+- OpenSSL:
+  . Fix memory leak in openssl_sign() when passing invalid algorithm.
+    (nielsdos)
+  . Fix potential leaks when writing to BIO fails. (nielsdos)
+
+- PDO Firebird:
+  . Fixed bug GH-18276 (persistent connection - "zend_mm_heap corrupted"
+    with setAttribute()) (SakiTakamachi).
+  . Fixed bug GH-17383 (PDOException has wrong code and message since PHP 8.4)
+    (SakiTakamachi).
+
+- PDO Sqlite:
+  . Fix memory leak on error return of collation callback. (nielsdos)
+
+- PgSql:
+  . Fix uouv in pg_put_copy_end(). (nielsdos)
+
+- SPL:
+  . Fixed bug GH-18322 (SplObjectStorage debug handler mismanages memory).
+    (nielsdos)
+
+- Standard:
+  . Fixed bug GH-18145 (php8ts crashes in php_clear_stat_cache()).
+    (Jakub Zelenka)
+  . Fix resource leak in iptcembed() on error. (nielsdos)
+
+- Tests:
+  . Address deprecated PHP 8.4 session options to prevent test failures.
+    (willvar)
+
+- Zip:
+  . Fix uouv when handling empty options in ZipArchive::addGlob(). (nielsdos)
+  . Fix memory leak when handling a too long path in ZipArchive::addGlob().
+    (nielsdos)
+
 10 Apr 2025, PHP 8.4.6
 
 - BCMath:
@@ -71,6 +146,10 @@ PHP                                                                        NEWS
 
 - PDO:
   . Fix memory leak when destroying PDORow. (nielsdos)
+
+- PGSQL:
+  . Fixed bug GH-18148 (pg_copy_from() regression with explicit \n terminator
+    due to wrong offset check). (David Carlier)
 
 - Standard:
   . Fix memory leaks in array_any() / array_all(). (nielsdos)
