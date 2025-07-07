@@ -1,5 +1,19 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+03 Jul 2025, PHP 8.1.33
+
+- PGSQL:
+  . Fixed GHSA-hrwm-9436-5mv3 (pgsql extension does not check for errors during
+    escaping). (CVE-2025-1735) (Jakub Zelenka)
+
+- SOAP:
+  . Fixed GHSA-453j-q27h-5p8x (NULL Pointer Dereference in PHP SOAP Extension
+    via Large XML Namespace Prefix). (CVE-2025-6491) (Lekssays, nielsdos)
+
+- Standard:
+  . Fixed GHSA-3cr5-j632-f35r (Null byte termination in hostnames).
+    (CVE-2025-1220) (Jakub Zelenka)
+
 13 Mar 2025, PHP 8.1.32
 
 - LibXML:
@@ -8,7 +22,7 @@ PHP                                                                        NEWS
     when requesting a redirected resource). (CVE-2025-1219) (timwolla)
 
 - Streams:
-  . Fixed GHSA-hgf54-96fm-v528 (Stream HTTP wrapper header check might omit
+  . Fixed GHSA-hgf5-96fm-v528 (Stream HTTP wrapper header check might omit
     basic auth header). (CVE-2025-1736) (Jakub Zelenka)
   . Fixed GHSA-52jp-hrpf-2jff (Stream HTTP wrapper truncate redirect location
     to 1024 bytes). (CVE-2025-1861) (Jakub Zelenka)
@@ -1586,7 +1600,7 @@ PHP                                                                        NEWS
   . Fixed bug GH-7815 (php_uname doesn't recognise latest Windows versions).
     (David Warner)
 
-02 Dec 2021, PHP 8.1.1
+16 Dec 2021, PHP 8.1.1
 
 - IMAP:
   . Fixed bug #81649 (imap_(un)delete accept sequences, not single numbers).
