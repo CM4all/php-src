@@ -186,8 +186,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: 13
-            arch: X64
           - os: 14
             arch: ARM64
     name: MACOS_${{ matrix.arch }}_DEBUG_NTS
@@ -358,6 +356,7 @@ jobs:
     if: github.repository == 'php/php-src' || github.event_name == 'pull_request'
     name: FREEBSD
     runs-on: ubuntu-latest
+    timeout-minutes: 50
     steps:
       - name: git checkout
         uses: actions/checkout@v4
