@@ -708,6 +708,9 @@ RunWas(struct was_simple *w)
 			return false;
 	}
 
+	if (getenv("FREE_AT_EXIT") == NULL)
+		_exit(EXIT_SUCCESS);
+
 	return true;
 }
 
@@ -747,6 +750,9 @@ RunMultiWas(struct was_multi *m)
 
 		was_simple_free(w);
 	}
+
+	if (getenv("FREE_AT_EXIT") == NULL)
+		_exit(EXIT_SUCCESS);
 
 	sigaction(SIGCHLD, &old_sigchld, NULL);
 	return true;
