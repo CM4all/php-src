@@ -17,7 +17,7 @@
 #ifndef SAPI_H
 #define SAPI_H
 
-#include "zend_API.h" // for zend_fcall_info_cache
+#include "zend_fcall_info.h"
 #include "zend_hash.h"
 #include "zend_llist.h"
 #include "zend_stream.h" // for zend_stat_t
