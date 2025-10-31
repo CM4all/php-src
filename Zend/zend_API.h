@@ -27,8 +27,6 @@
 #include "zend_execute.h" // for get_active_function_or_method_name()
 #include "zend_fcall_info.h"
 #include "zend_gc.h" // for zend_get_gc_buffer_add_obj()
-#include "zend_globals.h" // for struct _zend_compiler_globals used by ZEND_MAP_PTR_GET_IMM()
-#include "zend_globals_macros.h" // for CG() used by ZEND_MAP_PTR_GET_IMM()
 #include "zend_modules.h" // for SHUTDOWN_FUNC_ARGS
 #include "zend_object_handlers.h" // for struct _zend_object_handlers
 #include "zend_portability.h" // for BEGIN_EXTERN_C
@@ -430,50 +428,10 @@ ZEND_API void zend_declare_class_constant_string(zend_class_entry *ce, const cha
 ZEND_API zend_result zend_update_class_constant(zend_class_constant *c, const zend_string *name, zend_class_entry *scope);
 ZEND_API zend_result zend_update_class_constants(zend_class_entry *class_type);
 ZEND_API HashTable *zend_separate_class_constants_table(zend_class_entry *class_type);
-
-static zend_always_inline HashTable *zend_class_constants_table(zend_class_entry *ce) {
-	if ((ce->ce_flags & ZEND_ACC_HAS_AST_CONSTANTS) && ZEND_MAP_PTR(ce->mutable_data)) {
-		zend_class_mutable_data *mutable_data =
-			(zend_class_mutable_data*)ZEND_MAP_PTR_GET_IMM(ce->mutable_data);
-		if (mutable_data && mutable_data->constants_table) {
-			return mutable_data->constants_table;
-		} else {
-			return zend_separate_class_constants_table(ce);
-		}
-	} else {
-		return &ce->constants_table;
-	}
-}
-
-static zend_always_inline zval *zend_class_default_properties_table(zend_class_entry *ce) {
-	if ((ce->ce_flags & ZEND_ACC_HAS_AST_PROPERTIES) && ZEND_MAP_PTR(ce->mutable_data)) {
-		zend_class_mutable_data *mutable_data =
-			(zend_class_mutable_data*)ZEND_MAP_PTR_GET_IMM(ce->mutable_data);
-		return mutable_data->default_properties_table;
-	} else {
-		return ce->default_properties_table;
-	}
-}
-
-static zend_always_inline void zend_class_set_backed_enum_table(zend_class_entry *ce, HashTable *backed_enum_table)
-{
-	if (ZEND_MAP_PTR(ce->mutable_data) && ce->type == ZEND_USER_CLASS) {
-		zend_class_mutable_data *mutable_data = (zend_class_mutable_data*)ZEND_MAP_PTR_GET_IMM(ce->mutable_data);
-		mutable_data->backed_enum_table = backed_enum_table;
-	} else {
-		ce->backed_enum_table = backed_enum_table;
-	}
-}
-
-static zend_always_inline HashTable *zend_class_backed_enum_table(zend_class_entry *ce)
-{
-	if (ZEND_MAP_PTR(ce->mutable_data) && ce->type == ZEND_USER_CLASS) {
-		zend_class_mutable_data *mutable_data = (zend_class_mutable_data*)ZEND_MAP_PTR_GET_IMM(ce->mutable_data);
-		return mutable_data->backed_enum_table;
-	} else {
-		return ce->backed_enum_table;
-	}
-}
+ZEND_API HashTable *zend_class_constants_table(zend_class_entry *ce);
+ZEND_API zval *zend_class_default_properties_table(zend_class_entry *ce);
+ZEND_API void zend_class_set_backed_enum_table(zend_class_entry *ce, HashTable *backed_enum_table);
+ZEND_API HashTable *zend_class_backed_enum_table(zend_class_entry *ce);
 
 ZEND_API void zend_update_property_ex(const zend_class_entry *scope, zend_object *object, zend_string *name, zval *value);
 ZEND_API void zend_update_property(const zend_class_entry *scope, zend_object *object, const char *name, size_t name_length, zval *value);
@@ -760,21 +718,7 @@ ZEND_API void zend_detach_symbol_table(zend_execute_data *execute_data);
 ZEND_API zend_result zend_set_local_var(zend_string *name, zval *value, bool force);
 ZEND_API zend_result zend_set_local_var_str(const char *name, size_t len, zval *value, bool force);
 
-static zend_always_inline zend_result zend_forbid_dynamic_call(void)
-{
-	zend_execute_data *ex = EG(current_execute_data);
-	ZEND_ASSERT(ex != NULL && ex->func != NULL);
-
-	if (ZEND_CALL_INFO(ex) & ZEND_CALL_DYNAMIC) {
-		zend_string *function_or_method_name = get_active_function_or_method_name();
-		zend_throw_error(NULL, "Cannot call %.*s() dynamically",
-			(int) ZSTR_LEN(function_or_method_name), ZSTR_VAL(function_or_method_name));
-		zend_string_release(function_or_method_name);
-		return FAILURE;
-	}
-
-	return SUCCESS;
-}
+ZEND_API zend_result zend_forbid_dynamic_call(void);
 
 ZEND_API ZEND_COLD const char *zend_get_object_type_case(const zend_class_entry *ce, bool upper_case);
 
