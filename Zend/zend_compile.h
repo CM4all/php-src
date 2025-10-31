@@ -21,6 +21,7 @@
 #define ZEND_COMPILE_H
 
 #include "zend_ast.h"
+#include "zend_execute_data.h"
 #include "zend_hash.h" // for HashTable
 #include "zend_map_ptr.h"
 #include "zend_alloc.h"
@@ -611,18 +612,6 @@ union _zend_function {
 
 	zend_op_array op_array;
 	zend_internal_function internal_function;
-};
-
-struct _zend_execute_data {
-	const zend_op       *opline;           /* executed opline                */
-	zend_execute_data   *call;             /* current call                   */
-	zval                *return_value;
-	zend_function       *func;             /* executed function              */
-	zval                 This;             /* this + call_info + num_args    */
-	zend_execute_data   *prev_execute_data;
-	zend_array          *symbol_table;
-	void               **run_time_cache;   /* cache op_array->run_time_cache */
-	zend_array          *extra_named_params;
 };
 
 #define ZEND_CALL_HAS_THIS           IS_OBJECT_EX
