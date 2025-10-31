@@ -21,6 +21,8 @@
 #include "zend_hash.h"
 #include "zend_types.h"
 #include "zend_exceptions.h"
+#include "zend_globals.h"
+#include "zend_globals_macros.h"
 #include "zend_string.h"
 
 ZEND_TLS HashTable *zend_class_autoload_functions;
