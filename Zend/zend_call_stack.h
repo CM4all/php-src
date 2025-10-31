@@ -19,7 +19,6 @@
 #ifndef ZEND_CALL_STACK_H
 #define ZEND_CALL_STACK_H
 
-#include "zend.h"
 #include "zend_portability.h"
 #ifdef _MSC_VER
 # include <intrin.h>
@@ -31,6 +30,8 @@
 #ifdef _MSC_VER
 #include <intrin.h>
 #endif
+
+#include <stdint.h>
 
 #ifdef ZEND_CHECK_STACK_LIMIT
 
