@@ -1088,3 +1088,11 @@ ZEND_API bool zend_is_graceful_exit(const zend_object *ex)
 {
 	return ex->ce == &zend_ce_graceful_exit;
 }
+
+ZEND_API void zend_rethrow_exception(zend_execute_data *execute_data)
+{
+	if (EX(opline)->opcode != ZEND_HANDLE_EXCEPTION) {
+		EG(opline_before_exception) = EX(opline);
+		EX(opline) = EG(exception_op);
+	}
+}
