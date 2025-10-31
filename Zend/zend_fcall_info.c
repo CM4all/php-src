@@ -21,6 +21,10 @@
 
 #include "zend_fcall_info.h"
 #include "zend_API.h" // for zend_is_callable_ex()
+#include "zend_compile.h" // for union _zend_function
+#include "zend_globals.h"
+#include "zend_globals_macros.h" // for EG()
+#include "zend_objects_API.h" // for OBJ_RELEASE()
 
 ZEND_API void zend_release_fcall_info_cache(zend_fcall_info_cache *fcc) {
 	if (fcc->function_handler &&
@@ -190,6 +194,56 @@ ZEND_API zend_result zend_fcall_info_call(zend_fcall_info *fci, zend_fcall_info_
 	return result;
 }
 /* }}} */
+
+ZEND_API bool zend_fcc_equals(const zend_fcall_info_cache* a, const zend_fcall_info_cache* b)
+{
+	if (UNEXPECTED((a->function_handler->common.fn_flags & ZEND_ACC_CALL_VIA_TRAMPOLINE) &&
+		(b->function_handler->common.fn_flags & ZEND_ACC_CALL_VIA_TRAMPOLINE))) {
+		return a->object == b->object
+			&& a->calling_scope == b->calling_scope
+			&& a->closure == b->closure
+			&& zend_string_equals(a->function_handler->common.function_name, b->function_handler->common.function_name)
+		;
+	}
+	return a->function_handler == b->function_handler
+		&& a->object == b->object
+		&& a->calling_scope == b->calling_scope
+		&& a->closure == b->closure
+	;
+}
+
+ZEND_API void zend_fcc_addref(zend_fcall_info_cache *fcc)
+{
+	ZEND_ASSERT(ZEND_FCC_INITIALIZED(*fcc) && "FCC Not initialized, possibly refetch trampoline freed by ZPP?");
+	/* If the cached trampoline is set, free it */
+	if (UNEXPECTED(fcc->function_handler == &EG(trampoline))) {
+		zend_function *copy = (zend_function*)emalloc(sizeof(zend_function));
+
+		memcpy(copy, fcc->function_handler, sizeof(zend_function));
+		fcc->function_handler->common.function_name = NULL;
+		fcc->function_handler = copy;
+	}
+	if (fcc->object) {
+		GC_ADDREF(fcc->object);
+	}
+	if (fcc->closure) {
+		GC_ADDREF(fcc->closure);
+	}
+}
+
+ZEND_API void zend_fcc_dtor(zend_fcall_info_cache *fcc)
+{
+	ZEND_ASSERT(fcc->function_handler);
+	if (fcc->object) {
+		OBJ_RELEASE(fcc->object);
+	}
+	/* Need to free potential trampoline (__call/__callStatic) copied function handler before releasing the closure */
+	zend_release_fcall_info_cache(fcc);
+	if (fcc->closure) {
+		OBJ_RELEASE(fcc->closure);
+	}
+	*fcc = empty_fcall_info_cache;
+}
 
 ZEND_API void zend_get_callable_zval_from_fcc(const zend_fcall_info_cache *fcc, zval *callable)
 {
