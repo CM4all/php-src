@@ -2006,3 +2006,19 @@ ZEND_API zend_result zend_set_local_var_str(const char *name, size_t len, zval *
 	return FAILURE;
 }
 /* }}} */
+
+ZEND_API zend_result zend_forbid_dynamic_call(void)
+{
+	zend_execute_data *ex = EG(current_execute_data);
+	ZEND_ASSERT(ex != NULL && ex->func != NULL);
+
+	if (ZEND_CALL_INFO(ex) & ZEND_CALL_DYNAMIC) {
+		zend_string *function_or_method_name = get_active_function_or_method_name();
+		zend_throw_error(NULL, "Cannot call %.*s() dynamically",
+			(int) ZSTR_LEN(function_or_method_name), ZSTR_VAL(function_or_method_name));
+		zend_string_release(function_or_method_name);
+		return FAILURE;
+	}
+
+	return SUCCESS;
+}
