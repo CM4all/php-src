@@ -20,7 +20,12 @@
 #ifndef ZEND_CONSTANTS_H
 #define ZEND_CONSTANTS_H
 
-#include "zend_globals.h"
+#include "zend_portability.h" // for BEGIN_EXTERN_C
+#include "zend_value.h"
+
+typedef struct _zend_array HashTable;
+typedef struct _zend_class_constant zend_class_constant;
+typedef struct _zend_string zend_string;
 
 #define CONST_CS				0					/* No longer used -- always case sensitive */
 #define CONST_PERSISTENT		(1<<0)				/* Persistent */
