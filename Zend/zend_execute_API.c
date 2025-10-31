@@ -607,6 +607,16 @@ ZEND_API zend_function *zend_active_function_ex(zend_execute_data *execute_data)
 	return func;
 }
 
+ZEND_API zend_function *zend_active_function(void)
+{
+	zend_function *func = EG(current_execute_data)->func;
+	if (ZEND_USER_CODE(func->type)) {
+		return zend_active_function_ex(EG(current_execute_data));
+	} else {
+		return func;
+	}
+}
+
 ZEND_API zend_string *get_active_function_or_method_name(void) /* {{{ */
 {
 	ZEND_ASSERT(zend_is_executing());
