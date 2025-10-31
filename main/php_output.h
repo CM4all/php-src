@@ -18,6 +18,7 @@
 #define PHP_OUTPUT_H
 
 #include "Zend/zend_API.h" // for ZEND_BEGIN_MODULE_GLOBALS
+#include "Zend/zend_fcall_info.h"
 
 #define PHP_OUTPUT_NEWAPI 1
 
