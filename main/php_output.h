@@ -17,6 +17,8 @@
 #ifndef PHP_OUTPUT_H
 #define PHP_OUTPUT_H
 
+#include "Zend/zend_API.h" // for ZEND_BEGIN_MODULE_GLOBALS
+
 #define PHP_OUTPUT_NEWAPI 1
 
 /* handler ops */
