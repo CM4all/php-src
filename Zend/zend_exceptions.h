@@ -88,15 +88,7 @@ ZEND_API ZEND_COLD void zend_throw_graceful_exit(void);
 ZEND_API ZEND_ATTRIBUTE_PURE bool zend_is_unwind_exit(const zend_object *ex);
 ZEND_API ZEND_ATTRIBUTE_PURE bool zend_is_graceful_exit(const zend_object *ex);
 
-#include "zend_globals.h"
-
-static zend_always_inline void zend_rethrow_exception(zend_execute_data *execute_data)
-{
-	if (EX(opline)->opcode != ZEND_HANDLE_EXCEPTION) {
-		EG(opline_before_exception) = EX(opline);
-		EX(opline) = EG(exception_op);
-	}
-}
+ZEND_API void zend_rethrow_exception(zend_execute_data *execute_data);
 
 END_EXTERN_C()
 
