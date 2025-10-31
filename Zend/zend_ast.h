@@ -329,7 +329,7 @@ ZEND_API zend_ast *zend_ast_create_decl(
 
 ZEND_API zend_ast * ZEND_FASTCALL zend_ast_create_fcc(void);
 
-typedef struct {
+typedef struct _zend_ast_evaluate_ctx {
 	bool had_side_effects;
 } zend_ast_evaluate_ctx;
 
