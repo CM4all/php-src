@@ -20,6 +20,7 @@
 #include "zend.h"
 #include "zend_attributes.h"
 #include "zend_constants.h"
+#include "zend_error.h"
 #include "zend_exceptions.h"
 #include "zend_execute.h"
 #include "zend_variables.h"
