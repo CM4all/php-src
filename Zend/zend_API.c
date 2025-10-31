@@ -25,6 +25,8 @@
 #include "zend_objects.h" // for zend_objects_new()
 #include "zend_extensions.h"
 #include "zend_constants.h"
+#include "zend_globals.h" // for struct _zend_compiler_globals used by ZEND_MAP_PTR_GET_IMM()
+#include "zend_globals_macros.h" // for CG() used by ZEND_MAP_PTR_GET_IMM()
 #include "zend_interfaces.h" // for zend_ce_stringable
 #include "zend_exceptions.h"
 #include "zend_closures.h" // for zend_ce_closure
@@ -1479,6 +1481,50 @@ ZEND_API HashTable *zend_separate_class_constants_table(zend_class_entry *class_
 	mutable_data->constants_table = constants_table;
 
 	return constants_table;
+}
+
+ZEND_API HashTable *zend_class_constants_table(zend_class_entry *ce) {
+	if ((ce->ce_flags & ZEND_ACC_HAS_AST_CONSTANTS) && ZEND_MAP_PTR(ce->mutable_data)) {
+		zend_class_mutable_data *mutable_data =
+			(zend_class_mutable_data*)ZEND_MAP_PTR_GET_IMM(ce->mutable_data);
+		if (mutable_data && mutable_data->constants_table) {
+			return mutable_data->constants_table;
+		} else {
+			return zend_separate_class_constants_table(ce);
+		}
+	} else {
+		return &ce->constants_table;
+	}
+}
+
+ZEND_API zval *zend_class_default_properties_table(zend_class_entry *ce) {
+	if ((ce->ce_flags & ZEND_ACC_HAS_AST_PROPERTIES) && ZEND_MAP_PTR(ce->mutable_data)) {
+		zend_class_mutable_data *mutable_data =
+			(zend_class_mutable_data*)ZEND_MAP_PTR_GET_IMM(ce->mutable_data);
+		return mutable_data->default_properties_table;
+	} else {
+		return ce->default_properties_table;
+	}
+}
+
+ZEND_API void zend_class_set_backed_enum_table(zend_class_entry *ce, HashTable *backed_enum_table)
+{
+	if (ZEND_MAP_PTR(ce->mutable_data) && ce->type == ZEND_USER_CLASS) {
+		zend_class_mutable_data *mutable_data = (zend_class_mutable_data*)ZEND_MAP_PTR_GET_IMM(ce->mutable_data);
+		mutable_data->backed_enum_table = backed_enum_table;
+	} else {
+		ce->backed_enum_table = backed_enum_table;
+	}
+}
+
+ZEND_API HashTable *zend_class_backed_enum_table(zend_class_entry *ce)
+{
+	if (ZEND_MAP_PTR(ce->mutable_data) && ce->type == ZEND_USER_CLASS) {
+		zend_class_mutable_data *mutable_data = (zend_class_mutable_data*)ZEND_MAP_PTR_GET_IMM(ce->mutable_data);
+		return mutable_data->backed_enum_table;
+	} else {
+		return ce->backed_enum_table;
+	}
 }
 
 static zend_result update_property(zval *val, zend_property_info *prop_info) {
