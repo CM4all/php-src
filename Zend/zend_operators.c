@@ -21,9 +21,13 @@
 #include "zend_operators.h"
 #include "zend.h"
 #include "zend_variables.h"
+#include "zend_object.h"
 #include "zend_objects.h" // for zend_objects_new()
+#include "zend_resource.h"
 #include "zend_globals.h"
+#include "zend_hash.h" // for zend_hash_num_elements()
 #include "zend_multiply.h" // for ZEND_SIGNED_MULTIPLY_LONG()
+#include "zend_object_handlers.h" // for struct _zend_object_handlers
 #include "zend_list.h"
 #include "zend_API.h"
 #include "zend_strtod.h"
@@ -2906,7 +2910,56 @@ try_again:
 
 ZEND_API bool ZEND_FASTCALL zend_is_true(const zval *op) /* {{{ */
 {
-	return i_zend_is_true(op);
+	bool result = 0;
+
+again:
+	switch (Z_TYPE_P(op)) {
+		case IS_TRUE:
+			result = 1;
+			break;
+		case IS_LONG:
+			if (Z_LVAL_P(op)) {
+				result = 1;
+			}
+			break;
+		case IS_DOUBLE:
+			if (UNEXPECTED(zend_isnan(Z_DVAL_P(op)))) {
+				zend_nan_coerced_to_type_warning(_IS_BOOL);
+			}
+			if (Z_DVAL_P(op)) {
+				result = 1;
+			}
+			break;
+		case IS_STRING:
+			if (Z_STRLEN_P(op) > 1 || (Z_STRLEN_P(op) && Z_STRVAL_P(op)[0] != '0')) {
+				result = 1;
+			}
+			break;
+		case IS_ARRAY:
+			if (zend_hash_num_elements(Z_ARRVAL_P(op))) {
+				result = 1;
+			}
+			break;
+		case IS_OBJECT:
+			if (EXPECTED(Z_OBJ_HT_P(op)->cast_object == zend_std_cast_object_tostring)) {
+				result = 1;
+			} else {
+				result = zend_object_is_true(op);
+			}
+			break;
+		case IS_RESOURCE:
+			if (EXPECTED(Z_RES_HANDLE_P(op))) {
+				result = 1;
+			}
+			break;
+		case IS_REFERENCE:
+			op = Z_REFVAL_P(op);
+			goto again;
+			break;
+		default:
+			break;
+	}
+	return result;
 }
 /* }}} */
 
@@ -3884,3 +3937,14 @@ ZEND_API zend_long ZEND_FASTCALL zend_dval_to_lval_slow(double d)
 }
 /* }}} */
 #endif
+
+ZEND_API void zend_unwrap_reference(zval *op) /* {{{ */
+{
+	if (Z_REFCOUNT_P(op) == 1) {
+		ZVAL_UNREF(op);
+	} else {
+		Z_DELREF_P(op);
+		ZVAL_COPY(op, Z_REFVAL_P(op));
+	}
+}
+/* }}} */
