@@ -21,11 +21,7 @@
 #ifndef ZEND_OPERATORS_H
 #define ZEND_OPERATORS_H
 
-#include "zend_hash.h" // for zend_hash_num_elements()
-#include "zend_object.h"
-#include "zend_object_handlers.h" // for struct _zend_object_handlers
 #include "zend_portability.h" // for BEGIN_EXTERN_
-#include "zend_resource.h"
 #include "zend_result.h"
 #include "zend_string.h" // for zend_string_copy()
 #include "zend_value.h"
@@ -52,6 +48,8 @@
 #endif
 
 #define LONG_SIGN_MASK ZEND_LONG_MIN
+
+typedef struct _zend_array HashTable;
 
 BEGIN_EXTERN_C()
 ZEND_API zend_result ZEND_FASTCALL add_function(zval *result, zval *op1, zval *op2);
@@ -410,56 +408,7 @@ ZEND_API bool ZEND_FASTCALL zend_object_is_true(const zval *op);
 
 static zend_always_inline bool i_zend_is_true(const zval *op)
 {
-	bool result = 0;
-
-again:
-	switch (Z_TYPE_P(op)) {
-		case IS_TRUE:
-			result = 1;
-			break;
-		case IS_LONG:
-			if (Z_LVAL_P(op)) {
-				result = 1;
-			}
-			break;
-		case IS_DOUBLE:
-			if (UNEXPECTED(zend_isnan(Z_DVAL_P(op)))) {
-				zend_nan_coerced_to_type_warning(_IS_BOOL);
-			}
-			if (Z_DVAL_P(op)) {
-				result = 1;
-			}
-			break;
-		case IS_STRING:
-			if (Z_STRLEN_P(op) > 1 || (Z_STRLEN_P(op) && Z_STRVAL_P(op)[0] != '0')) {
-				result = 1;
-			}
-			break;
-		case IS_ARRAY:
-			if (zend_hash_num_elements(Z_ARRVAL_P(op))) {
-				result = 1;
-			}
-			break;
-		case IS_OBJECT:
-			if (EXPECTED(Z_OBJ_HT_P(op)->cast_object == zend_std_cast_object_tostring)) {
-				result = 1;
-			} else {
-				result = zend_object_is_true(op);
-			}
-			break;
-		case IS_RESOURCE:
-			if (EXPECTED(Z_RES_HANDLE_P(op))) {
-				result = 1;
-			}
-			break;
-		case IS_REFERENCE:
-			op = Z_REFVAL_P(op);
-			goto again;
-			break;
-		default:
-			break;
-	}
-	return result;
+	return zend_is_true(op);
 }
 
 /* Indicate that two values cannot be compared. This value should be returned for both orderings
@@ -1008,16 +957,7 @@ ZEND_API zend_string* ZEND_FASTCALL zend_u64_to_str(uint64_t num);
 ZEND_API zend_string* ZEND_FASTCALL zend_i64_to_str(int64_t num);
 ZEND_API zend_string* ZEND_FASTCALL zend_double_to_str(double num);
 
-static zend_always_inline void zend_unwrap_reference(zval *op) /* {{{ */
-{
-	if (Z_REFCOUNT_P(op) == 1) {
-		ZVAL_UNREF(op);
-	} else {
-		Z_DELREF_P(op);
-		ZVAL_COPY(op, Z_REFVAL_P(op));
-	}
-}
-/* }}} */
+ZEND_API void zend_unwrap_reference(zval *op);
 
 static zend_always_inline bool zend_strnieq(const char *ptr1, const char *ptr2, size_t num)
 {
