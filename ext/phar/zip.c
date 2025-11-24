@@ -345,29 +345,8 @@ foundit:
 	entry.is_zip = 1;
 	entry.fp_type = PHAR_FP;
 	entry.is_persistent = mydata->is_persistent;
-#define PHAR_ZIP_FAIL_FREE(errmsg, save) \
-			zend_hash_destroy(&mydata->manifest); \
-			HT_INVALIDATE(&mydata->manifest); \
-			zend_hash_destroy(&mydata->mounted_dirs); \
-			HT_INVALIDATE(&mydata->mounted_dirs); \
-			zend_hash_destroy(&mydata->virtual_dirs); \
-			HT_INVALIDATE(&mydata->virtual_dirs); \
-			php_stream_close(fp); \
-			phar_metadata_tracker_free(&mydata->metadata_tracker, mydata->is_persistent); \
-			if (mydata->signature) { \
-				efree(mydata->signature); \
-			} \
-			if (error) { \
-				spprintf(error, 4096, "phar error: %s in zip-based phar \"%s\"", errmsg, mydata->fname); \
-			} \
-			pefree(mydata->fname, mydata->is_persistent); \
-			if (mydata->alias) { \
-				pefree(mydata->alias, mydata->is_persistent); \
-			} \
-			pefree(mydata, mydata->is_persistent); \
-			efree(save); \
-			return FAILURE;
 #define PHAR_ZIP_FAIL(errmsg) \
+			efree(actual_alias); \
 			zend_hash_destroy(&mydata->manifest); \
 			HT_INVALIDATE(&mydata->manifest); \
 			zend_hash_destroy(&mydata->mounted_dirs); \
@@ -521,14 +500,13 @@ foundit:
 			mydata->sig_flags = PHAR_GET_32(sig);
 			if (FAILURE == phar_verify_signature(sigfile, php_stream_tell(sigfile), mydata->sig_flags, sig + 8, entry.uncompressed_filesize - 8, fname, &mydata->signature, &sig_len, error)) {
 				efree(sig);
+				php_stream_close(sigfile);
 				if (error) {
-					char *save;
-					php_stream_close(sigfile);
-					spprintf(&save, 4096, "signature cannot be verified: %s", *error);
+					char errmsg[128];
+					snprintf(errmsg, sizeof(errmsg), "signature cannot be verified: %s", *error);
 					efree(*error);
-					PHAR_ZIP_FAIL_FREE(save, save);
+					PHAR_ZIP_FAIL(errmsg);
 				} else {
-					php_stream_close(sigfile);
 					PHAR_ZIP_FAIL("signature cannot be verified");
 				}
 			}
@@ -673,7 +651,7 @@ foundit:
 					}
 				}
 
-				if (!entry.uncompressed_filesize || !actual_alias) {
+				if (!entry.uncompressed_filesize) {
 					php_stream_filter_remove(filter, 1);
 					pefree(entry.filename, entry.is_persistent);
 					PHAR_ZIP_FAIL("unable to read in alias, truncated");
@@ -706,7 +684,7 @@ foundit:
 					}
 				}
 
-				if (!entry.uncompressed_filesize || !actual_alias) {
+				if (!entry.uncompressed_filesize) {
 					php_stream_filter_remove(filter, 1);
 					pefree(entry.filename, entry.is_persistent);
 					PHAR_ZIP_FAIL("unable to read in alias, truncated");
@@ -729,7 +707,7 @@ foundit:
 					}
 				}
 
-				if (!entry.uncompressed_filesize || !actual_alias) {
+				if (!entry.uncompressed_filesize) {
 					pefree(entry.filename, entry.is_persistent);
 					PHAR_ZIP_FAIL("unable to read in alias, truncated");
 				}
@@ -1298,6 +1276,7 @@ void phar_zip_flush(phar_archive_data *phar, zend_string *user_stub, bool is_def
 			return;
 		}
 		if (phar->alias_len != php_stream_write(entry.fp, phar->alias, phar->alias_len)) {
+			php_stream_close(entry.fp);
 			if (error) {
 				spprintf(error, 0, "unable to set alias in zip-based phar \"%s\"", phar->fname);
 			}
@@ -1422,6 +1401,7 @@ fperror:
 	pass.centralfp = php_stream_fopen_tmpfile();
 
 	if (!pass.centralfp) {
+		php_stream_close(pass.filefp);
 		goto fperror;
 	}
 

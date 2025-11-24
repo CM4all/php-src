@@ -561,6 +561,11 @@ ZEND_API zend_result zend_check_property_access(const zend_object *zobj, zend_st
 				return FAILURE;
 			}
 		} else {
+			/* We were looking for a protected property but found a private one
+			 * belonging to the parent class. */
+			if (property_info->flags & ZEND_ACC_PRIVATE) {
+				return FAILURE;
+			}
 			ZEND_ASSERT(property_info->flags & ZEND_ACC_PROTECTED);
 		}
 		return SUCCESS;
@@ -1778,7 +1783,9 @@ ZEND_API zend_function *zend_get_property_hook_trampoline(
 	const zend_property_info *prop_info,
 	zend_property_hook_kind kind, zend_string *prop_name)
 {
-	static const zend_arg_info arg_info[1] = {{0}};
+	static const zend_internal_arg_info arg_info[2] = {
+		{ .name = "value" }
+	};
 	zend_function *func;
 	if (EXPECTED(EG(trampoline).common.function_name == NULL)) {
 		func = &EG(trampoline);
