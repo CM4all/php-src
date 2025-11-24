@@ -40,6 +40,7 @@
 #ifdef LIBXML_SCHEMAS_ENABLED
 #include <libxml/relaxng.h>
 #include <libxml/xmlschemas.h>
+#include <libxml/xmlschemastypes.h>
 #endif
 
 #ifdef HAVE_JEMALLOC
@@ -956,7 +957,16 @@ PHP_LIBXML_API void php_libxml_initialize(void)
 
 		/* we should be the only one's to ever init!! */
 		ZEND_IGNORE_LEAKS_BEGIN();
+
 		xmlInitParser();
+#ifdef ZTS
+# ifdef LIBXML_SCHEMAS_ENABLED
+		xmlSchemaInitTypes();
+# endif
+# ifdef LIBXML_RELAXNG_ENABLED
+		xmlRelaxNGInitTypes();
+# endif
+#endif
 		ZEND_IGNORE_LEAKS_END();
 
 		_php_libxml_default_entity_loader = xmlGetExternalEntityLoader();

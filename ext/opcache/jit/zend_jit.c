@@ -53,6 +53,10 @@
 #include <errno.h>
 #endif
 
+#if defined(__APPLE__) && defined(__x86_64__)
+# include <mach-o/dyld.h>
+#endif
+
 #ifdef ZTS
 int jit_globals_id;
 #else
