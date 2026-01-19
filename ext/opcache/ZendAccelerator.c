@@ -78,7 +78,6 @@ typedef int gid_t;
 #ifndef ZEND_WIN32
 # include <sys/types.h>
 # include <sys/wait.h>
-# include <sys/ipc.h>
 # include <pwd.h>
 # include <grp.h>
 #endif
