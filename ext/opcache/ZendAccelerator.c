@@ -2107,7 +2107,7 @@ static zend_op_array *persistent_compile_file_inner(zend_file_handle *file_handl
 			/* open file to resolve the path */
 		    if (file_handle->type == ZEND_HANDLE_FILENAME
 		     && accelerator_orig_zend_stream_open_function(file_handle) == FAILURE) {
-				if (!EG(exception)) {
+				if (!EG(exception) && !file_handle->primary_script) {
 					if (type == ZEND_REQUIRE) {
 						zend_message_dispatcher(ZMSG_FAILED_REQUIRE_FOPEN, ZSTR_VAL(filename));
 					} else {
