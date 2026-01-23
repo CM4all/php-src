@@ -455,6 +455,7 @@ static zend_result was_module_main(struct was_simple *w)
 
 	zend_file_handle file_handle;
 	zend_stream_init_filename(&file_handle, SG(request_info).path_translated);
+	file_handle.primary_script = true;
 	php_execute_script(&file_handle);
 	zend_destroy_file_handle(&file_handle);
 
