@@ -689,6 +689,7 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 
 		case 'y':
 			command_line->print_system_id = true;
+			command_line->ini_ignore = true;
 			break;
 
 		case PHP_GETOPT_INVALID_ARG: /* print usage on bad options, exit 1 */
