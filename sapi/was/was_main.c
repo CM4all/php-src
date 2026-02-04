@@ -676,10 +676,6 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 			/* no HTML output, please */
 			php_ini_builder_define(&command_line->ini_builder, "html_errors=0");
 
-			/* we need the opcache extension */
-			php_ini_builder_define(&command_line->ini_builder, "zend_extension=opcache.so");
-			php_ini_builder_define(&command_line->ini_builder, "opcache.enable=1");
-
 			/* this is an arbitrary path (which must
 			   exist); with out this option, opcache
 			   refuses to enable "file_cache_only" */
