@@ -171,9 +171,6 @@ static int sapi_was_send_headers(sapi_headers_struct *sapi_headers)
 		/* special case for "--precompile" mode */
 		return SAPI_HEADER_SENT_SUCCESSFULLY;
 
-	if (SG(sapi_headers).http_response_code == 0)
-		SG(sapi_headers).http_response_code = 200;
-
 	if (!was_simple_status(w, SG(sapi_headers).http_response_code))
 		return SAPI_HEADER_SEND_FAILED;
 
@@ -448,8 +445,7 @@ static void init_request_info(struct was_simple *w, const char *request_uri)
 	const char *content_type = was_simple_get_header(w, "content-type");
 	SG(request_info).content_type = content_type ? content_type : "";
 
-	/* 0 means the http_response_code has not yet been set */
-	SG(sapi_headers).http_response_code = 0;
+	SG(sapi_headers).http_response_code = 200;
 }
 
 static zend_result was_module_main(struct was_simple *w)
@@ -460,16 +456,7 @@ static zend_result was_module_main(struct was_simple *w)
 	zend_file_handle file_handle;
 	zend_stream_init_filename(&file_handle, SG(request_info).path_translated);
 	file_handle.primary_script = true;
-
-	if (!php_execute_script(&file_handle) &&
-	    file_handle.opened_path == NULL &&
-	    SG(sapi_headers).http_response_code == 0) {
-		/* the primary script could not be opened and no
-		   response has been sent: change the HTTP status to
-		   "404 Not Found" */
-		SG(sapi_headers).http_response_code = 404;
-	}
-
+	php_execute_script(&file_handle);
 	zend_destroy_file_handle(&file_handle);
 
 	finish_was_metrics(w);
