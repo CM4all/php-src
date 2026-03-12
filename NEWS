@@ -1,6 +1,59 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-12 Feb 2026, PHP 8.5.3
+12 Mar 2026, PHP 8.5.4
+
+- Core:
+  . Fixed bug GH-21029 (zend_mm_heap corrupted on Aarch64, LTO builds). (Arnaud)
+  . Fixed bug GH-21059 (Segfault when preloading constant AST closure). (ilutov)
+  . Fixed bug GH-21072 (Crash on (unset) cast in constant expression).
+    (arshidkv12)
+  . Fix deprecation now showing when accessing null key of an array with JIT.
+    (alexandre-daubois)
+  . Fixed bug GH-20657 (Assertion failure in zend_lazy_object_get_info triggered
+    by setRawValueWithoutLazyInitialization() and newLazyGhost()). (Arnaud)
+  . Fixed bug GH-20504 (Assertion failure in zend_get_property_guard when
+    accessing properties on Reflection LazyProxy via isset()). (Arnaud)
+  . Fixed OSS-Fuzz #478009707 (Borked assign-op/inc/dec on untyped hooked
+    property backing value). (ilutov)
+  . Fixed bug GH-21215 (Build fails with -std=). (Arnaud)
+  . Fixed bug GH-13674 (Build system installs libtool wrappers when using
+    slibtool). (Michael Orlitzky)
+
+- Curl:
+  . Don't truncate length. (ndossche)
+
+- Date:
+  . Fixed bug GH-20936 (DatePeriod::__set_state() cannot handle null start).
+    (ndossche)
+  . Fix timezone offset with seconds losing precision. (ndossche)
+
+- DOM:
+  . Fixed bug GH-21077 (Accessing Dom\Node::baseURI can throw TypeError).
+    (ndossche)
+  . Fixed bug GH-21097 (Accessing Dom\Node properties can can throw TypeError).
+    (ndossche)
+
+- LDAP:
+  . Fixed bug GH-21262 (ldap_modify() too strict controls argument validation
+    makes it impossible to unset attribute). (David Carlier)
+
+- MBString:
+  . Fixed bug GH-21223; mb_guess_encoding no longer crashes when passed huge
+    list of candidate encodings (with 200,000+ entries). (Jordi Kroon)
+
+- Opcache:
+  . Fixed bug GH-20718 ("Insufficient shared memory" when using JIT on Solaris).
+    (Petr Sumbera)
+  . Fixed bug GH-21227 (Borked SCCP of array containing partial object).
+    (ilutov)
+
+- OpenSSL:
+  . Fix a bunch of leaks and error propagation. (ndossche)
+
+- Windows:
+  . Fixed compilation with clang (missing intrin.h include). (Kévin Dunglas)
+
+29 Jan 2026, PHP 8.5.3
 
 - Core:
   . Fixed bug GH-20806 (preserve_none feature compatiblity with LTO).

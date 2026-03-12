@@ -542,7 +542,7 @@ static size_t curl_write(char *data, size_t size, size_t nmemb, void *ctx)
 			return fwrite(data, size, nmemb, write_handler->fp);
 		case PHP_CURL_RETURN:
 			if (length > 0) {
-				smart_str_appendl(&write_handler->buf, data, (int) length);
+				smart_str_appendl(&write_handler->buf, data, length);
 			}
 			break;
 		case PHP_CURL_USER: {
@@ -580,6 +580,10 @@ static int curl_fnmatch(void *ctx, const char *pattern, const char *string)
 	zval argv[3];
 	zval retval;
 
+	if (!ZEND_FCC_INITIALIZED(ch->handlers.fnmatch)) {
+		return rval;
+	}
+
 	GC_ADDREF(&ch->std);
 	ZVAL_OBJ(&argv[0], &ch->std);
 	ZVAL_STRING(&argv[1], pattern);
@@ -611,6 +615,9 @@ static int curl_progress(void *clientp, double dltotal, double dlnow, double ult
 	fprintf(stderr, "curl_progress() called\n");
 	fprintf(stderr, "clientp = %x, dltotal = %f, dlnow = %f, ultotal = %f, ulnow = %f\n", clientp, dltotal, dlnow, ultotal, ulnow);
 #endif
+	if (!ZEND_FCC_INITIALIZED(ch->handlers.progress)) {
+		return rval;
+	}
 
 	zval args[5];
 	zval retval;
@@ -649,6 +656,9 @@ static int curl_xferinfo(void *clientp, curl_off_t dltotal, curl_off_t dlnow, cu
 	fprintf(stderr, "curl_xferinfo() called\n");
 	fprintf(stderr, "clientp = %x, dltotal = %ld, dlnow = %ld, ultotal = %ld, ulnow = %ld\n", clientp, dltotal, dlnow, ultotal, ulnow);
 #endif
+	if (!ZEND_FCC_INITIALIZED(ch->handlers.xferinfo)) {
+		return rval;
+	}
 
 	zval argv[5];
 	zval retval;
@@ -809,7 +819,7 @@ static size_t curl_read(char *data, size_t size, size_t nmemb, void *ctx)
 			if (!Z_ISUNDEF(retval)) {
 				_php_curl_verify_handlers(ch, /* reporterror */ true);
 				if (Z_TYPE(retval) == IS_STRING) {
-					length = MIN((size * nmemb), Z_STRLEN(retval));
+					length = MIN(size * nmemb, Z_STRLEN(retval));
 					memcpy(data, Z_STRVAL(retval), length);
 				} else if (Z_TYPE(retval) == IS_LONG) {
 					length = Z_LVAL_P(&retval);
@@ -840,7 +850,7 @@ static size_t curl_write_header(char *data, size_t size, size_t nmemb, void *ctx
 			/* Handle special case write when we're returning the entire transfer
 			 */
 			if (ch->handlers.write->method == PHP_CURL_RETURN && length > 0) {
-				smart_str_appendl(&ch->handlers.write->buf, data, (int) length);
+				smart_str_appendl(&ch->handlers.write->buf, data, length);
 			} else {
 				PHPWRITE(data, length);
 			}

@@ -259,7 +259,8 @@ static zend_always_inline size_t zend_safe_address(size_t nmemb, size_t size, si
 		: "=&r"(res), "=&r"(m_overflow)
 		: "r"(nmemb),
 		  "r"(size),
-		  "r"(offset));
+		  "r"(offset)
+		: "cc");
 
 	if (UNEXPECTED(m_overflow)) {
 		*overflow = 1;
@@ -283,7 +284,8 @@ static zend_always_inline size_t zend_safe_address(size_t nmemb, size_t size, si
              : "=&r"(res), "=&r"(m_overflow)
              : "r"(nmemb),
                "r"(size),
-               "r"(offset));
+               "r"(offset)
+             : "xer");
 
         if (UNEXPECTED(m_overflow)) {
                 *overflow = 1;

@@ -20,6 +20,9 @@
 #define ZEND_CALL_STACK_H
 
 #include "zend_portability.h"
+#ifdef _MSC_VER
+# include <intrin.h>
+#endif
 #ifdef __APPLE__
 # include <pthread.h>
 #endif
