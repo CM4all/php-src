@@ -1,5 +1,80 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+12 Mar 2026, PHP 8.4.19
+
+- Core:
+  . Fixed bug GH-21029 (zend_mm_heap corrupted on Aarch64, LTO builds). (Arnaud)
+  . Fixed bug GH-20657 (Assertion failure in zend_lazy_object_get_info triggered
+    by setRawValueWithoutLazyInitialization() and newLazyGhost()). (Arnaud)
+  . Fixed bug GH-20504 (Assertion failure in zend_get_property_guard when
+    accessing properties on Reflection LazyProxy via isset()). (Arnaud)
+  . Fixed OSS-Fuzz #478009707 (Borked assign-op/inc/dec on untyped hooked
+    property backing value). (ilutov)
+  . Fixed bug GH-21215 (Build fails with -std=). (Arnaud)
+  . Fixed bug GH-13674 (Build system installs libtool wrappers when using
+    slibtool). (Michael Orlitzky)
+
+- Curl:
+  . Fixed bug GH-21023 (CURLOPT_XFERINFOFUNCTION crash with a null callback).
+    (David Carlier)
+  . Don't truncate length. (ndossche)
+
+- Date:
+  . Fixed bug GH-20936 (DatePeriod::__set_state() cannot handle null start).
+    (ndossche)
+  . Fix timezone offset with seconds losing precision. (ndossche)
+
+- DOM:
+  . Fixed bug GH-21077 (Accessing Dom\Node::baseURI can throw TypeError).
+    (ndossche)
+  . Fixed bug GH-21097 (Accessing Dom\Node properties can can throw TypeError).
+    (ndossche)
+
+- MBString:
+  . Fixed bug GH-21223; mb_guess_encoding no longer crashes when passed huge
+    list of candidate encodings (with 200,000+ entries). (Jordi Kroon)
+
+- Opcache:
+  . Fixed bug GH-20718 ("Insufficient shared memory" when using JIT on Solaris).
+    (Petr Sumbera)
+  . Fixed bug GH-21227 (Borked SCCP of array containing partial object).
+    (ilutov)
+  . Fixed bug GH-21052 (Preloaded constant erroneously propagated to file-cached
+    script). (ilutov)
+
+- OpenSSL:
+  . Fix a bunch of leaks and error propagation. (ndossche)
+
+- PCNTL:
+  . Fixed pcntl_setns() internal errors handling regarding errnos.
+    (David Carlier/ndossche)
+  . Fixed cpuset leak in pcntl_setcpuaffinity on out-of-range CPU ID
+    on NetBSD/Solaris platforms. (David Carlier)
+  . Fixed pcntl_signal() signal table registering the callback first
+    OS-wise before the internal list. (David Carlier)
+  . Fixed pcntl_signal_dispatch() stale pointer and exception
+    handling. (David Carlier)
+
+- PCRE:
+  . Fixed preg_match memory leak with invalid regexes. (David Carlier)
+
+- PDO_PGSQL:
+  . Fixed bug GH-21055 (connection attribute status typo for GSS negotiation).
+    (lsaos)
+
+- PGSQL:
+  . Fixed bug GH-21162 (pg_connect() memory leak on error).
+    (David Carlier)
+
+- Sockets:
+  . Fixed bug GH-21161 (socket_set_option() crash with array 'addr'
+    entry as null). (David Carlier)
+  . Fixed possible addr length overflow with socket_connect() and AF_UNIX
+    family sockets. (David Carlier)
+
+- Windows:
+  . Fixed compilation with clang (missing intrin.h include). (Kévin Dunglas)
+
 12 Feb 2026, PHP 8.4.18
 
 - Core:
