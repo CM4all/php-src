@@ -187,6 +187,7 @@ jobs:
             ${{ matrix.variation && '-d zend_test.observer.enabled=1 -d zend_test.observer.show_output=0' || '' }}
           idleCpu: ${{ matrix.asan && 'true' || 'false' }}
       - name: Test Tracing JIT
+        if: ${{ inputs.all_variations || matrix.asan }}
         uses: ./.github/actions/test-linux
         with:
           enableOpcache: true
@@ -208,7 +209,7 @@ jobs:
       - name: Test Function JIT
         # ASAN frequently timeouts. Each test run takes ~90 minutes, we can
         # avoid running into the 6 hour timeout by skipping the function JIT.
-        if: ${{ inputs.all_variations && !matrix.asan }}
+        if: ${{ !matrix.asan }}
         uses: ./.github/actions/test-linux
         with:
           enableOpcache: true
@@ -505,7 +506,8 @@ jobs:
       - name: Test Laravel
         if: ${{ !cancelled() }}
         run: |
-          git clone https://github.com/laravel/framework.git --depth=1
+          branch=${{ fromJson(inputs.branch).jobs.COMMUNITY.config.laravel_version }}
+          git clone https://github.com/laravel/framework.git --depth=1 ${branch:+--branch="$branch"}
           cd framework
           git rev-parse HEAD
           php /usr/bin/composer install --no-progress --ignore-platform-req=php+
@@ -550,7 +552,8 @@ jobs:
       - name: Test Symfony
         if: ${{ !cancelled() }}
         run: |
-          git clone https://github.com/symfony/symfony.git --depth=1 --branch="${{ fromJson(inputs.branch).jobs.COMMUNITY.config.symfony_version }}"
+          branch=${{ fromJson(inputs.branch).jobs.COMMUNITY.config.symfony_version }}
+          git clone https://github.com/symfony/symfony.git --depth=1 ${branch:+--branch="$branch"}
           cd symfony
           git rev-parse HEAD
           php /usr/bin/composer install --no-progress --ignore-platform-req=php+
@@ -978,6 +981,21 @@ jobs:
           configurationParameters: >-
             --${{ matrix.zts && 'enable' || 'disable' }}-zts
           runExtraTests: true
+  SOLARIS:
+    if: ${{ fromJson(inputs.branch).jobs.SOLARIS }}
+    name: "SOLARIS"
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - name: git checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ fromJson(inputs.branch).ref }}
+      - name: Solaris
+        uses: ./.github/actions/solaris
+        with:
+          configurationParameters: --disable-zts
+          runExtraTests: true
   BENCHMARKING:
     name: BENCHMARKING
     if: ${{ fromJson(inputs.branch).jobs.BENCHMARKING }}
@@ -1035,6 +1053,7 @@ jobs:
           sudo mkdir -p /etc/php.d
           sudo chmod 777 /etc/php.d
           echo mysqli.default_socket=/var/run/mysqld/mysqld.sock > /etc/php.d/mysqli.ini
+          ${{ !fromJson(inputs.branch).jobs.BENCHMARKING.config.integrated_opcache && 'echo zend_extension=opcache.so >> /etc/php.d/opcache.ini' || '' }}
           echo opcache.enable=1 >> /etc/php.d/opcache.ini
           echo opcache.enable_cli=1 >> /etc/php.d/opcache.ini
       - name: Setup
@@ -1074,8 +1093,8 @@ jobs:
         run: |-
           set -x
           php benchmark/generate_diff.php \
-            ${{ github.event.pull_request.head.sha }} \
-            $(git merge-base ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}) \
+            ${{ github.sha }} \
+            ${{ github.event.pull_request.base.sha }} \
             > $GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@v6
         with:
