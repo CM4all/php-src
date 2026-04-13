@@ -3867,7 +3867,10 @@ static int php_openssl_get_evp_pkey_type(int key_type) {
 /* {{{ php_openssl_generate_private_key */
 static EVP_PKEY * php_openssl_generate_private_key(struct php_x509_request * req)
 {
-	if (req->priv_key_bits < MIN_KEY_LENGTH) {
+	if ((req->priv_key_type == OPENSSL_KEYTYPE_RSA ||
+			req->priv_key_type == OPENSSL_KEYTYPE_DH ||
+			req->priv_key_type == OPENSSL_KEYTYPE_DSA) &&
+			req->priv_key_bits < MIN_KEY_LENGTH) {
 		php_error_docref(NULL, E_WARNING, "Private key length must be at least %d bits, configured to %d",
 			MIN_KEY_LENGTH, req->priv_key_bits);
 		return NULL;
@@ -5936,16 +5939,21 @@ PHP_FUNCTION(openssl_pkcs7_encrypt)
 	/* tack on extra headers */
 	if (zheaders) {
 		ZEND_HASH_FOREACH_STR_KEY_VAL(Z_ARRVAL_P(zheaders), strindex, zcertval) {
+			int ret;
 			zend_string *str = zval_try_get_string(zcertval);
 			if (UNEXPECTED(!str)) {
 				goto clean_exit;
 			}
 			if (strindex) {
-				BIO_printf(outfile, "%s: %s\n", ZSTR_VAL(strindex), ZSTR_VAL(str));
+				ret = BIO_printf(outfile, "%s: %s\n", ZSTR_VAL(strindex), ZSTR_VAL(str));
 			} else {
-				BIO_printf(outfile, "%s\n", ZSTR_VAL(str));
+				ret = BIO_printf(outfile, "%s\n", ZSTR_VAL(str));
 			}
 			zend_string_release(str);
+			if (ret < 0) {
+				php_openssl_store_errors();
+				goto clean_exit;
+			}
 		} ZEND_HASH_FOREACH_END();
 	}
 
@@ -6164,6 +6172,7 @@ PHP_FUNCTION(openssl_pkcs7_sign)
 			zend_string_release(str);
 			if (ret < 0) {
 				php_openssl_store_errors();
+				goto clean_exit;
 			}
 		} ZEND_HASH_FOREACH_END();
 	}
@@ -6554,16 +6563,21 @@ PHP_FUNCTION(openssl_cms_encrypt)
 	/* tack on extra headers */
 	if (zheaders && encoding == ENCODING_SMIME) {
 		ZEND_HASH_FOREACH_STR_KEY_VAL(Z_ARRVAL_P(zheaders), strindex, zcertval) {
+			int ret;
 			zend_string *str = zval_try_get_string(zcertval);
 			if (UNEXPECTED(!str)) {
 				goto clean_exit;
 			}
 			if (strindex) {
-				BIO_printf(outfile, "%s: %s\n", ZSTR_VAL(strindex), ZSTR_VAL(str));
+				ret = BIO_printf(outfile, "%s: %s\n", ZSTR_VAL(strindex), ZSTR_VAL(str));
 			} else {
-				BIO_printf(outfile, "%s\n", ZSTR_VAL(str));
+				ret = BIO_printf(outfile, "%s\n", ZSTR_VAL(str));
 			}
 			zend_string_release(str);
+			if (ret < 0) {
+				php_openssl_store_errors();
+				goto clean_exit;
+			}
 		} ZEND_HASH_FOREACH_END();
 	}
 
@@ -6843,6 +6857,7 @@ PHP_FUNCTION(openssl_cms_sign)
 			zend_string_release(str);
 			if (ret < 0) {
 				php_openssl_store_errors();
+				goto clean_exit;
 			}
 		} ZEND_HASH_FOREACH_END();
 	}
