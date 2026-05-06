@@ -5167,7 +5167,7 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 							 && ssa->vars[ssa_op->op2_def].use_chain < 0
 							 && !ssa->vars[ssa_op->op2_def].phi_use_chain) {
 								if (!zend_jit_store_type(&ctx, var_num, type)) {
-									return 0;
+									goto jit_failure;
 								}
 								SET_STACK_TYPE(stack, var_num, type, 1);
 							}
@@ -5220,7 +5220,7 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 							 && ssa->vars[ssa_op->op1_def].use_chain < 0
 							 && !ssa->vars[ssa_op->op1_def].phi_use_chain) {
 								if (!zend_jit_store_type(&ctx, var_num, type)) {
-									return 0;
+									goto jit_failure;
 								}
 								SET_STACK_TYPE(stack, var_num, type, 1);
 							}
@@ -5317,7 +5317,7 @@ static const void *zend_jit_trace(zend_jit_trace_rec *trace_buffer, uint32_t par
 							 && ssa->vars[ssa_op->op1_def].use_chain < 0
 							 && !ssa->vars[ssa_op->op1_def].phi_use_chain) {
 								if (!zend_jit_store_type(&ctx, var_num, type)) {
-									return 0;
+									goto jit_failure;
 								}
 								SET_STACK_TYPE(stack, var_num, type, 1);
 							}
@@ -6539,7 +6539,7 @@ done:
 											var_num = EX_VAR_TO_NUM(var_num);
 
 											if (!zend_jit_store_type(&ctx, var_num, type)) {
-												return 0;
+												goto jit_failure;
 											}
 											SET_STACK_TYPE(stack, var_num, type, 1);
 										}
@@ -7179,7 +7179,7 @@ done:
 				 && type != STACK_MEM_TYPE(stack, i)
 				 && zend_jit_trace_must_store_type(op_array, op_array_ssa, opline - op_array->opcodes, i, type)) {
 					if (!zend_jit_store_type(jit, i, type)) {
-						return 0;
+						goto jit_failure;
 					}
 					SET_STACK_TYPE(stack, i, type, 1);
 				}
@@ -7301,11 +7301,11 @@ jit_failure:
 		zend_string_release(name);
 	}
 
+jit_cleanup:;
 	} zend_catch {
 		do_bailout = 1;
 	}  zend_end_try();
 
-jit_cleanup:
 	/* Clean up used op_arrays */
 	while (num_op_arrays > 0) {
 		op_array = op_arrays[--num_op_arrays];
