@@ -22,7 +22,6 @@
 #include "php.h"
 #if defined(HAVE_LIBXML) && defined(HAVE_DOM)
 #include "php_dom.h"
-#include <libxml/SAX.h>
 #include <libxml/xmlsave.h>
 #ifdef LIBXML_SCHEMAS_ENABLED
 #include <libxml/relaxng.h>
@@ -1125,7 +1124,7 @@ PHP_METHOD(DOMDocument, __construct)
 	}
 
 	if (encoding_len > 0) {
-		docp->encoding = (const xmlChar *) xmlStrdup((xmlChar *) encoding);
+		docp->encoding = xmlStrdup((const xmlChar *) encoding);
 	}
 
 	intern = Z_DOMOBJ_P(ZEND_THIS);
@@ -1442,12 +1441,16 @@ PHP_METHOD(DOMDocument, save)
 	doc_props = dom_get_doc_props(intern->document);
 	format = doc_props->formatoutput;
 	if (options & LIBXML_SAVE_NOEMPTYTAG) {
+		ZEND_DIAGNOSTIC_IGNORED_START("-Wdeprecated-declarations")
 		saveempty = xmlSaveNoEmptyTags;
 		xmlSaveNoEmptyTags = 1;
+		ZEND_DIAGNOSTIC_IGNORED_END
 	}
 	bytes = xmlSaveFormatFileEnc(file, docp, NULL, format);
 	if (options & LIBXML_SAVE_NOEMPTYTAG) {
+		ZEND_DIAGNOSTIC_IGNORED_START("-Wdeprecated-declarations")
 		xmlSaveNoEmptyTags = saveempty;
+		ZEND_DIAGNOSTIC_IGNORED_END
 	}
 	if (bytes == -1) {
 		RETURN_FALSE;
@@ -1494,12 +1497,16 @@ PHP_METHOD(DOMDocument, saveXML)
 			RETURN_FALSE;
 		}
 		if (options & LIBXML_SAVE_NOEMPTYTAG) {
+			ZEND_DIAGNOSTIC_IGNORED_START("-Wdeprecated-declarations")
 			saveempty = xmlSaveNoEmptyTags;
 			xmlSaveNoEmptyTags = 1;
+			ZEND_DIAGNOSTIC_IGNORED_END
 		}
 		xmlNodeDump(buf, docp, node, 0, format);
 		if (options & LIBXML_SAVE_NOEMPTYTAG) {
+			ZEND_DIAGNOSTIC_IGNORED_START("-Wdeprecated-declarations")
 			xmlSaveNoEmptyTags = saveempty;
+			ZEND_DIAGNOSTIC_IGNORED_END
 		}
 		mem = (xmlChar*) xmlBufferContent(buf);
 		if (!mem) {
@@ -1510,13 +1517,17 @@ PHP_METHOD(DOMDocument, saveXML)
 		xmlBufferFree(buf);
 	} else {
 		if (options & LIBXML_SAVE_NOEMPTYTAG) {
+			ZEND_DIAGNOSTIC_IGNORED_START("-Wdeprecated-declarations")
 			saveempty = xmlSaveNoEmptyTags;
 			xmlSaveNoEmptyTags = 1;
+			ZEND_DIAGNOSTIC_IGNORED_END
 		}
 		/* Encoding is handled from the encoding property set on the document */
 		xmlDocDumpFormatMemory(docp, &mem, &size, format);
 		if (options & LIBXML_SAVE_NOEMPTYTAG) {
+			ZEND_DIAGNOSTIC_IGNORED_START("-Wdeprecated-declarations")
 			xmlSaveNoEmptyTags = saveempty;
+			ZEND_DIAGNOSTIC_IGNORED_END
 		}
 		if (!size || !mem) {
 			RETURN_FALSE;

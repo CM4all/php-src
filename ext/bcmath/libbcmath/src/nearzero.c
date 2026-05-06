@@ -41,10 +41,7 @@
    Specifically, all but the last digit is 0 and the last digit is 1.
    Last digit is defined by scale. */
 
-char
-bc_is_near_zero (num, scale)
-     bc_num num;
-     int scale;
+char bc_is_near_zero(bc_num num, int scale)
 {
   int  count;
   char *nptr;

@@ -39,9 +39,7 @@
 
 /* new_num allocates a number and sets fields to known values. */
 
-bc_num
-_bc_new_num_ex (length, scale, persistent)
-     int length, scale, persistent;
+bc_num _bc_new_num_ex(int length, int scale, int persistent)
 {
   bc_num temp;
   /* PHP Change:  malloc() -> pemalloc(), removed free_list code */
@@ -61,10 +59,7 @@ _bc_new_num_ex (length, scale, persistent)
 /* "Frees" a bc_num NUM.  Actually decreases reference count and only
    frees the storage if reference count is zero. */
 
-void
-_bc_free_num_ex (num, persistent)
-    bc_num *num;
-    int persistent;
+void _bc_free_num_ex(bc_num *num, int persistent)
 {
   if (*num == NULL) return;
   (*num)->n_refs--;
