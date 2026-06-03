@@ -1,5 +1,44 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+04 Jun 2026, PHP 8.4.22
+
+- Date:
+  . Fixed bug GH-18422 (int overflow in php_date_llabs). (iliaal)
+
+- Intl:
+  . Fix incorrect argument positions in out-of-bounds errors for
+    IntlCalendar::set(), IntlCalendar::setDate(), IntlCalendar::setDateTime(),
+    and IntlGregorianCalendar date/time construction. (Weilin Du)
+  . Expose Spoofchecker restriction-level APIs on all supported ICU
+    versions. (Weilin Du)
+  . Fix SpoofChecker::setAllowedChars() and IntlDateFormatter::__construct()
+    to report PHP constant names instead of ICU constant names in
+    user-visible error messages.
+    (Weilin Du)
+
+- MySQLnd:
+  . Fix persistent free of non-persistent connect_attr key (David Carlier).
+
+- Opcache:
+  . Fixed tracing JIT crash when a VM interrupt is handled during an observed
+    user function call. (Levi Morrison)
+  . Fixed bug GH-22004 (Assertion failure at ext/opcache/jit/zend_jit_trace.c).
+    (Arnaud)
+
+- OpenSSL:
+  . Fix compatibility issues with OpenSSL 4.0. (jordikroon, Remi)
+
+- SPL:
+  . Fix SplFixedArray::setSize leak when destructor grows during clear.
+    (David Carlier)
+  . Fixed bug GH-21933 (use after free of self-freeing MultipleIterator
+    children). (David Carlier)
+
+- Standard:
+  . Fixed bug GH-21689 (version_compare() incorrectly handles versions ending
+    with a dot). (timwolla)
+  . Fixed ip2long() leading zeros handling inconsistency on AIX. (ayappanec)
+
 07 May 2026, PHP 8.4.21
 
 - Core:
@@ -29,6 +68,8 @@ PHP                                                                        NEWS
     (David Carlier)
   . Upgrade to lexbor v2.7.0. (CVE-2026-29078, CVE-2026-29079)
     (ndossche, ilutov)
+  . Fixed bug GH-21544 (Dom\XMLDocument::C14N*( drops namespace declarations
+    on DOM-built documents). (David Carlier, ndossche)
 
 - FPM:
   . Fixed GHSA-7qg2-v9fj-4mwv (XSS within status endpoint). (CVE-2026-6735)
