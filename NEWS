@@ -1,5 +1,78 @@
 PHP                                                                        NEWS
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+03 Jul 2026, PHP 8.4.23
+
+- Core:
+  . Fixed bug GH-22280 (Incorrect compile error for goto to label preceding
+    try/finally block). (Pratik Bhujel)
+
+- BCMath:
+  . Fixed issues with oversized allocations and signed overflow in bcround()
+    and BcMath\Number::round(). (edorian)
+
+- Date:
+  . Fix incorrect recurrence check of DatePeriod::createFromISO8601String().
+    (ndossche)
+
+- DOM:
+  . Fix GH-22219 (Dom\XMLDocument::schemaValidate fails to resolve
+    xs:QName with prefix from imported schema). (David Carlier)
+
+- Exif:
+  . Read correct value for single and double tags. (ndossche)
+
+- GD:
+  . Fixed bug GH-22121 (Double free in gdImageSetStyle() after
+    overflow-triggered early return). (iliaal)
+  . Fixed bug GH-19666 (imageconvolution() unexpected nan filter value).
+    (David Carlier)
+  . Fixed bug GH-19739 (imageellipse/imagefilledellipse overflow).
+    (David Carlier)
+  . Fixed bug GH-19730 (imageaffine overflow).
+    (David Carlier)
+
+- Intl:
+  . Fix incorrect argument positions for uninitialized calendar arguments in
+    IntlCalendar::equals(), ::before(), ::after(), and ::isEquivalentTo(), and
+    for invalid start/end arguments in transliterator_transliterate().
+    (Weilin Du)
+  . Fixed IntlTimeZone::getDisplayName() to synchronize object error state
+    for invalid display types. (Weilin Du)
+  . Fixed Spoofchecker restriction-level APIs to only be exposed with ICU 53
+    and later. (Graham Campbell)
+
+- mysqli:
+  . Fix stmt->query leak in mysqli_execute_query() validation errors.
+    (David Carlier)
+
+- Opcache:
+  . Fixed bug GH-20469 (Unsafe inheritance cache replay with reentrant
+    autoloading). (Levi Morrison)
+
+- OpenSSL:
+  . Fixed bug GH-22187 (Memory corruption (zend_mm_heap corrupted) in
+    openssl_encrypt with AES-WRAP-PAD). (David Carlier)
+
+- Phar:
+  . Fixed a bypass of the magic ".phar" directory protection in
+    Phar::addEmptyDir() for paths starting with "/.phar", while allowing
+    non-magic directory names that merely share the ".phar" prefix. (Weilin Du)
+
+- Reflection:
+  . Preserve class-name case in ReflectionClass::getProperty() error messages
+    and autoloading. (jorgsowa)
+
+- Sqlite:
+  . Fix error checks for column retrieval. (ndossche)
+
+- Zlib:
+  . Fixed memory leak if deflate initialization fails and there is a dict.
+    (ndossche)
+  . Fixed memory leak in inflate_add(). (ndossche)
+
+- Zip:
+  . Fixed error-related memory leaks. (ndossche)
+
 04 Jun 2026, PHP 8.4.22
 
 - Date:
@@ -20,6 +93,8 @@ PHP                                                                        NEWS
   . Fix persistent free of non-persistent connect_attr key (David Carlier).
 
 - Opcache:
+  . Fixed bug GH-21972 (Corrupted variable type when a typed by-value return
+    contains a reference wrapper). (Weilin Du)
   . Fixed tracing JIT crash when a VM interrupt is handled during an observed
     user function call. (Levi Morrison)
   . Fixed bug GH-22004 (Assertion failure at ext/opcache/jit/zend_jit_trace.c).
@@ -27,6 +102,13 @@ PHP                                                                        NEWS
 
 - OpenSSL:
   . Fix compatibility issues with OpenSSL 4.0. (jordikroon, Remi)
+
+- Phar:
+  . Fixed bug GH-21986 (PharData::getContent() crash on infinite recursion
+    with symlinks). (David Carlier)
+
+- SOAP:
+  . Fixed integer overflow when decoding SOAP array indexes. (Weilin Du)
 
 - SPL:
   . Fix SplFixedArray::setSize leak when destructor grows during clear.
