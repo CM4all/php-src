@@ -310,6 +310,49 @@ static void add_header_variable(const char *name, const char *value,
 	add_variable(PARSE_SERVER, buffer, value, array);
 }
 
+static const char *const http_method_to_string_data[] = {
+	[HTTP_METHOD_HEAD] = "HEAD",
+	[HTTP_METHOD_GET] = "GET",
+	[HTTP_METHOD_POST] = "POST",
+	[HTTP_METHOD_PUT] = "PUT",
+	[HTTP_METHOD_DELETE] = "DELETE",
+	[HTTP_METHOD_OPTIONS] = "OPTIONS",
+	[HTTP_METHOD_TRACE] = "TRACE",
+
+	/* WebDAV methods */
+	[HTTP_METHOD_PROPFIND] = "PROPFIND",
+	[HTTP_METHOD_PROPPATCH] = "PROPPATCH",
+	[HTTP_METHOD_MKCOL] = "MKCOL",
+	[HTTP_METHOD_COPY] = "COPY",
+	[HTTP_METHOD_MOVE] = "MOVE",
+	[HTTP_METHOD_LOCK] = "LOCK",
+	[HTTP_METHOD_UNLOCK] = "UNLOCK",
+
+	/* RFC 5789 */
+	[HTTP_METHOD_PATCH] = "PATCH",
+
+	/* Versioning Extensions to WebDAV methods (RFC3253) */
+	[HTTP_METHOD_REPORT] = "REPORT",
+
+	/* RFC 10008 */
+	[HTTP_METHOD_QUERY] = "QUERY",
+};
+
+ZEND_ATTRIBUTE_CONST
+static const char *http_method_to_string(http_method_t method)
+{
+	const unsigned idx = (unsigned)method;
+
+	const char *s = NULL;
+	if (idx < sizeof(http_method_to_string_data) / sizeof(http_method_to_string_data[0]))
+		s = http_method_to_string_data[idx];
+
+	if (s == NULL)
+		s = "UNKNOWN";
+
+	return s;
+}
+
 static void sapi_was_register_variables(zval *array)
 {
 	struct was_simple *const w = SG(server_context);
