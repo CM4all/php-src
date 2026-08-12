@@ -19,6 +19,7 @@
 #include "php_ini.h"
 #include "observer.h"
 #include "zend_observer.h"
+#include "zend_extensions.h"
 #include "zend_smart_str.h"
 #include "ext/standard/php_var.h"
 #include "zend_generators.h"
@@ -379,6 +380,7 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_BOOLEAN("zend_test.observer.fiber_switch", "0", PHP_INI_SYSTEM, OnUpdateBool, observer_fiber_switch, zend_zend_test_globals, zend_test_globals)
 	STD_PHP_INI_BOOLEAN("zend_test.observer.fiber_destroy", "0", PHP_INI_SYSTEM, OnUpdateBool, observer_fiber_destroy, zend_zend_test_globals, zend_test_globals)
 	STD_PHP_INI_BOOLEAN("zend_test.observer.execute_internal", "0", PHP_INI_SYSTEM, OnUpdateBool, observer_execute_internal, zend_zend_test_globals, zend_test_globals)
+	STD_PHP_INI_BOOLEAN("zend_test.observer.reserve_op_array_handle", "0", PHP_INI_SYSTEM, OnUpdateBool, observer_reserve_op_array_handle, zend_zend_test_globals, zend_test_globals)
 PHP_INI_END()
 
 void zend_test_observer_init(INIT_FUNC_ARGS)
@@ -387,6 +389,9 @@ void zend_test_observer_init(INIT_FUNC_ARGS)
 	if (type != MODULE_TEMPORARY) {
 		REGISTER_INI_ENTRIES();
 		if (ZT_G(observer_enabled)) {
+			if (ZT_G(observer_reserve_op_array_handle)) {
+				zend_get_op_array_extension_handle("zend_test");
+			}
 			zend_observer_fcall_register(observer_fcall_init);
 		}
 	} else {
