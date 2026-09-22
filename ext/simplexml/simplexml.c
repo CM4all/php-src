@@ -443,8 +443,7 @@ long_dim:
 	if (sxe->iter.type == SXE_ITER_ATTRLIST) {
 		attribs = 1;
 		elements = 0;
-		node = php_sxe_get_first_node_non_destructive(sxe, node);
-		attr = (xmlAttrPtr)node;
+		attr = (xmlAttrPtr)php_sxe_get_first_node_non_destructive(sxe, node);
 		test = sxe->iter.name != NULL;
 	} else if (sxe->iter.type != SXE_ITER_CHILD) {
 		mynode = node;
@@ -1680,6 +1679,7 @@ PHP_METHOD(SimpleXMLElement, addChild)
 	xmlNodePtr      node, newnode;
 	xmlNsPtr        nsptr = NULL;
 	xmlChar        *localname, *prefix = NULL;
+	const xmlChar  *retprefix = NULL;
 
 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|s!s!",
 		&qname, &qname_len, &value, &value_len, &nsuri, &nsuri_len) == FAILURE) {
@@ -1728,7 +1728,11 @@ PHP_METHOD(SimpleXMLElement, addChild)
 		}
 	}
 
-	node_as_zval_str(sxe, newnode, return_value, SXE_ITER_NONE, localname, prefix, 0);
+	if ((prefix != NULL || nsuri != NULL) && newnode->ns != NULL) {
+		retprefix = newnode->ns->prefix;
+	}
+
+	node_as_zval_str(sxe, newnode, return_value, SXE_ITER_NONE, localname, retprefix, 1);
 
 	xmlFree(localname);
 	if (prefix != NULL) {
