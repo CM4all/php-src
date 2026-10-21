@@ -26,7 +26,7 @@ dnl Basic autoconf initialization, generation of config.nice.
 dnl ----------------------------------------------------------------------------
 
 AC_PREREQ([2.68])
-AC_INIT([PHP],[8.6.0RC3],[https://github.com/php/php-src/issues],[php],[https://www.php.net])
+AC_INIT([PHP],[8.6.0RC4],[https://github.com/php/php-src/issues],[php],[https://www.php.net])
 AC_CONFIG_SRCDIR([main/php_version.h])
 AC_CONFIG_MACRO_DIR([build])
 AC_CONFIG_AUX_DIR([build])
@@ -286,6 +286,9 @@ SAPI_LIBNAME_STATIC=$SAPI_LIBNAME.a
 SAPI_SHARED=libs/$SAPI_LIBNAME_SHARED
 SAPI_STATIC=libs/$SAPI_LIBNAME_STATIC
 SAPI_LIBTOOL=libphp.la
+
+dnl Set by SAPIs whose host program dlopen()s libphp without linking against it.
+php_tsrm_dlopened_sapi=no
 
 PHP_CONFIGURE_PART([Configuring SAPI modules])
 
@@ -888,6 +891,20 @@ AS_VAR_IF([PHP_THREAD_SAFETY], [yes], [
 
   AC_MSG_CHECKING([for POSIX threads])
   AC_MSG_RESULT([yes])
+
+  AS_VAR_IF([php_tsrm_dlopened_sapi], [yes], [
+    php_tsrm_tls_model=
+    for flag in $CFLAGS $EXTRA_CFLAGS; do
+      AS_CASE([$flag], [-ftls-model=*], [php_tsrm_tls_model=$flag])
+    done
+
+    dnl Define TSRM_TLS_MODEL_USE_DEFAULT to avoid forcing static TLS in dlopened SAPIs.
+    dnl Omit it for explicit initial-exec to enable the TCB offset fast path.
+    AS_IF([test "$php_tsrm_tls_model" != "-ftls-model=initial-exec"], [
+      AC_DEFINE([TSRM_TLS_MODEL_USE_DEFAULT], [1],
+        [Define to 1 to use the compiler's default TLS model.])
+    ])
+  ])
 ])
 
 PHP_ARG_ENABLE([rtld-now],

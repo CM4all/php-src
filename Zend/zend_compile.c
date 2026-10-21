@@ -472,6 +472,7 @@ void init_compiler(void) /* {{{ */
 	CG(delayed_autoloads) = NULL;
 	CG(unlinked_uses) = NULL;
 	CG(current_linking_class) = NULL;
+	CG(interned_strings_fallible) = false;
 }
 /* }}} */
 
@@ -2486,9 +2487,14 @@ static inline zend_op *zend_delayed_emit_op(znode *result, uint8_t opcode, znode
 }
 /* }}} */
 
-static inline uint32_t zend_delayed_compile_begin(void) /* {{{ */
+static zend_always_inline uint32_t zend_delayed_oplines_stack_size(void)
 {
 	return zend_stack_count(&CG(delayed_oplines_stack));
+}
+
+static inline uint32_t zend_delayed_compile_begin(void) /* {{{ */
+{
+	return zend_delayed_oplines_stack_size();
 }
 /* }}} */
 
@@ -3209,6 +3215,7 @@ static zend_op *zend_delayed_compile_prop(znode *result, zend_ast *ast, uint32_t
 		/* We will throw if $this doesn't exist, so there's no need to emit a JMP_NULL
 		 * check for a nullsafe access. */
 	} else {
+		uint32_t offset = zend_delayed_oplines_stack_size();
 		zend_short_circuiting_mark_inner(obj_ast);
 		zend_mark_const_object_fetch(obj_ast);
 		opline = zend_delayed_compile_var(&obj_node, obj_ast, type, false);
@@ -3225,10 +3232,11 @@ static zend_op *zend_delayed_compile_prop(znode *result, zend_ast *ast, uint32_t
 				/* Flush delayed oplines */
 				zend_op *opline = NULL, *oplines = zend_stack_base(&CG(delayed_oplines_stack));
 				uint32_t var = obj_node.u.op.var;
-				uint32_t count = zend_stack_count(&CG(delayed_oplines_stack));
+				uint32_t count = zend_delayed_oplines_stack_size();
 				uint32_t i = count;
 
-				while (i > 0 && oplines[i-1].result_type == IS_TMP_VAR && oplines[i-1].result.var == var) {
+				/* Only consider the oplines delayed while compiling obj_ast. */
+				while (i > offset && oplines[i-1].result_type == IS_TMP_VAR && oplines[i-1].result.var == var) {
 					i--;
 					if (oplines[i].op1_type == IS_TMP_VAR) {
 						var = oplines[i].op1.var;
@@ -5365,7 +5373,15 @@ static zend_result zend_compile_func_array_map(znode *result, zend_ast_list *arg
 
 	/* Evaluate class name */
 	znode class_node;
-	if (callback->kind == ZEND_AST_STATIC_CALL) {
+	if (callback->kind == ZEND_AST_STATIC_CALL
+	 && callback->child[0]->kind == ZEND_AST_ZVAL
+	 && Z_TYPE_P(zend_ast_get_zval(callback->child[0])) == IS_STRING
+	 && zend_get_class_fetch_type(zend_ast_get_str(callback->child[0])) == ZEND_FETCH_CLASS_DEFAULT) {
+		/* Resolve the name against the namespace and imports, as compiling it
+		 * as an expression would yield the unresolved string. */
+		class_node.op_type = IS_CONST;
+		ZVAL_STR(&class_node.u.constant, zend_resolve_class_name_ast(callback->child[0]));
+	} else if (callback->kind == ZEND_AST_STATIC_CALL) {
 		znode result;
 		zend_compile_expr(&result, callback->child[0]);
 		if (result.op_type == IS_CONST || result.op_type == IS_TMP_VAR) {
@@ -5397,15 +5413,7 @@ static zend_result zend_compile_func_array_map(znode *result, zend_ast_list *arg
 	zend_ast *call_args = zend_partial_apply(callback,
 			zend_ast_create_znode(&value));
 	if (!call_args) {
-		CG(active_op_array)->T--;
-		if (func_node.op_type == IS_CONST) {
-			zval_ptr_dtor_nogc(&func_node.u.constant);
-		}
-		if (class_node.op_type == IS_CONST) {
-			zval_ptr_dtor_nogc(&class_node.u.constant);
-		}
-		/* The callback is not a FCC/PFA, or is not optimizable */
-		return FAILURE;
+		goto fail;
 	}
 
 	zend_op *opline;
@@ -5414,6 +5422,10 @@ static zend_result zend_compile_func_array_map(znode *result, zend_ast_list *arg
 	zend_compile_expr(&array, args->child[1]);
 	/* array is an argument to both ZEND_TYPE_ASSERT and to ZEND_FE_RESET_R. */
 	if (array.op_type == IS_CONST) {
+		if (Z_TYPE(array.u.constant) != IS_ARRAY) {
+			zval_ptr_dtor_nogc(&array.u.constant);
+			goto fail;
+		}
 		Z_TRY_ADDREF(array.u.constant);
 	}
 
@@ -5494,6 +5506,17 @@ static zend_result zend_compile_func_array_map(znode *result, zend_ast_list *arg
 	}
 
 	return SUCCESS;
+
+fail:
+	CG(active_op_array)->T--;
+	if (func_node.op_type == IS_CONST) {
+		zval_ptr_dtor_nogc(&func_node.u.constant);
+	}
+	if (class_node.op_type == IS_CONST) {
+		zval_ptr_dtor_nogc(&class_node.u.constant);
+	}
+
+	return FAILURE;
 }
 
 static zend_result zend_try_compile_special_func_ex(znode *result, zend_string *lcname, zend_ast_list *args, uint32_t type, uint32_t lineno) /* {{{ */

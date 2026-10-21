@@ -114,7 +114,9 @@ void zend_exception_set_previous(zend_object *exception, zend_object *add_previo
 		return;
 	}
 
-	if (exception == add_previous || zend_is_unwind_exit(add_previous) || zend_is_graceful_exit(add_previous)) {
+	if (exception == add_previous
+	 || zend_is_unwind_exit(exception) || zend_is_graceful_exit(exception)
+	 || zend_is_unwind_exit(add_previous) || zend_is_graceful_exit(add_previous)) {
 		OBJ_RELEASE(add_previous);
 		return;
 	}
@@ -146,6 +148,8 @@ void zend_exception_set_previous(zend_object *exception, zend_object *add_previo
 		}
 		ex = previous;
 	} while (Z_OBJ_P(ex) != add_previous);
+
+	OBJ_RELEASE(add_previous);
 }
 /* }}} */
 
