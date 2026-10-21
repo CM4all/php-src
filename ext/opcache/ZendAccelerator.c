@@ -199,10 +199,10 @@ static time_t zend_accel_get_time(void)
 # define zend_accel_get_time() time(NULL)
 #endif
 
-static inline ZEND_ATTRIBUTE_PURE bool is_cacheable_stream_path(const char *filename)
+static inline ZEND_ATTRIBUTE_PURE bool is_cacheable_stream_path(const zend_string *filename)
 {
-	return memcmp(filename, "file://", sizeof("file://") - 1) == 0 ||
-	       memcmp(filename, "phar://", sizeof("phar://") - 1) == 0;
+	return zend_string_starts_with_literal(filename, "file://") ||
+	       zend_string_starts_with_literal(filename, "phar://");
 }
 
 static ZEND_ATTRIBUTE_PURE bool check_no_validate_timestamps_in(const zend_string *filename)
@@ -656,14 +656,17 @@ static zend_string* ZEND_FASTCALL accel_init_interned_string_for_php(const char 
 		zend_string *ret = accel_find_interned_string_ex(h, str, size);
 
 		if (!ret) {
-			ret = zend_string_init(str, size, permanent);
+			ret = zend_string_finit(str, size, permanent, CG(interned_strings_fallible));
+			if (UNEXPECTED(!ret)) {
+				return NULL;
+			}
 			ZSTR_H(ret) = h;
 		}
 
 		return ret;
 	}
 
-	return zend_string_init(str, size, permanent);
+	return zend_string_finit(str, size, permanent, CG(interned_strings_fallible));
 }
 
 static inline void accel_copy_permanent_list_types(
@@ -1254,7 +1257,7 @@ zend_string *accel_make_persistent_key(zend_string *str)
 	if (IS_ABSOLUTE_PATH(path, path_length)) {
 		/* pass */
 	} else if (UNEXPECTED(php_is_stream_path(path))) {
-		if (!is_cacheable_stream_path(path)) {
+		if (!is_cacheable_stream_path(str)) {
 			return NULL;
 		}
 		/* pass */
@@ -1932,7 +1935,7 @@ static zend_op_array *file_cache_compile_file(zend_file_handle *file_handle, int
 	bool from_memory; /* if the script we've got is stored in SHM */
 
 	if (php_is_stream_path(ZSTR_VAL(file_handle->filename)) &&
-	    !is_cacheable_stream_path(ZSTR_VAL(file_handle->filename))) {
+	    !is_cacheable_stream_path(file_handle->filename)) {
 		return accelerator_orig_compile_file(file_handle, type);
 	}
 
@@ -2090,7 +2093,7 @@ static zend_op_array *persistent_compile_file_inner(zend_file_handle *file_handl
 				return accelerator_orig_compile_file(file_handle, type);
 			}
 			persistent_script = zend_accel_hash_find(&ZCSG(hash), key);
-		} else if (UNEXPECTED(php_is_stream_path(ZSTR_VAL(filename)) && !is_cacheable_stream_path(ZSTR_VAL(filename)))) {
+		} else if (UNEXPECTED(php_is_stream_path(ZSTR_VAL(filename)) && !is_cacheable_stream_path(filename))) {
 			ZCG(cache_opline) = NULL;
 			ZCG(cache_persistent_script) = NULL;
 			return accelerator_orig_compile_file(file_handle, type);
@@ -2395,6 +2398,10 @@ static zend_class_entry* zend_accel_inheritance_cache_get(zend_class_entry *ce, 
 	bool needs_autoload;
 	zend_inheritance_cache_entry *entry = ce->inheritance_cache;
 
+	if (entry) {
+		ZEND_ATOMIC_FENCE_ACQUIRE();
+	}
+
 	while (entry) {
 		entry = zend_accel_inheritance_cache_find(entry, ce, parent, traits_and_interfaces, &needs_autoload);
 		if (entry) {
@@ -2498,6 +2505,7 @@ static zend_class_entry* zend_accel_inheritance_cache_add(zend_class_entry *ce, 
 	}
 
 	zend_map_ptr_extend(ZCSG(map_ptr_last));
+	zend_accel_pending_ce_cache_begin();
 
 #if ZEND_MM_NEED_EIGHT_BYTE_REALIGNMENT
 	/* Align to 8-byte boundary */
@@ -2551,9 +2559,12 @@ static zend_class_entry* zend_accel_inheritance_cache_add(zend_class_entry *ce, 
 	entry->num_warnings = EG(num_errors);
 	entry->warnings = zend_persist_warnings(EG(num_errors), EG(errors));
 	entry->next = proto->inheritance_cache;
-	proto->inheritance_cache = entry;
 
 	ZCSG(map_ptr_last) = CG(map_ptr_last);
+	ZEND_ATOMIC_FENCE_RELEASE();
+	proto->inheritance_cache = entry;
+
+	zend_accel_pending_ce_cache_commit();
 
 	zend_shared_alloc_destroy_xlat_table();
 
@@ -2942,6 +2953,9 @@ zend_result accel_post_deactivate(void)
 		zend_string_release_ex(ZCG(cwd), 0);
 		ZCG(cwd) = NULL;
 	}
+
+	/* A persist window left through a bailout never published its slots */
+	zend_accel_pending_ce_cache_discard();
 
 	if (!ZCG(enabled) || !accel_startup_ok) {
 		return SUCCESS;
@@ -4833,6 +4847,7 @@ static zend_result accel_finish_startup_preload(bool in_child)
 	EG(error_reporting) = 0;
 
 	const zend_result rc = php_request_startup();
+	zend_mm_set_max_allocs(0);
 
 	EG(error_reporting) = orig_error_reporting;
 
