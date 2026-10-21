@@ -84,6 +84,12 @@ ZendArchiveFile::LoadScript() const noexcept
 
 	memcpy(buf, p, info.mem_size);
 	zend_map_ptr_extend(ZCSG(map_ptr_last));
+	const uint32_t orig_map_ptr_last = CG(map_ptr_last);
+
+	/* class name map_ptr slots allocated during unserialization
+	   are published only after ZCSG(map_ptr_last) has been
+	   updated */
+	zend_accel_pending_ce_cache_begin();
 
 	/* unserialize the embedded zend_persistent_script instance */
 
@@ -93,6 +99,8 @@ ZendArchiveFile::LoadScript() const noexcept
 	zend_try {
 		zend_file_cache_unserialize(script, buf);
 	} zend_catch {
+		zend_accel_pending_ce_cache_discard();
+		CG(map_ptr_last) = orig_map_ptr_last;
 		zend_shared_alloc_unlock();
 		return nullptr;
 	} zend_end_try();
@@ -100,6 +108,7 @@ ZendArchiveFile::LoadScript() const noexcept
 	script->corrupted = 0;
 
 	ZCSG(map_ptr_last) = CG(map_ptr_last);
+	zend_accel_pending_ce_cache_commit();
 	script->dynamic_members.last_used = ZCG(request_time);
 
 	/* store the unserialized zend_persistent_script in ZCSG(hash)
