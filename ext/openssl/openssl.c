@@ -1058,7 +1058,7 @@ PHP_FUNCTION(openssl_spki_new)
 	}
 
 	if (challenge) {
-		if (!ASN1_STRING_set(spki->spkac->challenge, challenge, (int)challenge_len)) {
+		if (!ASN1_STRING_set1_data(spki->spkac->challenge, (const unsigned char *) challenge, challenge_len)) {
 			php_openssl_store_errors();
 			php_error_docref(NULL, E_WARNING, "Unable to set challenge data");
 			goto cleanup;
@@ -1245,7 +1245,8 @@ PHP_FUNCTION(openssl_spki_export_challenge)
 		goto cleanup;
 	}
 
-	RETVAL_STRING((const char *)ASN1_STRING_get0_data(spki->spkac->challenge));
+	RETVAL_STRINGL_FAST((const char *)ASN1_STRING_get0_data(spki->spkac->challenge),
+		ASN1_STRING_get_length(spki->spkac->challenge));
 	goto cleanup;
 
 cleanup:
@@ -3276,7 +3277,7 @@ PHP_FUNCTION(openssl_pkcs7_read)
 
 			if (PEM_write_bio_X509(bio_out, ca) && BIO_get_mem_ptr(bio_out, &bio_buf) > 0) {
 				ZVAL_STRINGL(&zcert, bio_buf->data, bio_buf->length);
-				add_index_zval(zout, i, &zcert);
+				add_next_index_zval(zout, &zcert);
 			}
 			(void)BIO_reset(bio_out);
 		}
@@ -3294,7 +3295,7 @@ PHP_FUNCTION(openssl_pkcs7_read)
 
 			if (PEM_write_bio_X509_CRL(bio_out, crl) && BIO_get_mem_ptr(bio_out, &bio_buf) > 0) {
 				ZVAL_STRINGL(&zcert, bio_buf->data, bio_buf->length);
-				add_index_zval(zout, i, &zcert);
+				add_next_index_zval(zout, &zcert);
 			}
 			(void)BIO_reset(bio_out);
 		}
@@ -3950,7 +3951,7 @@ PHP_FUNCTION(openssl_cms_read)
 
 			if (PEM_write_bio_X509(bio_out, ca) && BIO_get_mem_ptr(bio_out, &bio_buf) > 0) {
 				ZVAL_STRINGL(&zcert, bio_buf->data, bio_buf->length);
-				add_index_zval(zout, i, &zcert);
+				add_next_index_zval(zout, &zcert);
 			}
 			(void)BIO_reset(bio_out);
 		}
@@ -3969,7 +3970,7 @@ PHP_FUNCTION(openssl_cms_read)
 
 			if (PEM_write_bio_X509_CRL(bio_out, crl) && BIO_get_mem_ptr(bio_out, &bio_buf) > 0) {
 				ZVAL_STRINGL(&zcert, bio_buf->data, bio_buf->length);
-				add_index_zval(zout, i, &zcert);
+				add_next_index_zval(zout, &zcert);
 			}
 			(void)BIO_reset(bio_out);
 		}

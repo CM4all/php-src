@@ -182,7 +182,7 @@ PHP_FUNCTION(stream_socket_client)
 		/* host might contain binary characters */
 		zend_string *quoted_host = php_addslashes(host);
 
-		php_error_docref(NULL, E_WARNING, "Unable to connect to %s (%s)", ZSTR_VAL(quoted_host), errstr == NULL ? "Unknown error" : ZSTR_VAL(errstr));
+		php_error_docref(NULL, E_WARNING, "Unable to connect to %pS (%s)", quoted_host, errstr == NULL ? "Unknown error" : ZSTR_VAL(errstr));
 		zend_string_release_ex(quoted_host, 0);
 	}
 
@@ -838,6 +838,7 @@ PHP_FUNCTION(stream_select)
 	}
 
 	if (!PHP_SAFE_MAX_FD(max_fd, max_set_count)) {
+		php_stream_error_operation_end(context);
 		RETURN_FALSE;
 	}
 

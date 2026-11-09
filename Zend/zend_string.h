@@ -19,6 +19,7 @@
 #define ZEND_STRING_H
 
 #include "zend_types.h"
+#include "zend_atomic.h" // for ZEND_ATOMIC_LOAD_ACQUIRE_32()
 #include "zend_alloc.h"
 #include "zend_char.h"
 #include "zend_long.h"
@@ -40,6 +41,12 @@ struct _zend_string {
 	size_t            len;
 	char              val[1];
 };
+
+static zend_always_inline bool zstr_has_ce_cache(const zend_string *s)
+{
+	uint32_t type_info = ZEND_ATOMIC_LOAD_ACQUIRE_32(&GC_TYPE_INFO(s));
+	return (type_info & (IS_STR_CLASS_NAME_MAP_PTR << GC_FLAGS_SHIFT)) != 0;
+}
 
 #include "zend_errors.h"
 
