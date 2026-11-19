@@ -764,12 +764,14 @@ static inline zend_long safe_shift_left(zend_long n, zend_long s) {
 }
 
 static inline bool shift_left_overflows(zend_long n, zend_long s) {
-	/* This considers shifts that shift in the sign bit to be overflowing as well */
-	if (n >= 0) {
-		return s >= SIZEOF_ZEND_LONG * 8 - 1 || safe_shift_left(n, s) < n;
-	} else {
-		return s >= SIZEOF_ZEND_LONG * 8 || safe_shift_left(n, s) > n;
+	if (UNEXPECTED((zend_ulong)s >= SIZEOF_ZEND_LONG * 8)) {
+		return true;
 	}
+	if (UNEXPECTED(s == SIZEOF_ZEND_LONG * 8 - 1)) {
+		return n != 0 && n != -1;
+	}
+	zend_long shifted = (zend_long)((zend_ulong)n << (zend_ulong)s);
+	return (shifted >> s) != n;
 }
 
 /* If b does not divide a exactly, return the two adjacent values between which the real result
@@ -2226,6 +2228,9 @@ static uint32_t assign_dim_array_result_type(
 			if (dim_type & (MAY_BE_UNDEF|MAY_BE_NULL)) {
 				tmp |= MAY_BE_ARRAY_KEY_STRING;
 			}
+			if ((tmp & MAY_BE_ARRAY_KEY_STRING) && MAY_BE_PACKED(arr_type)) {
+				tmp |= MAY_BE_ARRAY_NUMERIC_HASH;
+			}
 		}
 	}
 	/* Only add value type if we have a key type. It might be that the key type is illegal
@@ -2811,11 +2816,11 @@ static zend_always_inline zend_result _zend_update_type_info(
 						 * null will be returned. */
 						tmp |= MAY_BE_NULL;
 					}
-					if (t2 & (MAY_BE_ARRAY | MAY_BE_OBJECT)) {
+					if (OP2_INFO() & (MAY_BE_ARRAY | MAY_BE_OBJECT)) {
 						/* Arrays and objects cannot be used as keys. */
 						tmp |= MAY_BE_NULL;
 					}
-					if (t1 & (MAY_BE_ANY - (MAY_BE_NULL | MAY_BE_FALSE | MAY_BE_STRING | MAY_BE_ARRAY))) {
+					if (OP1_INFO() & (MAY_BE_ANY - (MAY_BE_NULL | MAY_BE_FALSE | MAY_BE_STRING | MAY_BE_ARRAY))) {
 						/* null and false are implicitly converted to array, anything else
 						 * results in a null return value. */
 						tmp |= MAY_BE_NULL;
@@ -3456,7 +3461,11 @@ static zend_always_inline zend_result _zend_update_type_info(
 		case ZEND_ADD_ARRAY_UNPACK:
 			tmp = ssa_var_info[ssa_op->result_use].type;
 			ZEND_ASSERT(tmp & MAY_BE_ARRAY);
-			tmp |= t1 & (MAY_BE_ARRAY_KEY_ANY|MAY_BE_ARRAY_OF_ANY|MAY_BE_ARRAY_OF_REF);
+			if (t1 & MAY_BE_ARRAY_KEY_LONG) {
+				/* Integer keys are appended without copying the hash/packed layout of the source array. */
+				tmp |= MAY_BE_HASH_ONLY(tmp) ? MAY_BE_ARRAY_NUMERIC_HASH : MAY_BE_ARRAY_KEY_LONG;
+			}
+			tmp |= t1 & (MAY_BE_ARRAY_KEY_STRING|MAY_BE_ARRAY_OF_ANY|MAY_BE_ARRAY_OF_REF);
 			if (t1 & MAY_BE_OBJECT) {
 				tmp |= MAY_BE_ARRAY_KEY_ANY | MAY_BE_ARRAY_OF_ANY;
 			}
@@ -3616,6 +3625,9 @@ static zend_always_inline zend_result _zend_update_type_info(
 						}
 						if (t2 & (MAY_BE_UNDEF | MAY_BE_NULL)) {
 							key_type |= MAY_BE_ARRAY_KEY_STRING;
+						}
+						if ((key_type & MAY_BE_ARRAY_KEY_STRING) && MAY_BE_PACKED(t1)) {
+							key_type |= MAY_BE_ARRAY_NUMERIC_HASH;
 						}
 					}
 				} else if (opline->opcode == ZEND_FETCH_DIM_UNSET) {
@@ -5028,7 +5040,6 @@ ZEND_API bool zend_may_throw_ex(const zend_op *opline, const zend_ssa_op *ssa_op
 		case ZEND_SWITCH_STRING:
 		case ZEND_MATCH:
 		case ZEND_ISSET_ISEMPTY_VAR:
-		case ZEND_ISSET_ISEMPTY_CV:
 		case ZEND_FUNC_NUM_ARGS:
 		case ZEND_FUNC_GET_ARGS:
 		case ZEND_COPY_TMP:
@@ -5118,6 +5129,12 @@ ZEND_API bool zend_may_throw_ex(const zend_op *opline, const zend_ssa_op *ssa_op
 		case ZEND_JMPNZ_EX:
 		case ZEND_BOOL:
 		case ZEND_JMP_SET:
+			return (t1 & MAY_BE_OBJECT);
+		case ZEND_ISSET_ISEMPTY_CV:
+			if (!(opline->extended_value & ZEND_ISEMPTY)) {
+				return 0;
+			}
+			/* empty() casts to bool: objects may have a cast handler */
 			return (t1 & MAY_BE_OBJECT);
 		case ZEND_BOOL_XOR:
 			return (t1 & MAY_BE_OBJECT) || (t2 & MAY_BE_OBJECT);

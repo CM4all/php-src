@@ -2466,9 +2466,14 @@ static inline zend_op *zend_delayed_emit_op(znode *result, uint8_t opcode, znode
 }
 /* }}} */
 
-static inline uint32_t zend_delayed_compile_begin(void) /* {{{ */
+static zend_always_inline uint32_t zend_delayed_oplines_stack_size(void)
 {
 	return zend_stack_count(&CG(delayed_oplines_stack));
+}
+
+static inline uint32_t zend_delayed_compile_begin(void) /* {{{ */
+{
+	return zend_delayed_oplines_stack_size();
 }
 /* }}} */
 
@@ -3155,6 +3160,7 @@ static zend_op *zend_delayed_compile_prop(znode *result, zend_ast *ast, uint32_t
 		/* We will throw if $this doesn't exist, so there's no need to emit a JMP_NULL
 		 * check for a nullsafe access. */
 	} else {
+		uint32_t offset = zend_delayed_oplines_stack_size();
 		zend_short_circuiting_mark_inner(obj_ast);
 		opline = zend_delayed_compile_var(&obj_node, obj_ast, type, 0);
 		if (opline && (opline->opcode == ZEND_FETCH_DIM_W
@@ -3170,10 +3176,11 @@ static zend_op *zend_delayed_compile_prop(znode *result, zend_ast *ast, uint32_t
 				/* Flush delayed oplines */
 				zend_op *opline = NULL, *oplines = zend_stack_base(&CG(delayed_oplines_stack));
 				uint32_t var = obj_node.u.op.var;
-				uint32_t count = zend_stack_count(&CG(delayed_oplines_stack));
+				uint32_t count = zend_delayed_oplines_stack_size();
 				uint32_t i = count;
 
-				while (i > 0 && oplines[i-1].result_type == IS_TMP_VAR && oplines[i-1].result.var == var) {
+				/* Only consider the oplines delayed while compiling obj_ast. */
+				while (i > offset && oplines[i-1].result_type == IS_TMP_VAR && oplines[i-1].result.var == var) {
 					i--;
 					if (oplines[i].op1_type == IS_TMP_VAR) {
 						var = oplines[i].op1.var;
@@ -6538,10 +6545,9 @@ static void zend_compile_match(znode *result, zend_ast *ast)
 		if (opline->op1_type == IS_CONST) {
 			Z_TRY_ADDREF_P(CT_CONSTANT(opline->op1));
 		}
-		if (arms->children == 0) {
-			/* Mark this as an "expression throw" for opcache. */
-			opline->extended_value = ZEND_THROW_IS_EXPR;
-		}
+		/* Mark this as an "expression throw" for opcache.
+		 * Even if there are arms, they may become unreachable after optimization, which loses live ranges. */
+		opline->extended_value = ZEND_THROW_IS_EXPR;
 	}
 
 	for (uint32_t i = 0; i < arms->children; ++i) {

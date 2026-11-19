@@ -8086,7 +8086,9 @@ ZEND_VM_HELPER(zend_dispatch_try_catch_finally_helper, ANY, ANY, uint32_t try_ca
 			Z_OPLINE_NUM_P(fast_call) = (uint32_t)-1;
 			ZEND_VM_JMP_EX(&EX(func)->op_array.opcodes[try_catch->finally_op], 0);
 
-		} else if (op_num < try_catch->finally_end) {
+		} else if (op_num <= try_catch->finally_end) {
+			/* Exception thrown in the finally block, or at its FAST_RET
+			 * (by an interrupt) */
 			zval *fast_call = EX_VAR(EX(func)->op_array.opcodes[try_catch->finally_end].op1.var);
 
 			/* cleanup incomplete RETURN statement */
@@ -8166,7 +8168,7 @@ ZEND_VM_HANDLER(149, ZEND_HANDLE_EXCEPTION, ANY, ANY)
 			/* further blocks will not be relevant... */
 			break;
 		}
-		if (throw_op_num < try_catch->catch_op || throw_op_num < try_catch->finally_end) {
+		if (throw_op_num < try_catch->catch_op || throw_op_num <= try_catch->finally_end) {
 			current_try_catch_offset = i;
 		}
 	}
@@ -8585,7 +8587,13 @@ ZEND_VM_HANDLER(163, ZEND_FAST_RET, ANY, TRY_CATCH)
 	if (Z_OPLINE_NUM_P(fast_call) != (uint32_t)-1) {
 		const zend_op *fast_ret = EX(func)->op_array.opcodes + Z_OPLINE_NUM_P(fast_call);
 
-		ZEND_VM_JMP_EX(fast_ret + 1, 0);
+		/* Handle interrupts before jumping: fast_ret + 1 is inside the try
+		 * block, so an exception thrown there would run the finally block
+		 * again. An exception thrown at FAST_RET belongs to the finally
+		 * block. */
+		ZEND_VM_INTERRUPT_CHECK();
+		ZEND_VM_SET_OPCODE_NO_INTERRUPT(fast_ret + 1);
+		ZEND_VM_CONTINUE();
 	}
 
 	/* special case for unhandled exceptions */
@@ -9454,7 +9462,7 @@ ZEND_VM_COLD_CONST_HANDLER(190, ZEND_COUNT, CONST|TMPVAR|CV, UNUSED)
 	ZEND_VM_NEXT_OPCODE_CHECK_EXCEPTION();
 }
 
-ZEND_VM_TYPE_SPEC_HANDLER(ZEND_COUNT, (op1_info & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF)) == MAY_BE_ARRAY, ZEND_COUNT_ARRAY, CV|TMPVAR, UNUSED)
+ZEND_VM_TYPE_SPEC_HANDLER(ZEND_COUNT, op->op1_type != IS_CONST && (op1_info & (MAY_BE_ANY|MAY_BE_UNDEF|MAY_BE_REF)) == MAY_BE_ARRAY, ZEND_COUNT_ARRAY, CV|TMPVAR, UNUSED)
 {
 	USE_OPLINE
 	zend_array *ht = Z_ARRVAL_P(GET_OP1_ZVAL_PTR_UNDEF(BP_VAR_R));
@@ -10029,11 +10037,11 @@ ZEND_VM_HOT_TYPE_SPEC_HANDLER(ZEND_IS_NOT_EQUAL|ZEND_IS_NOT_IDENTICAL, (op1_info
 	ZEND_VM_SMART_BRANCH(result, 0);
 }
 
-ZEND_VM_TYPE_SPEC_HANDLER(ZEND_IS_IDENTICAL, op->op1_type == IS_CV && (op->op2_type & (IS_CONST|IS_CV)) && !(op1_info & (MAY_BE_UNDEF|MAY_BE_REF)) && !(op2_info & (MAY_BE_UNDEF|MAY_BE_REF)), ZEND_IS_IDENTICAL_NOTHROW, CV, CONST|CV, SPEC(COMMUTATIVE))
+ZEND_VM_TYPE_SPEC_HANDLER(ZEND_IS_IDENTICAL, op->op1_type == IS_CV && (op->op2_type & (IS_CONST|IS_CV)) && !(op1_info & (MAY_BE_UNDEF|MAY_BE_REF)) && !(op2_info & (MAY_BE_UNDEF|MAY_BE_REF)) && !((op1_info & op2_info) & MAY_BE_ARRAY_OF_ARRAY), ZEND_IS_IDENTICAL_NOTHROW, CV, CONST|CV, SPEC(COMMUTATIVE))
 {
 	/* This is declared below the specializations for MAY_BE_LONG/MAY_BE_DOUBLE so those will be used instead if possible. */
 	/* This optimizes $x === SOME_CONST_EXPR and $x === $y for non-refs and non-undef, which can't throw. */
-	/* (Infinite recursion when comparing arrays is an uncatchable fatal error) */
+	/* Comparing two arrays that may contain arrays is excluded, as recursion throws an Error. */
 	USE_OPLINE
 	zval *op1, *op2;
 	bool result;
@@ -10045,7 +10053,7 @@ ZEND_VM_TYPE_SPEC_HANDLER(ZEND_IS_IDENTICAL, op->op1_type == IS_CV && (op->op2_t
 	ZEND_VM_SMART_BRANCH(result, 0);
 }
 
-ZEND_VM_TYPE_SPEC_HANDLER(ZEND_IS_NOT_IDENTICAL, op->op1_type == IS_CV && (op->op2_type & (IS_CONST|IS_CV)) && !(op1_info & (MAY_BE_UNDEF|MAY_BE_REF)) && !(op2_info & (MAY_BE_UNDEF|MAY_BE_REF)), ZEND_IS_NOT_IDENTICAL_NOTHROW, CV, CONST|CV, SPEC(COMMUTATIVE))
+ZEND_VM_TYPE_SPEC_HANDLER(ZEND_IS_NOT_IDENTICAL, op->op1_type == IS_CV && (op->op2_type & (IS_CONST|IS_CV)) && !(op1_info & (MAY_BE_UNDEF|MAY_BE_REF)) && !(op2_info & (MAY_BE_UNDEF|MAY_BE_REF)) && !((op1_info & op2_info) & MAY_BE_ARRAY_OF_ARRAY), ZEND_IS_NOT_IDENTICAL_NOTHROW, CV, CONST|CV, SPEC(COMMUTATIVE))
 {
 	USE_OPLINE
 	zval *op1, *op2;
@@ -10446,7 +10454,11 @@ ZEND_VM_HELPER(zend_interrupt_helper, ANY, ANY)
 
 			}
 		}
-		ZEND_VM_ENTER();
+		/* Like ZEND_VM_ENTER() but don't check for interrupts yet to avoid recursion if the
+		 * interrupt handler re-sets the vm_interrupt flag. */
+		execute_data = EG(current_execute_data);
+		LOAD_OPLINE();
+		ZEND_VM_LEAVE();
 	}
 	ZEND_VM_CONTINUE();
 }

@@ -1213,6 +1213,7 @@ void zend_shutdown(void) /* {{{ */
 #endif
 	zend_map_ptr_static_last = 0;
 	zend_map_ptr_static_size = 0;
+	global_map_ptr_last = 0;
 
 	zend_destroy_rsrc_list_dtors();
 
@@ -2091,6 +2092,7 @@ ZEND_API void zend_alloc_ce_cache(zend_string *type_name)
 	do {
 		ret = ZEND_MAP_PTR_NEW_OFFSET();
 	} while (ret <= 2);
-	GC_ADD_FLAGS(type_name, IS_STR_CLASS_NAME_MAP_PTR);
 	GC_SET_REFCOUNT(type_name, ret);
+	ZEND_ATOMIC_FENCE_RELEASE();
+	GC_ADD_FLAGS(type_name, IS_STR_CLASS_NAME_MAP_PTR);
 }

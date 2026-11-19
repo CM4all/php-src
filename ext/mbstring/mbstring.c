@@ -275,7 +275,7 @@ static const mbfl_encoding *php_mb_get_encoding(zend_string *encoding_name, uint
 }
 
 static const mbfl_encoding *php_mb_get_encoding_or_pass(const char *encoding_name, size_t encoding_name_len) {
-	if (strncmp(encoding_name, "pass", encoding_name_len) == 0) {
+	if (encoding_name_len == strlen("pass") && strncmp(encoding_name, "pass", encoding_name_len) == 0) {
 		return &mbfl_encoding_pass;
 	}
 
@@ -335,7 +335,7 @@ static zend_result php_mb_parse_encoding_list(const char *value, size_t value_le
 			}
 			size_t p1_length = p - p1 + 1;
 			/* convert to the encoding number and check encoding */
-			if (strncasecmp(p1, "auto", p1_length) == 0) {
+			if (p1_length == strlen("auto") && strncasecmp(p1, "auto", p1_length) == 0) {
 				if (!included_auto) {
 					const enum mbfl_no_encoding *src = MBSTRG(default_detect_order_list);
 					const size_t identify_list_size = MBSTRG(default_detect_order_list_size);
@@ -607,8 +607,10 @@ static char *php_mb_rfc1867_getword(const zend_encoding *encoding, char **line, 
 				++pos;
 			}
 		} else {
-			pos += php_mb_mbchar_bytes(pos, (const mbfl_encoding *)encoding);
-
+			size_t len = php_mb_mbchar_bytes(pos, (const mbfl_encoding *)encoding);
+			while (len-- > 0 && *pos) {
+				++pos;
+			}
 		}
 	}
 	if (*pos == '\0') {
@@ -620,7 +622,10 @@ static char *php_mb_rfc1867_getword(const zend_encoding *encoding, char **line, 
 	res = estrndup(*line, pos - *line);
 
 	while (*pos == stop) {
-		pos += php_mb_mbchar_bytes(pos, (const mbfl_encoding *)encoding);
+		size_t len = php_mb_mbchar_bytes(pos, (const mbfl_encoding *)encoding);
+		while (len-- > 0 && *pos) {
+			++pos;
+		}
 	}
 
 	*line = pos;
