@@ -278,12 +278,12 @@ static int add_variable(int filter_arg, const char *name, const char *_value,
 
 static size_t get_host_length(const char *s)
 {
-	if (!isalnum(*s))
+	if (!isalnum((unsigned char)*s))
 		return 0;
 
 	size_t i = 1;
 	for (; s[i] != 0 && s[i] != ':'; ++i) {
-		if (!isalnum(s[i]) && s[i] != '-' && s[i] != '_' && s[i] != '.')
+		if (!isalnum((unsigned char)s[i]) && s[i] != '-' && s[i] != '_' && s[i] != '.')
 			return 0;
 	}
 
@@ -297,10 +297,11 @@ static void add_header_variable(const char *name, const char *value,
 
 	char *p = stpcpy(buffer, "HTTP_");
 	for (; *name != 0; ++name) {
-		if (islower(*name))
-			*p++ = *name - 'a' + 'A';
-		else if (isupper(*name) || isdigit(*name))
-			*p++ = *name;
+		const unsigned char ch = *name;
+		if (islower(ch))
+			*p++ = ch - 'a' + 'A';
+		else if (isupper(ch) || isdigit(ch))
+			*p++ = ch;
 		else
 			*p++ = '_';
 	}
