@@ -34,6 +34,22 @@
 #include <malloc.h>
 #include <unistd.h>
 
+/**
+ * Call opcache_compile_file(), catching bailouts.  This function must
+ * not have objects with non-trivial destructors.
+ */
+static zend_persistent_script *
+CompileFile(zend_file_handle *file_handle, zend_op_array **op_array_p) noexcept
+{
+	zend_persistent_script *persistent_script = nullptr;
+
+	zend_try {
+		persistent_script = opcache_compile_file(file_handle, ZEND_INCLUDE, op_array_p);
+	} zend_end_try();
+
+	return persistent_script;
+}
+
 static bool
 PrecompileFile(zend_file_handle *file_handle, int output_fd)
 {
@@ -41,7 +57,7 @@ PrecompileFile(zend_file_handle *file_handle, int output_fd)
 
 	zend_op_array *op_array;
 	zend_persistent_script *persistent_script =
-		opcache_compile_file(file_handle, ZEND_INCLUDE, &op_array);
+		CompileFile(file_handle, &op_array);
 	if (persistent_script == nullptr) {
 		if (EG(exception))
 			zend_exception_error(EG(exception), E_ERROR);
