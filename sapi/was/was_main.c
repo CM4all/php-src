@@ -283,7 +283,7 @@ static size_t get_host_length(const char *s)
 
 	size_t i = 1;
 	for (; s[i] != 0 && s[i] != ':'; ++i) {
-		if (!isalnum(*s) && *s != '-' && *s != '_')
+		if (!isalnum(s[i]) && s[i] != '-' && s[i] != '_' && s[i] != '.')
 			return 0;
 	}
 
