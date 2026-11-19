@@ -141,19 +141,34 @@ NormalizeFilename(const char *filename) noexcept
 	return filename;
 }
 
-static ZipFileHeader
-WritePreliminaryZipFileHeader(int fd, const char *filename)
+static bool
+WriteFull(int fd, const void *data, size_t size) noexcept
+{
+	ssize_t nbytes = write(fd, data, size);
+	if (nbytes < 0) {
+		perror("Failed to write");
+		return false;
+	}
+
+	if ((size_t)nbytes != size) {
+		fprintf(stderr, "Short write\n");
+		return false;
+	}
+
+	return true;
+}
+
+static bool
+WritePreliminaryZipFileHeader(int fd, const char *filename, ZipFileHeader &h)
 {
 	const size_t filename_length = strlen(filename);
 
-	ZipFileHeader h{};
+	h = {};
 	h.compression_method = 0;
 	h.name_length = filename_length;
-	write(fd, &h, sizeof(h));
 
-	write(fd, filename, filename_length);
-
-	return h;
+	return WriteFull(fd, &h, sizeof(h)) &&
+		WriteFull(fd, filename, filename_length);
 }
 
 [[gnu::pure]]
@@ -201,7 +216,9 @@ precompile(const char *const*files, size_t n_files)
 		/* remember the offset and write a preliminary
 		   ZipFileHeader (which will be updated later) */
 		const auto header_offset = lseek(fd, 0, SEEK_CUR);
-		auto h = WritePreliminaryZipFileHeader(fd, source_filename);
+		ZipFileHeader h;
+		if (!WritePreliminaryZipFileHeader(fd, source_filename, h))
+			return false;
 
 		/* compile the file and write the opcode into the ZIP
 		   file */
@@ -220,7 +237,10 @@ precompile(const char *const*files, size_t n_files)
 		h.compressed_size = h.uncompressed_size = data_size;
 		h.crc = CrcFromFile(fd, data_offset, data_size);
 
-		pwrite(fd, &h, sizeof(h), header_offset);
+		if (pwrite(fd, &h, sizeof(h), header_offset) != (ssize_t)sizeof(h)) {
+			perror("Failed to write");
+			return false;
+		}
 
 		/* remember header data so we can later write central
 		   directory */
@@ -241,25 +261,28 @@ precompile(const char *const*files, size_t n_files)
 		const size_t name_length = strlen(name);
 
 		const auto &entry = entries[i];
-		write(fd, &entry, sizeof(entry));
-		write(fd, name, name_length);
+		if (!WriteFull(fd, &entry, sizeof(entry)) ||
+		    !WriteFull(fd, name, name_length))
+			return false;
 
 		directory_size += sizeof(entry) + name_length;
 	}
 
 	end.directory_size = directory_size;
 
-	write(fd, &end, sizeof(end));
+	if (!WriteFull(fd, &end, sizeof(end)))
+		return false;
 
 	/* truncate the ZIP file at the current position, just in case
 	   we reverted a file which was already written */
-	ftruncate(fd, lseek(fd, 0, SEEK_CUR));
+	if (ftruncate(fd, lseek(fd, 0, SEEK_CUR)) < 0) {
+		perror("Failed to truncate");
+		return false;
+	}
 
 	/* commit the ZIP file, link it to its final filename */
 
 	char zip_filename[64];
 	sprintf(zip_filename, "opcache-%.32s.zip", zend_system_id);
-	CommitFile(fd, AT_FDCWD, zip_filename);
-
-	return true;
+	return CommitFile(fd, AT_FDCWD, zip_filename);
 }
