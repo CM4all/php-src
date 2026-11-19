@@ -431,17 +431,15 @@ static void sapi_was_register_variables(zval *array)
 
 static void sapi_was_log_message(const char *message, int syslog_type_int)
 {
-	char buf[8192];
-	int len = strlen( message );
-	if (*(message + len - 1 ) != '\n') {
-		snprintf( buf, 8191, "%s\n", message );
-		message = buf;
-		if (len > 8191)
-			len = 8191;
-		++len;
-	}
+	const size_t length = strlen(message);
+	struct iovec iov[] = {
+		{ .iov_base = (void *)message, .iov_len = length },
+		{ .iov_base = (void *)"\n", .iov_len = 1 },
+	};
 
-	write(STDERR_FILENO, message, len);
+	/* append a newline only if the message doesn't have one */
+	const int iovcnt = length > 0 && message[length - 1] == '\n' ? 1 : 2;
+	writev(STDERR_FILENO, iov, iovcnt);
 }
 
 static sapi_module_struct was_sapi_module = {
