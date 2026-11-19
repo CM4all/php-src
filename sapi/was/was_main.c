@@ -501,11 +501,11 @@ static zend_result was_module_main(struct was_simple *w)
 	php_execute_script(&file_handle);
 	zend_destroy_file_handle(&file_handle);
 
-	finish_was_metrics(w);
-
 	zend_try {
 		php_request_shutdown(NULL);
 	} zend_end_try();
+
+	finish_was_metrics(w);
 
 	return SUCCESS;
 }
