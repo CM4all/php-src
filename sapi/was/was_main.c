@@ -550,6 +550,8 @@ PHP_FUNCTION(was_request_headers)
 				    p->name, strlen(p->name),
 				    p->value);
 	}
+
+	was_simple_iterator_free(i);
 }
 
 PHP_FUNCTION(was_response_headers)
