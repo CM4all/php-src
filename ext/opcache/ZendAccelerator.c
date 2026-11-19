@@ -222,7 +222,8 @@ ZEND_ATTRIBUTE_PURE static bool check_validate_timestamps_fh(const zend_file_han
 
 bool is_persistent_script(const zend_string *filename)
 {
-	if (!IS_ABSOLUTE_PATH(ZSTR_VAL(filename), ZSTR_LEN(filename)))
+	if (!ZCG(accelerator_enabled) ||
+	    !IS_ABSOLUTE_PATH(ZSTR_VAL(filename), ZSTR_LEN(filename)))
 		return false;
 
 	zend_string *key = normalize_path(filename);
