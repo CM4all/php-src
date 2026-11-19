@@ -833,6 +833,7 @@ int main(int argc, char *argv[])
 
 	if (was_sapi_module.startup(&was_sapi_module) == FAILURE) {
 		php_module_shutdown();
+		sapi_shutdown();
 		php_ini_builder_deinit(&command_line.ini_builder);
 		return EXIT_FAILURE;
 	}
@@ -840,6 +841,7 @@ int main(int argc, char *argv[])
 	if (command_line.print_system_id) {
 		printf("%.32s\n", zend_system_id);
 		php_module_shutdown();
+		sapi_shutdown();
 		php_ini_builder_deinit(&command_line.ini_builder);
 		return EXIT_SUCCESS;
 	}
@@ -849,6 +851,7 @@ int main(int argc, char *argv[])
 	if (command_line.precompile) {
 		if (php_request_startup() == FAILURE) {
 			php_module_shutdown();
+			sapi_shutdown();
 			php_ini_builder_deinit(&command_line.ini_builder);
 			return EXIT_FAILURE;
 		}
@@ -862,6 +865,7 @@ int main(int argc, char *argv[])
 		} zend_end_try();
 
 		php_module_shutdown();
+		sapi_shutdown();
 		php_ini_builder_deinit(&command_line.ini_builder);
 		return ret;
 	}
@@ -881,6 +885,7 @@ int main(int argc, char *argv[])
 	}
 
 	php_module_shutdown();
+	sapi_shutdown();
 	php_ini_builder_deinit(&command_line.ini_builder);
 	return ret;
 }
