@@ -262,7 +262,7 @@ precompile(const char *const*files, size_t n_files)
 	/* write the central directory */
 
 	ZipDirectoryEnd end{};
-	end.total_entries = n_files;
+	end.disk_entries = end.total_entries = n_files;
 	end.directory_offset = lseek(fd, 0, SEEK_CUR);
 
 	size_t directory_size = 0;
