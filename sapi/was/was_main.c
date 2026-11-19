@@ -845,8 +845,11 @@ int main(int argc, char *argv[])
 	ret = EXIT_SUCCESS;
 
 	if (command_line.precompile) {
-		if (php_request_startup() == FAILURE)
-			return -1;
+		if (php_request_startup() == FAILURE) {
+			php_module_shutdown();
+			php_ini_builder_deinit(&command_line.ini_builder);
+			return EXIT_FAILURE;
+		}
 
 		if (!precompile((const char *const*)argv + command_line.optind,
 				argc - command_line.optind))
