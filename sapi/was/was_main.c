@@ -723,6 +723,9 @@ ParseCommandLine(int argc, char *argv[], struct CommandLine *command_line)
 			   work properly */
 			php_ini_builder_define(&command_line->ini_builder, "opcache.file_cache_only=1");
 
+			/* don't refuse recently modified sources */
+			php_ini_builder_define(&command_line->ini_builder, "opcache.file_update_protection=0");
+
 #ifdef HAVE_JIT
 			/* JIT must be disabled when storing to a file
 			   because the JIT will redirect opcode
