@@ -98,7 +98,8 @@ static void dom_xpath_proxy_factory(xmlNodePtr node, zval *child, dom_object *in
 
 	ZEND_ASSERT(node->type != XML_NAMESPACE_DECL);
 
-	php_dom_create_object(node, child, intern);
+	dom_xpath_object *xobj = php_xpath_obj_from_obj(&intern->std);
+	php_dom_create_object(node, child, dom_xpath_intern_for_doc(xobj, node->doc));
 }
 
 static dom_xpath_object *dom_xpath_ext_fetch_intern(xmlXPathParserContextPtr ctxt)
@@ -403,7 +404,7 @@ static void php_xpath_eval(INTERNAL_FUNCTION_PARAMETERS, int type, bool modern) 
 
 						/* Make sure parent dom object exists, so we can take an extra reference. */
 						zval parent_zval; /* don't destroy me, my lifetime is transferred to the fake namespace decl */
-						php_dom_create_object(nsparent, &parent_zval, &intern->dom);
+						php_dom_create_object(nsparent, &parent_zval, dom_xpath_intern_for_doc(intern, nsparent->doc));
 						dom_object *parent_intern = Z_DOMOBJ_P(&parent_zval);
 
 						node = php_dom_create_fake_namespace_decl(nsparent, original, &child, parent_intern);

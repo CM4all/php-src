@@ -121,6 +121,7 @@ static inline void php_phpdbg_globals_ctor(zend_phpdbg_globals *pg) /* {{{ */
 	pg->flags = PHPDBG_DEFAULT_FLAGS;
 	memset(pg->io, 0, sizeof(pg->io));
 	pg->frame.num = 0;
+	pg->frame.generator = 0;
 	pg->sapi_name_ptr = NULL;
 	pg->unclean_eval = 0;
 
@@ -237,6 +238,13 @@ static PHP_RSHUTDOWN_FUNCTION(phpdbg) /* {{{ */
 		fclose(PHPDBG_G(stdin_file));
 		PHPDBG_G(stdin_file) = NULL;
 	}
+
+	return SUCCESS;
+} /* }}} */
+
+static ZEND_MODULE_POST_ZEND_DEACTIVATE_D(phpdbg) /* {{{ */
+{
+	phpdbg_release_watch_elements();
 
 	return SUCCESS;
 } /* }}} */
@@ -689,7 +697,9 @@ static zend_module_entry sapi_phpdbg_module_entry = {
 	PHP_RSHUTDOWN(phpdbg),
 	NULL,
 	PHPDBG_VERSION,
-	STANDARD_MODULE_PROPERTIES
+	NO_MODULE_GLOBALS,
+	ZEND_MODULE_POST_ZEND_DEACTIVATE_N(phpdbg),
+	STANDARD_MODULE_PROPERTIES_EX
 };
 
 static inline int php_sapi_phpdbg_module_startup(sapi_module_struct *module) /* {{{ */

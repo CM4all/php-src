@@ -499,8 +499,9 @@ static void accel_interned_strings_restore_state(void)
 				/* Discard non-global CE_CACHE slots on reset. */
 				uintptr_t idx = (GC_REFCOUNT(s) - 1) / sizeof(void *);
 				if (idx >= ZCSG(map_ptr_last)) {
-					GC_SET_REFCOUNT(s, 2);
 					GC_DEL_FLAGS(s, IS_STR_CLASS_NAME_MAP_PTR);
+					ZEND_ATOMIC_FENCE_RELEASE();
+					GC_SET_REFCOUNT(s, 2);
 				}
 			}
 
@@ -609,6 +610,7 @@ finish:
 	if (ZSTR_HAS_CE_CACHE(str) && !ZSTR_HAS_CE_CACHE(s)) {
 		ZEND_ASSERT(GC_FLAGS(str) & IS_STR_PERMANENT);
 		GC_SET_REFCOUNT(s, GC_REFCOUNT(str));
+		ZEND_ATOMIC_FENCE_RELEASE();
 		GC_ADD_FLAGS(s, IS_STR_CLASS_NAME_MAP_PTR);
 	}
 
@@ -627,6 +629,13 @@ static zend_string* ZEND_FASTCALL accel_new_interned_string_for_php(zend_string 
 			return ret;
 		}
 	}
+#if ZEND_RC_DEBUG
+	/* PHP shouldn't create persistent strings during request, but at least
+	 * dl() may do this. They belong to the temporary module and are not shared. */
+	if (!zend_rc_debug && !ZSTR_IS_INTERNED(str) && (GC_FLAGS(str) & GC_PERSISTENT)) {
+		GC_MAKE_PERSISTENT_LOCAL(str);
+	}
+#endif
 	return str;
 }
 
@@ -651,22 +660,34 @@ static zend_always_inline zend_string *accel_find_interned_string_ex(zend_ulong 
 
 static zend_string* ZEND_FASTCALL accel_init_interned_string_for_php(const char *str, size_t size, bool permanent)
 {
+	zend_string *ret;
+
 	if (ZCG(counted)) {
 	    zend_ulong h = zend_inline_hash_func(str, size);
-		zend_string *ret = accel_find_interned_string_ex(h, str, size);
+		ret = accel_find_interned_string_ex(h, str, size);
 
-		if (!ret) {
-			ret = zend_string_finit(str, size, permanent, CG(interned_strings_fallible));
-			if (UNEXPECTED(!ret)) {
-				return NULL;
-			}
-			ZSTR_H(ret) = h;
+		if (ret) {
+			return ret;
 		}
 
-		return ret;
+		ret = zend_string_finit(str, size, permanent, CG(interned_strings_fallible));
+		if (UNEXPECTED(!ret)) {
+			return NULL;
+		}
+		ZSTR_H(ret) = h;
+	} else {
+		ret = zend_string_finit(str, size, permanent, CG(interned_strings_fallible));
 	}
 
-	return zend_string_finit(str, size, permanent, CG(interned_strings_fallible));
+#if ZEND_RC_DEBUG
+	/* PHP shouldn't create persistent strings during request, but at least
+	 * dl() may do this. They belong to the temporary module and are not shared. */
+	if (!zend_rc_debug && permanent) {
+		GC_MAKE_PERSISTENT_LOCAL(ret);
+	}
+#endif
+
+	return ret;
 }
 
 static inline void accel_copy_permanent_list_types(
@@ -1545,10 +1566,10 @@ static void zend_accel_add_key(zend_string *key, zend_accel_hash_entry *bucket)
 	}
 }
 
+/* Must perform the same check as phar_compile_file(). */
 static zend_always_inline ZEND_ATTRIBUTE_PURE bool is_phar_file(zend_string *filename)
 {
-	return filename && ZSTR_LEN(filename) >= sizeof(".phar") &&
-		!memcmp(ZSTR_VAL(filename) + ZSTR_LEN(filename) - (sizeof(".phar")-1), ".phar", sizeof(".phar")-1) &&
+	return filename && strstr(ZSTR_VAL(filename), ".phar") &&
 		!strstr(ZSTR_VAL(filename), "://");
 }
 
@@ -3404,6 +3425,11 @@ static void (*orig_post_shutdown_cb)(void);
 
 static void accel_post_shutdown(void)
 {
+	/* Call original shutdown prior to detaching SHM, so it can access its memory safely. */
+	if (orig_post_shutdown_cb) {
+		orig_post_shutdown_cb();
+	}
+
 	zend_shared_alloc_shutdown();
 }
 
@@ -4765,6 +4791,9 @@ static zend_result accel_preload(const char *config, bool in_child)
 
 		zend_shared_alloc_save_state();
 		accel_interned_strings_save_state();
+#ifdef HAVE_JIT
+		zend_jit_save_restart_point();
+#endif
 
 		SHM_PROTECT();
 		HANDLE_UNBLOCK_INTERRUPTIONS();

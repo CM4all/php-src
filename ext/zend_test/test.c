@@ -41,6 +41,7 @@
 #include "test_arginfo.h"
 #include "zend_call_stack.h"
 #include "zend_exceptions.h"
+#include "zend_system_id.h"
 #include "zend_mm_custom_handlers.h"
 #include "ext/uri/php_uri.h"
 
@@ -195,6 +196,37 @@ static ZEND_FUNCTION(zend_leak_bytes)
 	}
 
 	emalloc(leakbytes);
+}
+
+/* Reallocate a block of old_size bytes to new_size bytes and return its block
+ * size, along with the block size of a fresh allocation of new_size bytes. */
+static ZEND_FUNCTION(zend_test_erealloc_block_size)
+{
+	zend_long old_size, new_size;
+
+	ZEND_PARSE_PARAMETERS_START(2, 2)
+		Z_PARAM_LONG(old_size)
+		Z_PARAM_LONG(new_size)
+	ZEND_PARSE_PARAMETERS_END();
+
+	if (old_size < 1) {
+		zend_argument_value_error(1, "must be greater than 0");
+		RETURN_THROWS();
+	}
+	if (new_size < 1) {
+		zend_argument_value_error(2, "must be greater than 0");
+		RETURN_THROWS();
+	}
+
+	void *ptr = erealloc(emalloc(old_size), new_size);
+	void *fresh = emalloc(new_size);
+
+	array_init(return_value);
+	add_next_index_long(return_value, zend_mem_block_size(ptr));
+	add_next_index_long(return_value, zend_mem_block_size(fresh));
+
+	efree(fresh);
+	efree(ptr);
 }
 
 static ZEND_FUNCTION(zend_test_emalloc)
@@ -1007,6 +1039,17 @@ static ZEND_FUNCTION(get_open_basedir)
 	}
 }
 
+static PHP_INI_MH(OnUpdateZendTestWarnOnStartup)
+{
+	zend_result result = OnUpdateBool(entry, new_value, mh_arg1, mh_arg2, mh_arg3, stage);
+	if (result == SUCCESS) {
+		if (*(bool *)ZEND_INI_GET_ADDR()) {
+			zend_error(E_WARNING, "Test startup warning from zend_test");
+		}
+	}
+	return result;
+}
+
 static ZEND_FUNCTION(zend_test_is_pcre_bundled)
 {
 	ZEND_PARSE_PARAMETERS_NONE();
@@ -1198,6 +1241,24 @@ static ZEND_FUNCTION(zend_new_singleton_array)
 	ZEND_PARSE_PARAMETERS_NONE();
 
 	array_init_singleton(return_value);
+}
+
+static ZEND_FUNCTION(zend_test_set_local_var)
+{
+	zend_string *name;
+	zval *value;
+
+	ZEND_PARSE_PARAMETERS_START(2, 2)
+		Z_PARAM_STR(name)
+		Z_PARAM_ZVAL(value)
+	ZEND_PARSE_PARAMETERS_END();
+
+	Z_TRY_ADDREF_P(value);
+	if (zend_set_local_var(name, value, false) == FAILURE) {
+		zval_ptr_dtor(value);
+		RETURN_FALSE;
+	}
+	RETURN_TRUE;
 }
 
 static zend_object *zend_test_class_new(zend_class_entry *class_type)
@@ -1482,9 +1543,24 @@ static ZEND_METHOD(_ZendTestMagicCallForward, __call)
 	zval_ptr_dtor(&rv);
 }
 
+static void (*zend_test_prev_interrupt_function)(zend_execute_data *execute_data);
+
+/* The VM clears EG(vm_interrupt) before calling this, so setting it again
+ * leaves an interrupt pending at all times. The VM must still make progress. */
+static void zend_test_rearm_interrupt_function(zend_execute_data *execute_data)
+{
+	zend_atomic_bool_store_ex(&EG(vm_interrupt), true);
+
+	if (zend_test_prev_interrupt_function) {
+		zend_test_prev_interrupt_function(execute_data);
+	}
+}
+
 PHP_INI_BEGIN()
+	PHP_INI_ENTRY("zend_test.register_system_entropy", "0", PHP_INI_SYSTEM, NULL)
 	STD_PHP_INI_BOOLEAN("zend_test.replace_zend_execute_ex", "0", PHP_INI_SYSTEM, OnUpdateBool, replace_zend_execute_ex, zend_zend_test_globals, zend_test_globals)
 	STD_PHP_INI_BOOLEAN("zend_test.register_passes", "0", PHP_INI_SYSTEM, OnUpdateBool, register_passes, zend_zend_test_globals, zend_test_globals)
+	STD_PHP_INI_BOOLEAN("zend_test.rearm_vm_interrupt", "0", PHP_INI_SYSTEM, OnUpdateBool, rearm_vm_interrupt, zend_zend_test_globals, zend_test_globals)
 	STD_PHP_INI_BOOLEAN("zend_test.print_stderr_mshutdown", "0", PHP_INI_SYSTEM, OnUpdateBool, print_stderr_mshutdown, zend_zend_test_globals, zend_test_globals)
 #ifdef HAVE_COPY_FILE_RANGE
 	STD_PHP_INI_ENTRY("zend_test.limit_copy_file_range", "-1", PHP_INI_ALL, OnUpdateLong, limit_copy_file_range, zend_zend_test_globals, zend_test_globals)
@@ -1493,6 +1569,7 @@ PHP_INI_BEGIN()
 	STD_PHP_INI_ENTRY("zend_test.str_test", "", PHP_INI_ALL, OnUpdateStr, str_test, zend_zend_test_globals, zend_test_globals)
 	STD_PHP_INI_ENTRY("zend_test.not_empty_str_test", "val", PHP_INI_ALL, OnUpdateStrNotEmpty, not_empty_str_test, zend_zend_test_globals, zend_test_globals)
 	STD_PHP_INI_BOOLEAN("zend_test.observe_opline_in_zendmm", "0", PHP_INI_ALL, OnUpdateZendTestObserveOplineInZendMM, observe_opline_in_zendmm, zend_zend_test_globals, zend_test_globals)
+	STD_PHP_INI_BOOLEAN("zend_test.warn_on_startup", "0", PHP_INI_SYSTEM, OnUpdateZendTestWarnOnStartup, warn_on_startup, zend_zend_test_globals, zend_test_globals)
 PHP_INI_END()
 
 void (*old_zend_execute_ex)(zend_execute_data *execute_data);
@@ -1682,6 +1759,10 @@ PHP_MINIT_FUNCTION(zend_test)
 	// Loading via dl() not supported with the observer API
 	if (type != MODULE_TEMPORARY) {
 		REGISTER_INI_ENTRIES();
+		if (INI_BOOL("zend_test.register_system_entropy") &&
+			zend_add_system_entropy("zend_test", "test", ZEND_STRL("test entropy")) == FAILURE) {
+			php_error_docref(NULL, E_WARNING, "Failed to register system entropy");
+		}
 	} else {
 		(void)ini_entries;
 	}
@@ -1694,6 +1775,11 @@ PHP_MINIT_FUNCTION(zend_test)
 	if (ZT_G(register_passes)) {
 		zend_optimizer_register_pass(pass1);
 		zend_optimizer_register_pass(pass2);
+	}
+
+	if (ZT_G(rearm_vm_interrupt)) {
+		zend_test_prev_interrupt_function = zend_interrupt_function;
+		zend_interrupt_function = zend_test_rearm_interrupt_function;
 	}
 
 	zend_test_observer_init(INIT_FUNC_ARGS_PASSTHRU);
@@ -1715,6 +1801,11 @@ PHP_MSHUTDOWN_FUNCTION(zend_test)
 
 	zend_test_observer_shutdown(SHUTDOWN_FUNC_ARGS_PASSTHRU);
 
+	if (zend_interrupt_function == zend_test_rearm_interrupt_function) {
+		zend_interrupt_function = zend_test_prev_interrupt_function;
+		zend_test_prev_interrupt_function = NULL;
+	}
+
 	if (ZT_G(print_stderr_mshutdown)) {
 		fprintf(stderr, "[zend_test] MSHUTDOWN\n");
 	}
@@ -1727,7 +1818,13 @@ PHP_RINIT_FUNCTION(zend_test)
 	ALLOC_HASHTABLE(ZT_G(global_weakmap));
 	zend_hash_init(ZT_G(global_weakmap), 8, NULL, ZVAL_PTR_DTOR, 0);
 	ZT_G(observer_nesting_depth) = 0;
+	ZT_G(observer_throw_on_vm_interrupt) = false;
 	zend_test_mm_custom_handlers_rinit();
+
+	if (ZT_G(rearm_vm_interrupt)) {
+		zend_atomic_bool_store_ex(&EG(vm_interrupt), true);
+	}
+
 	return SUCCESS;
 }
 
@@ -1939,6 +2036,9 @@ static PHP_FUNCTION(zend_test_compile_to_ast)
 
 	zend_arena *ast_arena;
 	zend_ast *ast = zend_compile_string_to_ast(str, &ast_arena, ZSTR_EMPTY_ALLOC());
+	if (!ast) {
+		RETURN_THROWS();
+	}
 
 	zend_string *result = zend_ast_export("", ast, "");
 

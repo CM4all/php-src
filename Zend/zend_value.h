@@ -192,7 +192,7 @@ static zend_always_inline uint8_t zval_get_type(const zval* pz) {
 #define OBJ_EXTRA_FLAGS(obj)		((obj)->extra_flags)
 
 /* Fast class cache */
-#define ZSTR_HAS_CE_CACHE(s)		(GC_FLAGS(s) & IS_STR_CLASS_NAME_MAP_PTR)
+#define ZSTR_HAS_CE_CACHE(s)		zstr_has_ce_cache(s)
 #define ZSTR_GET_CE_CACHE(s)		ZSTR_GET_CE_CACHE_EX(s, 1)
 #define ZSTR_SET_CE_CACHE(s, ce)	ZSTR_SET_CE_CACHE_EX(s, ce, 1)
 

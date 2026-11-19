@@ -649,7 +649,6 @@ foundit:
 			fp->readpos = 0;
 			/* the above lines should be for php < 5.2.6 after 5.3 filters are fixed */
 
-			mydata->alias_len = entry.uncompressed_filesize;
 			if (entry.flags & PHAR_ENT_COMPRESSED_GZ) {
 				filter = php_stream_filter_create("zlib.inflate", NULL, php_stream_is_persistent(fp));
 
@@ -735,6 +734,8 @@ foundit:
 					PHAR_ZIP_FAIL("unable to read in alias, truncated");
 				}
 			}
+
+			mydata->alias_len = entry.uncompressed_filesize;
 
 			/* return to central directory parsing */
 			php_stream_seek(fp, restore_pos, SEEK_SET);
@@ -1154,7 +1155,7 @@ continue_dir:
 			}
 		}
 
-		if (!entry->is_dir && entry->compressed_filesize && SUCCESS != php_stream_copy_to_stream_ex(p->old, p->filefp, entry->compressed_filesize, NULL)) {
+		if (!entry->is_dir && entry->compressed_filesize && (!p->old || SUCCESS != php_stream_copy_to_stream_ex(p->old, p->filefp, entry->compressed_filesize, NULL))) {
 			spprintf(p->error, 0, "unable to copy contents of file \"%s\" while creating zip-based phar \"%s\"", ZSTR_VAL(entry->filename), entry->phar->fname);
 			return ZEND_HASH_APPLY_STOP;
 		}

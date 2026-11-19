@@ -464,7 +464,7 @@ PHP_MINIT_FUNCTION(openssl)
 	ssl_stream_data_index = SSL_get_ex_new_index(0, "PHP stream index", NULL, NULL, NULL);
 
 	php_stream_xport_register("ssl", php_openssl_ssl_socket_factory);
-#ifndef OPENSSL_NO_SSL3
+#if OPENSSL_VERSION_NUMBER < 0x40000000L && !defined(OPENSSL_NO_SSL3)
 	php_stream_xport_register("sslv3", php_openssl_ssl_socket_factory);
 #endif
 	php_stream_xport_register("tls", php_openssl_ssl_socket_factory);
@@ -538,7 +538,7 @@ PHP_MSHUTDOWN_FUNCTION(openssl)
 	php_unregister_url_stream_wrapper("ftps");
 
 	php_stream_xport_unregister("ssl");
-#ifndef OPENSSL_NO_SSL3
+#if OPENSSL_VERSION_NUMBER < 0x40000000L && !defined(OPENSSL_NO_SSL3)
 	php_stream_xport_unregister("sslv3");
 #endif
 	php_stream_xport_unregister("tls");
@@ -668,7 +668,7 @@ PHP_FUNCTION(openssl_spki_new)
 	}
 
 	if (challenge) {
-		if (!ASN1_STRING_set(spki->spkac->challenge, challenge, (int)challenge_len)) {
+		if (!ASN1_STRING_set1_data(spki->spkac->challenge, (const unsigned char *) challenge, challenge_len)) {
 			php_openssl_store_errors();
 			php_error_docref(NULL, E_WARNING, "Unable to set challenge data");
 			goto cleanup;
@@ -857,7 +857,8 @@ PHP_FUNCTION(openssl_spki_export_challenge)
 		goto cleanup;
 	}
 
-	RETVAL_STRING((const char *)ASN1_STRING_get0_data(spki->spkac->challenge));
+	RETVAL_STRINGL_FAST((const char *)ASN1_STRING_get0_data(spki->spkac->challenge),
+		ASN1_STRING_get_length(spki->spkac->challenge));
 	goto cleanup;
 
 cleanup:
@@ -1038,8 +1039,8 @@ PHP_FUNCTION(openssl_x509_parse)
 	bool useshortnames = 1;
 	char * tmpstr;
 	zval subitem;
-	X509_EXTENSION *extension;
-	X509_NAME *subject_name;
+	PHP_OPENSSL_X509_EXTENSION *extension;
+	const X509_NAME *subject_name;
 	char *cert_name;
 	char *extname;
 	BIO *bio_out;
@@ -2008,7 +2009,7 @@ PHP_FUNCTION(openssl_csr_get_subject)
 	zend_object *csr_obj;
 	zend_string *csr_str;
 	bool use_shortnames = 1;
-	X509_NAME *subject;
+	const X509_NAME *subject;
 
 	ZEND_PARSE_PARAMETERS_START(1, 2)
 		Z_PARAM_OBJ_OF_CLASS_OR_STR(csr_obj, php_openssl_request_ce, csr_str)
@@ -2873,7 +2874,7 @@ PHP_FUNCTION(openssl_pkcs7_read)
 				BUF_MEM *bio_buf;
 				BIO_get_mem_ptr(bio_out, &bio_buf);
 				ZVAL_STRINGL(&zcert, bio_buf->data, bio_buf->length);
-				add_index_zval(zout, i, &zcert);
+				add_next_index_zval(zout, &zcert);
 			}
 			BIO_free(bio_out);
 		}
@@ -2888,7 +2889,7 @@ PHP_FUNCTION(openssl_pkcs7_read)
 				BUF_MEM *bio_buf;
 				BIO_get_mem_ptr(bio_out, &bio_buf);
 				ZVAL_STRINGL(&zcert, bio_buf->data, bio_buf->length);
-				add_index_zval(zout, i, &zcert);
+				add_next_index_zval(zout, &zcert);
 			}
 			BIO_free(bio_out);
 		}
@@ -3540,7 +3541,7 @@ PHP_FUNCTION(openssl_cms_read)
 				BUF_MEM *bio_buf;
 				BIO_get_mem_ptr(bio_out, &bio_buf);
 				ZVAL_STRINGL(&zcert, bio_buf->data, bio_buf->length);
-				add_index_zval(zout, i, &zcert);
+				add_next_index_zval(zout, &zcert);
 			}
 			BIO_free(bio_out);
 		}
@@ -3555,7 +3556,7 @@ PHP_FUNCTION(openssl_cms_read)
 				BUF_MEM *bio_buf;
 				BIO_get_mem_ptr(bio_out, &bio_buf);
 				ZVAL_STRINGL(&zcert, bio_buf->data, bio_buf->length);
-				add_index_zval(zout, i, &zcert);
+				add_next_index_zval(zout, &zcert);
 			}
 			BIO_free(bio_out);
 		}

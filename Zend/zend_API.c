@@ -35,7 +35,6 @@
 #include "zend_enum.h"
 #include "zend_object_handlers.h"
 #include "zend_observer.h"
-#include "zend_system_id.h"
 #include "zend_rc_debug.h"
 #include "zend_resource.h" // for struct _zend_resource, dereferenced by Z_RES_P()
 
@@ -3199,7 +3198,6 @@ ZEND_API zend_result zend_register_functions(zend_class_entry *scope, const zend
 				}
 				zend_flf_handlers[zend_flf_count] = flf_info->handler;
 				zend_flf_functions[zend_flf_count] = (zend_function *)reg_function;
-				zend_add_system_entropy("frameless", ZSTR_VAL(reg_function->function_name), &flf_info->num_args, sizeof(flf_info->num_args));
 				zend_flf_count++;
 				flf_info++;
 			}
@@ -3507,6 +3505,9 @@ ZEND_API void zend_deactivate_modules(void) /* {{{ */
 			if (module->request_shutdown_func) {
 				zend_try {
 					module->request_shutdown_func(module->type, module->module_number);
+				} zend_catch {
+					/* module shutdown is incomplete */
+					_exit(1);
 				} zend_end_try();
 			}
 		} ZEND_HASH_FOREACH_END();
@@ -3517,6 +3518,9 @@ ZEND_API void zend_deactivate_modules(void) /* {{{ */
 			zend_module_entry *module = *p;
 			zend_try {
 				module->request_shutdown_func(module->type, module->module_number);
+			} zend_catch {
+				/* module shutdown is incomplete */
+				_exit(1);
 			} zend_end_try();
 			p++;
 		}

@@ -505,7 +505,8 @@ SAPI_API void sapi_deactivate_module(void)
 	zend_llist_destroy(&SG(sapi_headers).headers);
 	if (SG(request_info).request_body) {
 		SG(request_info).request_body = NULL;
-	} else if (SG(server_context)) {
+	}
+	if (SG(server_context)) {
 		if (!SG(post_read)) {
 			/* make sure we've consumed all request input data */
 			char dummy[SAPI_POST_BLOCK_SIZE];
@@ -761,7 +762,7 @@ SAPI_API int sapi_header_op(sapi_header_op_enum op, void *arg)
 		return SUCCESS;
 	} else {
 		/* new line/NUL character safety check */
-		uint32_t i;
+		size_t i;
 		for (i = 0; i < header_line_len; i++) {
 			/* RFC 7230 ch. 3.2.4 deprecates folding support */
 			if (header_line[i] == '\n' || header_line[i] == '\r') {

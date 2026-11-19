@@ -334,6 +334,11 @@ static zend_result php_uri_parser_rfc3986_host_write(void *uri, zval *value, zva
 
 ZEND_ATTRIBUTE_NONNULL static zend_long port_str_to_zend_long_checked(const char *str, size_t len)
 {
+	while (len > 1 && *str == '0') {
+		str++;
+		len--;
+	}
+
 	if (len > MAX_LENGTH_OF_LONG) {
 		return -1;
 	}
@@ -659,6 +664,8 @@ ZEND_ATTRIBUTE_NONNULL static void *php_uri_parser_rfc3986_clone(void *uri)
 
 ZEND_ATTRIBUTE_NONNULL static zend_string *php_uri_parser_rfc3986_to_string(void *uri, php_uri_recomposition_mode recomposition_mode, bool exclude_fragment)
 {
+	zend_string *uri_string = NULL;
+
 	php_uri_parser_rfc3986_uris *uriparser_uris = uri;
 	const UriUriA *uriparser_uri;
 
@@ -667,19 +674,30 @@ ZEND_ATTRIBUTE_NONNULL static zend_string *php_uri_parser_rfc3986_to_string(void
 	} else {
 		uriparser_uri = get_normalized_uri(uriparser_uris);
 		if (UNEXPECTED(uriparser_uri == NULL)) {
-			return NULL;
+			goto fail;
 		}
 	}
 
-	int charsRequired = 0;
-	int result = uriToStringCharsRequiredA(uriparser_uri, &charsRequired);
-	ZEND_ASSERT(result == URI_SUCCESS);
+	int output_length = 0;
 
-	charsRequired++;
+	/* uriToStringCharsRequiredA() returns the number of characters WITHOUT the trailing NUL. */
+	int result = uriToStringCharsRequiredA(uriparser_uri, &output_length);
+	if (UNEXPECTED(result != URI_SUCCESS)) {
+		goto fail;
+	}
+	if (UNEXPECTED(output_length == INT_MAX)) {
+		goto fail;
+	}
 
-	zend_string *uri_string = zend_string_alloc(charsRequired - 1, false);
-	result = uriToStringA(ZSTR_VAL(uri_string), uriparser_uri, charsRequired, NULL);
-	ZEND_ASSERT(result == URI_SUCCESS);
+	/* uriToStringA() expects the size of the allocation in maxChars (i.e. WITH the trailing NUL). */
+	int allocation_size = output_length + 1;
+
+	uri_string = zend_string_alloc(output_length, false);
+	result = uriToStringA(ZSTR_VAL(uri_string), uriparser_uri, /* maxChars */ allocation_size, /* charsWritten */ NULL);
+	if (UNEXPECTED(result != URI_SUCCESS)) {
+		/* This should be unreachable in practice. */
+		goto fail;
+	}
 
 	if (exclude_fragment) {
 		const char *pos = zend_memrchr(ZSTR_VAL(uri_string), '#', ZSTR_LEN(uri_string));
@@ -687,6 +705,15 @@ ZEND_ATTRIBUTE_NONNULL static zend_string *php_uri_parser_rfc3986_to_string(void
 			uri_string = zend_string_truncate(uri_string, (pos - ZSTR_VAL(uri_string)), false);
 			ZSTR_VAL(uri_string)[ZSTR_LEN(uri_string)] = '\0';
 		}
+	}
+
+	return uri_string;
+
+ fail:
+
+	if (uri_string != NULL) {
+		zend_string_free(uri_string);
+		uri_string = NULL;
 	}
 
 	return uri_string;

@@ -244,6 +244,10 @@ static void dom_xml_ns_prefix_map_add(
 	} else if (GC_REFCOUNT(list) > 1) {
 		GC_DELREF(list);
 		list = zend_array_dup(list);
+		ZEND_HASH_PACKED_FOREACH_VAL(list, zval *val) {
+			/* Descendant does not own the data. */
+			DOM_Z_UNOWNED(val, Z_PTR_P(val));
+		} ZEND_HASH_FOREACH_END();
 		zend_hash_str_update_ptr(map->ht, (const char *) ns, ns_length, list);
 	}
 
@@ -1228,18 +1232,18 @@ static int dom_xml_serializing_a_document_node(
 	/* 1. Let serialized document be an empty string.
 	 *    => We use the output buffer instead. */
 
-	xmlNodePtr child = node->children;
-	node->children = NULL;
-
 	/* https://github.com/w3c/DOM-Parsing/issues/50 */
 	TRY(xmlOutputBufferFlush(ctx->out));
-	TRY(xmlSaveDoc(ctx->ctxt, (xmlDocPtr) node));
+	/* To gain the xml declaration, use a shallow copy of the document with the children NULLed out.
+	 * Stream wrappers can access the real document, so we cannot modify that. */
+	xmlDoc declaration_doc = *(xmlDocPtr) node;
+	declaration_doc.children = declaration_doc.last = NULL;
+	TRY(xmlSaveDoc(ctx->ctxt, &declaration_doc));
 	TRY(xmlSaveFlush(ctx->ctxt));
-
-	node->children = child;
 
 	/* 2. For each child child of node, in tree order, run the XML serialization algorithm on the child passing along the provided arguments,
 	 *    and append the result to serialized document. */
+	xmlNodePtr child = node->children;
 	while (child != NULL) {
 		TRY(dom_xml_serialization_algorithm(ctx, namespace_prefix_map, child, namespace, prefix_index, indent, require_well_formed));
 		child = child->next;

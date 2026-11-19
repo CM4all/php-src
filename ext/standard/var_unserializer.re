@@ -91,12 +91,13 @@ PHPAPI php_unserialize_data_t php_var_unserialize_init(void) {
 
 PHPAPI void php_var_unserialize_destroy(php_unserialize_data_t d) {
 	/* fprintf(stderr, "UNSERIALIZE_DESTROY == lock: %u, level: %u\n", BG(serialize_lock), BG(unserialize).level); */
-	if (BG(serialize_lock) || BG(unserialize).level == 1) {
+	if (BG(serialize_lock)) {
 		var_destroy(&d);
 		efree(d);
-	}
-	if (!BG(serialize_lock) && !--BG(unserialize).level) {
+	} else if (!--BG(unserialize).level) {
 		BG(unserialize).data = NULL;
+		var_destroy(&d);
+		efree(d);
 	}
 }
 
@@ -856,10 +857,11 @@ static inline int object_common(UNSERIALIZE_PARAMETER, zend_long elements, bool 
 		if (UNEXPECTED(!array_finit_size_mixed(&ary, elements))) {
 			return 0;
 		}
-		if (!process_nested_array_data(UNSERIALIZE_PASSTHRU, Z_ARRVAL(ary), elements)) {
+		if (!process_nested_array_data(UNSERIALIZE_PASSTHRU, Z_ARRVAL(ary), elements)
+				|| !finish_nested_data(UNSERIALIZE_PASSTHRU)) {
 			ZVAL_DEREF(rval);
 			GC_ADD_FLAGS(Z_OBJ_P(rval), IS_OBJ_DESTRUCTOR_CALLED);
-			zval_ptr_dtor(&ary);
+			ZVAL_COPY_VALUE(var_tmp_var(var_hash), &ary);
 			return 0;
 		}
 
@@ -872,7 +874,7 @@ static inline int object_common(UNSERIALIZE_PARAMETER, zend_long elements, bool 
 		tmp++;
 		ZVAL_COPY_VALUE(tmp, &ary);
 
-		return finish_nested_data(UNSERIALIZE_PASSTHRU);
+		return 1;
 	}
 
 	has_wakeup = Z_OBJCE_P(rval) != PHP_IC_ENTRY
@@ -886,7 +888,8 @@ static inline int object_common(UNSERIALIZE_PARAMETER, zend_long elements, bool 
 	if (UNEXPECTED(zend_hash_fextend(ht, zend_hash_num_elements(ht) + elements, HT_IS_PACKED(ht)) == FAILURE)) {
 		return 0;
 	}
-	if (!process_nested_object_data(UNSERIALIZE_PASSTHRU, ht, elements, Z_OBJ_P(rval))) {
+	if (!process_nested_object_data(UNSERIALIZE_PASSTHRU, ht, elements, Z_OBJ_P(rval))
+			|| !finish_nested_data(UNSERIALIZE_PASSTHRU)) {
 		if (has_wakeup) {
 			ZVAL_DEREF(rval);
 			GC_ADD_FLAGS(Z_OBJ_P(rval), IS_OBJ_DESTRUCTOR_CALLED);
@@ -902,7 +905,7 @@ static inline int object_common(UNSERIALIZE_PARAMETER, zend_long elements, bool 
 		Z_EXTRA_P(wakeup_var) = VAR_WAKEUP_FLAG;
 	}
 
-	return finish_nested_data(UNSERIALIZE_PASSTHRU);
+	return 1;
 }
 #ifdef PHP_WIN32
 # pragma optimize("", on)
@@ -1495,7 +1498,9 @@ object ":" uiv ":" ["]	{
 		return 1;
 	}
 
+	BG(serialize_lock)++;
 	zend_class_entry *ce = zend_lookup_class(enum_name);
+	BG(serialize_lock)--;
 	if (!ce) {
 		php_error_docref(NULL, E_WARNING, "Class '%s' not found", ZSTR_VAL(enum_name));
 		goto fail;
@@ -1524,7 +1529,10 @@ object ":" uiv ":" ["]	{
 
 	zval *value = &c->value;
 	if (Z_TYPE_P(value) == IS_CONSTANT_AST) {
-		if (zval_update_constant_ex(value, c->ce) == FAILURE) {
+		BG(serialize_lock)++;
+		zend_result result = zval_update_constant_ex(value, c->ce);
+		BG(serialize_lock)--;
+		if (result == FAILURE) {
 			return 0;
 		}
 	}
