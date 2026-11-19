@@ -1584,7 +1584,8 @@ PHPAPI zend_string *_php_stream_copy_to_mem(php_stream *src, size_t maxlen, bool
 #ifdef S_ISREG
 	    S_ISREG(ssbuf.sb.st_mode) &&
 #endif
-	    ssbuf.sb.st_size >= 0) {
+	    /* procfs and sysfs report st_size 0 */
+	    ssbuf.sb.st_size > 0) {
 		/* optimized code path for unfiltered regular files:
 		 * if we know the exact size, we can allocate the
 		 * right buffer size and issue only one read() system
